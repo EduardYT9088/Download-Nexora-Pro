@@ -134,6 +134,7 @@ jobs:
               <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
               <uses-permission android:name="android.permission.WAKE_LOCK" />
               <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
               <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
@@ -165,6 +166,10 @@ jobs:
                       android:exported="false"
                       android:configChanges="orientation|screenSize|keyboardHidden" />
                   <service
+                      android:name=".AudioService"
+                      android:exported="false"
+                      android:foregroundServiceType="mediaPlayback" />
+                  <service
                       android:name=".NexoraService"
                       android:exported="false"
                       android:foregroundServiceType="dataSync" />
@@ -172,7 +177,9 @@ jobs:
                       android:name=".MainActivity"
                       android:exported="true"
                       android:launchMode="singleTask"
-                      android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+                      android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode"
+                      android:supportsPictureInPicture="true"
+                      android:resizeableActivity="true"
                       android:windowSoftInputMode="adjustResize">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -189,7 +196,7 @@ jobs:
           EOF
 
           cat > $P/app/src/main/res/values/strings.xml <<'EOF'
-          <resources><string name="app_name">Nexora Download Plus</string></resources>
+          <resources><string name="app_name">Nexora Plus</string></resources>
           EOF
 
           cat > $P/app/src/main/res/values/colors.xml <<'EOF'
@@ -306,6 +313,10 @@ jobs:
           import android.webkit.MimeTypeMap;
           import android.webkit.URLUtil;
           import android.webkit.WebResourceRequest;
+          import android.webkit.WebResourceResponse;
+          import android.app.PictureInPictureParams;
+          import android.content.res.Configuration;
+          import android.util.Rational;
           import android.webkit.WebSettings;
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
@@ -356,6 +367,9 @@ jobs:
               private View fullView = null;
               private WebChromeClient.CustomViewCallback fullCb = null;
               private long pendingApk = -1;
+              // Qué está sonando en el reproductor (para ventana flotante / segundo plano)
+              private volatile JSONObject now = new JSONObject();
+              private boolean pipJustExited = false;
 
               // ---- Motor yt-dlp ----
               private static final ExecutorService POOL = Executors.newFixedThreadPool(6);
@@ -433,6 +447,32 @@ jobs:
                       }
                       @Override
                       public void onPageFinished(WebView v, String url) { pageReady = true; }
+
+                      @Override
+                      public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest req) {
+                          Uri u = req.getUrl();
+                          String h = u.getHost(), p = u.getPath();
+                          if (h == null || p == null || !"GET".equals(req.getMethod()) || !p.startsWith("/embed/")) return null;
+                          if (!(h.endsWith("youtube-nocookie.com") || h.endsWith("youtube.com"))) return null;
+                          try {
+                              HttpURLConnection c = (HttpURLConnection) new URL(u.toString()).openConnection();
+                              c.setRequestProperty("Referer", "https://" + getPackageName() + "/");
+                              c.setRequestProperty("User-Agent", WebSettings.getDefaultUserAgent(MainActivity.this));
+                              String al = req.getRequestHeaders() != null ? req.getRequestHeaders().get("Accept-Language") : null;
+                              if (al != null) c.setRequestProperty("Accept-Language", al);
+                              c.setConnectTimeout(10000);
+                              c.setReadTimeout(15000);
+                              int code = c.getResponseCode();
+                              if (code >= 300 && code < 400) return null;
+                              InputStream in = code < 400 ? c.getInputStream() : c.getErrorStream();
+                              String msg = c.getResponseMessage();
+                              java.util.Map<String, String> hs = new java.util.HashMap<>();
+                              hs.put("Cache-Control", "no-cache");
+                              return new WebResourceResponse("text/html", "utf-8", code, (msg == null || msg.isEmpty()) ? "OK" : msg, hs, in);
+                          } catch (Exception e) {
+                              return null;
+                          }
+                      }
                   });
                   web.addJavascriptInterface(new Bridge(), "NexoraAndroid");
                   web.loadUrl("file:///android_asset/index.html");
@@ -477,9 +517,58 @@ jobs:
                   }
               }
 
+              // ================= ventana flotante y segundo plano =================
+              private void enterPip() {
+                  if (Build.VERSION.SDK_INT < 26) return;
+                  try {
+                      enterPictureInPictureMode(new PictureInPictureParams.Builder().setAspectRatio(new Rational(16, 9)).build());
+                  } catch (Exception ignored) {}
+              }
+
+              @Override
+              protected void onUserLeaveHint() {
+                  super.onUserLeaveHint();
+                  JSONObject n = now;
+                  if (!n.optBoolean("playing")) return;
+                  String mode = n.optString("leave", "pip");
+                  if ("pip".equals(mode) && Build.VERSION.SDK_INT >= 26) { enterPip(); return; }
+                  if ("audio".equals(mode) && !n.optString("audio").isEmpty()) {
+                      startBg(n.optString("audio"), n.optString("ua"), n.optString("title"), n.optString("artist"), n.optLong("pos"));
+                      try { emit(new JSONObject().put("type", "bg").put("state", "started")); } catch (Exception ignored) {}
+                      return;
+                  }
+                  try { emit(new JSONObject().put("type", "leave")); } catch (Exception ignored) {}
+              }
+
+              @Override
+              public void onPictureInPictureModeChanged(boolean on, Configuration cfg) {
+                  super.onPictureInPictureModeChanged(on, cfg);
+                  if (!on) pipJustExited = true;
+                  try { emit(new JSONObject().put("type", "pip").put("on", on)); } catch (Exception ignored) {}
+              }
+
+              @Override
+              protected void onStop() {
+                  super.onStop();
+                  // Se cerró la ventana flotante: pausar el video
+                  if (pipJustExited) {
+                      pipJustExited = false;
+                      try { emit(new JSONObject().put("type", "pipClosed")); } catch (Exception ignored) {}
+                  }
+              }
+
+              private void startBg(String url, String ua, String title, String artist, long pos) {
+                  Intent i = new Intent(this, AudioService.class).setAction(AudioService.ACT_PLAY)
+                      .putExtra("url", url).putExtra("ua", ua).putExtra("title", title)
+                      .putExtra("artist", artist).putExtra("pos", pos);
+                  try { if (Build.VERSION.SDK_INT >= 26) startForegroundService(i); else startService(i); }
+                  catch (Exception e) { try { emit(new JSONObject().put("type", "bg").put("state", "error")); } catch (Exception ignored) {} }
+              }
+
               @Override
               protected void onResume() {
                   super.onResume();
+                  pipJustExited = false;
                   if (web != null && pageReady) web.evaluateJavascript("window.nexoraResume && nexoraResume()", null);
                   emitAccount(null);
                   if (pendingApk >= 0 && canInstall()) { long id = pendingApk; pendingApk = -1; launchInstaller(id); }
@@ -540,6 +629,8 @@ jobs:
               }
 
               // ================= utilidades =================
+              static void emitPublic(JSONObject o) { emit(o); }
+
               private static void emit(JSONObject o) {
                   final String js = "window.nxEvent && nxEvent(" + o.toString() + ")";
                   MAIN.post(() -> {
@@ -732,7 +823,7 @@ jobs:
               /** Enlaces para ver el video dentro de la app: formatos con audio y video juntos, y el mejor solo audio. */
               private static JSONObject streamsOf(JSONArray fs) throws Exception {
                   JSONObject byH = new JSONObject();
-                  String audio = ""; double bestAbr = -1; boolean audioM4a = false;
+                  String audio = "", audioUa = ""; double bestAbr = -1; boolean audioM4a = false;
                   if (fs != null) for (int i = 0; i < fs.length(); i++) {
                       JSONObject f = fs.optJSONObject(i);
                       if (f == null) continue;
@@ -756,13 +847,17 @@ jobs:
                       } else if (a && !v && https) {
                           boolean m4a = "m4a".equals(f.optString("ext", ""));
                           double abr = f.optDouble("abr", 0);
-                          if ((m4a && !audioM4a) || (m4a == audioM4a && abr > bestAbr)) { audio = url; bestAbr = abr; audioM4a = m4a; }
+                          if ((m4a && !audioM4a) || (m4a == audioM4a && abr > bestAbr)) {
+                              audio = url; bestAbr = abr; audioM4a = m4a;
+                              JSONObject hh = f.optJSONObject("http_headers");
+                              audioUa = hh != null ? hh.optString("User-Agent", "") : "";
+                          }
                       }
                   }
                   JSONArray streams = new JSONArray();
                   java.util.Iterator<String> it = byH.keys();
                   while (it.hasNext()) streams.put(byH.getJSONObject(it.next()));
-                  return new JSONObject().put("streams", streams).put("audio", audio);
+                  return new JSONObject().put("streams", streams).put("audio", audio).put("audioUa", audioUa);
               }
 
               private static String chUrlOf(JSONObject e) {
@@ -1108,6 +1203,7 @@ jobs:
                                           if (desc.length() > 5000) desc = desc.substring(0, 5000) + "…";
                                           o.put("streams", media.getJSONArray("streams"))
                                            .put("audio", media.optString("audio", ""))
+                                           .put("audioUa", media.optString("audioUa", ""))
                                            .put("desc", desc)
                                            .put("views", j.optLong("view_count", 0))
                                            .put("likes", j.optLong("like_count", 0))
@@ -1587,6 +1683,26 @@ jobs:
                   }
 
                   @JavascriptInterface
+                  public void setNow(String json) { try { now = new JSONObject(json); } catch (Exception ignored) {} }
+
+                  @JavascriptInterface
+                  public void enterPip() { runOnUiThread(MainActivity.this::enterPip); }
+
+                  @JavascriptInterface
+                  public void bgPlay(String url, String ua, String title, String artist, long pos) {
+                      runOnUiThread(() -> startBg(url, ua, title, artist, pos));
+                  }
+
+                  /** Detiene el audio en segundo plano y devuelve dónde iba (ms). */
+                  @JavascriptInterface
+                  public long bgStop() {
+                      long pos = AudioService.position();
+                      Intent i = new Intent(MainActivity.this, AudioService.class).setAction(AudioService.ACT_CLOSE);
+                      try { startService(i); } catch (Exception ignored) {}
+                      return pos;
+                  }
+
+                  @JavascriptInterface
                   public String abi() { return Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : ""; }
 
                   // ---------- varios ----------
@@ -1840,6 +1956,204 @@ jobs:
               public void onBackPressed() {
                   if (web.canGoBack()) web.goBack(); else super.onBackPressed();
               }
+          }
+          EOF
+
+          cat > android/app/src/main/java/com/nexora/download/AudioService.java <<'EOF'
+          package com.nexora.download;
+
+          import android.app.Notification;
+          import android.app.NotificationChannel;
+          import android.app.NotificationManager;
+          import android.app.PendingIntent;
+          import android.app.Service;
+          import android.content.Intent;
+          import android.content.pm.ServiceInfo;
+          import android.graphics.drawable.Icon;
+          import android.media.AudioAttributes;
+          import android.media.MediaMetadata;
+          import android.media.MediaPlayer;
+          import android.media.session.MediaSession;
+          import android.media.session.PlaybackState;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.IBinder;
+          import android.os.PowerManager;
+
+          import org.json.JSONObject;
+
+          import java.util.HashMap;
+          import java.util.Map;
+
+          /** Reproduce el audio de un video en segundo plano, con controles en la notificación. */
+          public class AudioService extends Service implements MediaPlayer.OnPreparedListener,
+                  MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
+
+              static final String ACT_PLAY = "nexora.PLAY", ACT_TOGGLE = "nexora.TOGGLE", ACT_CLOSE = "nexora.CLOSE";
+              private static final String CH = "nexora_audio";
+              private static volatile AudioService inst;
+
+              private MediaPlayer mp;
+              private MediaSession ms;
+              private String title = "", artist = "";
+              private long startPos = 0;
+              private boolean prepared = false;
+
+              static long position() {
+                  AudioService s = inst;
+                  try { return (s != null && s.mp != null && s.prepared) ? s.mp.getCurrentPosition() : -1; }
+                  catch (Exception e) { return -1; }
+              }
+
+              @Override
+              public int onStartCommand(Intent intent, int flags, int startId) {
+                  inst = this;
+                  String act = intent != null ? intent.getAction() : null;
+                  if (ACT_PLAY.equals(act)) {
+                      title = intent.getStringExtra("title");
+                      artist = intent.getStringExtra("artist");
+                      startPos = intent.getLongExtra("pos", 0);
+                      showNotification(true);
+                      play(intent.getStringExtra("url"), intent.getStringExtra("ua"));
+                  } else if (ACT_TOGGLE.equals(act)) {
+                      toggle();
+                  } else if (ACT_CLOSE.equals(act)) {
+                      close();
+                  } else {
+                      close();
+                  }
+                  return START_NOT_STICKY;
+              }
+
+              private void play(String url, String ua) {
+                  releasePlayer();
+                  prepared = false;
+                  try {
+                      mp = new MediaPlayer();
+                      mp.setAudioAttributes(new AudioAttributes.Builder()
+                          .setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build());
+                      mp.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+                      Map<String, String> headers = new HashMap<>();
+                      if (ua != null && !ua.isEmpty()) headers.put("User-Agent", ua);
+                      mp.setDataSource(this, Uri.parse(url), headers);
+                      mp.setOnPreparedListener(this);
+                      mp.setOnCompletionListener(this);
+                      mp.setOnErrorListener(this);
+                      mp.prepareAsync();
+                  } catch (Exception e) {
+                      emit("error");
+                      close();
+                  }
+              }
+
+              @Override
+              public void onPrepared(MediaPlayer p) {
+                  prepared = true;
+                  if (startPos > 0) try { p.seekTo((int) startPos); } catch (Exception ignored) {}
+                  p.start();
+                  updateSession(true);
+                  showNotification(true);
+                  emit("playing");
+              }
+
+              @Override
+              public void onCompletion(MediaPlayer p) { close(); }
+
+              @Override
+              public boolean onError(MediaPlayer p, int what, int extra) {
+                  emit("error");
+                  close();
+                  return true;
+              }
+
+              private void toggle() {
+                  if (mp == null || !prepared) return;
+                  if (mp.isPlaying()) { mp.pause(); updateSession(false); showNotification(false); emit("paused"); }
+                  else { mp.start(); updateSession(true); showNotification(true); emit("playing"); }
+              }
+
+              private void close() {
+                  releasePlayer();
+                  if (ms != null) { ms.setActive(false); ms.release(); ms = null; }
+                  stopForeground(true);
+                  stopSelf();
+                  inst = null;
+                  emit("stopped");
+              }
+
+              private void releasePlayer() {
+                  if (mp != null) { try { mp.release(); } catch (Exception ignored) {} mp = null; }
+              }
+
+              private void ensureSession() {
+                  if (ms != null) return;
+                  ms = new MediaSession(this, "NexoraAudio");
+                  ms.setCallback(new MediaSession.Callback() {
+                      @Override public void onPlay() { toggle(); }
+                      @Override public void onPause() { toggle(); }
+                      @Override public void onStop() { close(); }
+                  });
+                  ms.setActive(true);
+              }
+
+              private void updateSession(boolean playing) {
+                  ensureSession();
+                  ms.setMetadata(new MediaMetadata.Builder()
+                      .putString(MediaMetadata.METADATA_KEY_TITLE, title)
+                      .putString(MediaMetadata.METADATA_KEY_ARTIST, artist).build());
+                  long pos = 0;
+                  try { if (mp != null && prepared) pos = mp.getCurrentPosition(); } catch (Exception ignored) {}
+                  ms.setPlaybackState(new PlaybackState.Builder()
+                      .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_STOP)
+                      .setState(playing ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED, pos, 1f).build());
+              }
+
+              private PendingIntent action(String act, int code) {
+                  return PendingIntent.getService(this, code, new Intent(this, AudioService.class).setAction(act),
+                      PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+              }
+
+              private void showNotification(boolean playing) {
+                  ensureSession();
+                  NotificationManager nm = getSystemService(NotificationManager.class);
+                  if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CH) == null) {
+                      nm.createNotificationChannel(new NotificationChannel(CH, "Música en segundo plano", NotificationManager.IMPORTANCE_LOW));
+                  }
+                  PendingIntent open = PendingIntent.getActivity(this, 0,
+                      new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                      PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+                  Notification n = new Notification.Builder(this, CH)
+                      .setSmallIcon(R.drawable.ic_mono)
+                      .setContentTitle(title == null || title.isEmpty() ? "Nexora Download Plus" : title)
+                      .setContentText(artist == null ? "" : artist)
+                      .setContentIntent(open)
+                      .setOngoing(playing)
+                      .setVisibility(Notification.VISIBILITY_PUBLIC)
+                      .addAction(new Notification.Action.Builder(
+                          Icon.createWithResource(this, playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play),
+                          playing ? "Pausa" : "Reproducir", action(ACT_TOGGLE, 1)).build())
+                      .addAction(new Notification.Action.Builder(
+                          Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel), "Cerrar", action(ACT_CLOSE, 2)).build())
+                      .setStyle(new Notification.MediaStyle().setMediaSession(ms.getSessionToken()).setShowActionsInCompactView(0, 1))
+                      .build();
+                  if (Build.VERSION.SDK_INT >= 29) startForeground(2, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+                  else startForeground(2, n);
+              }
+
+              private static void emit(String state) {
+                  try { MainActivity.emitPublic(new JSONObject().put("type", "bg").put("state", state)); } catch (Exception ignored) {}
+              }
+
+              @Override
+              public void onDestroy() {
+                  releasePlayer();
+                  if (ms != null) { ms.release(); ms = null; }
+                  inst = null;
+                  super.onDestroy();
+              }
+
+              @Override
+              public IBinder onBind(Intent intent) { return null; }
           }
           EOF
 
