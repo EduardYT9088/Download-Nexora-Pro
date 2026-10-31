@@ -1,7 +1,5 @@
 ## Novedades
-- Reproductor más rápido dentro de la app
-- Miniaturas en alta calidad
-- Nueva pantalla Reproducir: pausar y continuar descargas, seleccionar varias y eliminar
-- 8 colores y modo negro AMOLED en Tema
-- Compartir Nexora ahora envía el APK
-- Nueva pantalla para enviar comentarios con fotos y videos
+- Recomendaciones de "Para ti" más acertadas
+- Se ocultan videos raros o casi sin vistas en el inicio
+- Las miniaturas que no cargaban ahora se ven bien
+- El audio en segundo plano cambia al nuevo video al abrir otro

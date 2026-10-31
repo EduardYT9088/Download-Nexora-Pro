@@ -1064,6 +1064,7 @@ function catQuery(fresh){
 }
 let feedReq=null, feedMode='cat', feedQuery='';
 const FEED_TTL=30*60*1000;
+if(saved.feedV!==2){ try{ Object.keys(localStorage).filter(k=>k.startsWith('nexora.feed.')).forEach(k=>localStorage.removeItem(k)) }catch(e){} saved.feedV=2 }
 function cacheGet(k){ try{ const v=JSON.parse(localStorage.getItem('nexora.feed.'+k)); return v }catch(e){ return null } }
 function cacheSet(k,items){ try{ localStorage.setItem('nexora.feed.'+k,JSON.stringify({t:Date.now(),items})) }catch(e){} }
 function fmtViews(n){ if(!n) return ''; const u=[[1e9,'B'],[1e6,'M'],[1e3,'K']]; for(const [v,s] of u) if(n>=v) return (n/v).toFixed(n/v<10?1:0).replace('.0','')+s; return String(n) }
@@ -1078,7 +1079,7 @@ function thumbHQ(u){ const id=ytId(u)||((u||'').match(/\/vi\/([\w-]{11})\//)||[]
 function imgHQ(thumb,url,extra){
   const t = (thumb && !/ytimg/.test(thumb)) ? {src:thumb,fb:''} : thumbHQ(thumb||url);
   if(!t.src || !/^https?:|^data:/.test(t.src) || (!/ytimg|\.(jpe?g|png|webp)/i.test(t.src) && !thumb)) return '';
-  return `<img src="${esc(t.src)}" data-fb="${esc(t.fb)}" alt="" loading="lazy" referrerpolicy="no-referrer" ${extra||''} onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=''}else this.remove()">` }
+  return `<img src="${esc(t.src)}" data-fb="${esc(t.fb)}" alt="" loading="lazy" referrerpolicy="no-referrer" ${extra||''} onload="if(this.naturalWidth<=120&&this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=''}" onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=''}else this.remove()">` }
 function cardsHTML(items){
   items.forEach(r=>RES[r.url]=r);
   return items.map(r=>`<div class="card" data-res="${esc(r.url)}" role="button" tabindex="0">
@@ -1092,27 +1093,32 @@ const STOP=new Set(('de la el los las un una unos unas y o en con por para que d
 function trackInterest(r){
   if(!r||!r.title) return;
   const id=ikey(r.url||''), h=(saved.hist||[]).filter(x=>x.id!==id);
-  h.unshift({id,title:r.title,ch:r.channel||'',t:Date.now()});
+  h.unshift({id,title:r.title,ch:r.channel||'',views:r.views||0,t:Date.now()});
   saved.hist=h.slice(0,60); save();
+}
+function cleanTitle(tl){
+  // "Artista - Canción (Official Video) [4K]" -> "artista canción"
+  const words=String(tl).replace(/\([^)]*\)|\[[^\]]*\]|#\S+|\|.*$/g,' ').toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu,' ').split(/\s+/).filter(w=>w.length>=3 && !STOP.has(w) && !/^\d+$/.test(w));
+  return words.slice(0,4).join(' ');
 }
 function interestQueries(){
   const h=(saved.hist||[]).slice(0,30);
-  const qs=[], chC={}, wC={};
-  h.forEach((x,i)=>{
-    const w8=1+(30-i)/15;
-    if(x.ch) chC[x.ch]=(chC[x.ch]||0)+w8;
-    String(x.title).toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').split(/\s+/).forEach(w=>{
-      if(w.length>=4 && !STOP.has(w) && !/^\d+$/.test(w)) wC[w]=(wC[w]||0)+w8;
-    });
-  });
-  const chs=Object.entries(chC).sort((a,b)=>b[1]-a[1]).map(x=>x[0]).slice(0,5);
-  const ws=Object.entries(wC).sort((a,b)=>b[1]-a[1]).map(x=>x[0]).slice(0,8);
-  shuffle(chs).slice(0,2).forEach(c=>qs.push(c));
-  const top=shuffle(ws);
-  if(top.length>=2) qs.push(top[0]+' '+top[1]); else if(top.length) qs.push(top[0]);
+  const chC={};
+  // canales que ves seguido o que son conocidos (evita canales con muy pocas vistas)
+  h.forEach((x,i)=>{ if(x.ch) chC[x.ch]=(chC[x.ch]||0)+1+(30-i)/30+((x.views||0)>=100000?1:0) });
+  const chs=Object.entries(chC).filter(([c,n])=>n>=2 || h.some(x=>x.ch===c&&(x.views||0)>=50000)).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  const recent=h.filter(x=>(x.views||0)===0||(x.views||0)>=20000).map(x=>cleanTitle(x.title)).filter(q=>q.split(' ').length>=2);
+  const qs=[];
+  if(chs.length) qs.push(shuffle(chs.slice(0,3))[0]);
+  shuffle(recent.slice(0,6)).slice(0,2).forEach(q=>{ if(!qs.includes(q)) qs.push(q) });
   const rq=recentQ()[0]; if(rq && !qs.some(q=>q.toLowerCase()===rq.toLowerCase())) qs.push(rq);
-  return {qs:qs.slice(0,4), basis:[...chs.slice(0,2),...ws.slice(0,2)]};
+  // siempre una búsqueda popular para mantener variedad conocida
+  qs.push(shuffle(t('pops').split('|'))[0]);
+  return {qs:qs.slice(0,4), basis:[...chs.slice(0,2),...recent.slice(0,1)]};
 }
+/* Quita videos casi sin vistas (suelen ser raros y sin miniatura) del inicio */
+function goodForFeed(x){ return feedMode==='q' || !x.views || x.views>=5000 }
 function feedQueries(force){
   if(feedMode==='q') return [feedQuery];
   if(curCat==='foryou'){
@@ -1172,7 +1178,7 @@ function onMore(ev){
   F.loading=false;
   const fm=$('#feedMore');
   const seen=new Set(F.items.map(x=>x.url)), watched=new Set(feedMode==='cat'&&curCat==='foryou'?(saved.hist||[]).map(x=>x.id):[]);
-  const add=(ev.ok?ev.items||[]:[]).filter(x=>!seen.has(x.url)&&!watched.has(ikey(x.url)));
+  const add=(ev.ok?ev.items||[]:[]).filter(x=>!seen.has(x.url)&&!watched.has(ikey(x.url))&&goodForFeed(x));
   F.starts[F.moreK]=(F.starts[F.moreK]||1)+F.morePer;
   if(!ev.ok){ if(fm) fm.innerHTML=`<button class="btn ghost" onclick="F.more=true;loadMore()">${t('retryBtn')}</button>`; return }
   if(!(ev.items||[]).length){ F.qs.splice(F.moreK,1); F.starts.splice(F.moreK,1); if(!F.qs.length){ F.more=false; if(fm) fm.innerHTML=''; return } return loadMore() }
@@ -1190,7 +1196,7 @@ let feedReq_key='';
 function onGroup(ev){
   const g=F.group, k=g.reqs[ev.req];
   delete g.reqs[ev.req];
-  g.res[k] = ev.ok ? (ev.items||[]) : [];
+  g.res[k] = ev.ok ? (ev.items||[]).filter(goodForFeed) : [];
   const lists=g.qs.map((_,i)=>g.res[i]||[]);
   const done=Object.keys(g.reqs).length===0;
   let items=interleave(lists);
@@ -1311,17 +1317,21 @@ function syncBar(){
 /* ====== Reproductor dentro de la app ====== */
 let W=null;
 let ZL=15;
+let BG_ON=false;   // hay audio sonando en segundo plano
 const wv=()=>$('#wv'), wf=()=>$('#wf');
-function hiThumb(u){ return (u||'').replace(/\/(mq|sd|hq)default\.jpg/,'/hq720.jpg') }
+function hiThumb(u){ return (u||'').replace(/\/(mq|sd)default\.jpg/,'/hqdefault.jpg') }
 function fmtDate(d){ if(!/^\d{8}$/.test(d||'')) return ''; const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8)); return dt.toLocaleDateString(S.lang,{day:'numeric',month:'short',year:'numeric'}) }
 function linkify(txt){ return esc(txt).replace(/https?:\/\/[^\s<]+/g,u=>`<a href="${u}" data-ext="1">${u}</a>`) }
 function openWatch(r){
   trackInterest(r);
   if(!HAS_YT){ if(r.url) window.open(r.url,'_blank','noopener'); return }
+  const carryBg = BG_ON;   // si estaba en segundo plano, el nuevo video también
+  if(carryBg){ try{ A.bgStop() }catch(e){} BG_ON=false }
   closeWatch(true);
   const req='w'+Date.now(), id=ytId(r.url);
   W={open:true,r,req,info:null,cur:-1,audio:false,bg:false,related:[],relReq:null,t0:Date.now(),mode:(saved.watchEmbed&&id)?'embed':'stream',pos:0,playing:false,ready:false,rate:1};
   pending[req]={url:r.url,plat:'YouTube',watch:true};
+  if(carryBg){ W.bgPending=true; W.mode='stream'; toast(t('bgWait')) }
   $('#watch').hidden=false; $('#watch').style.zIndex=++ZL;
   const v=wv(); v.removeAttribute('src'); v.load(); v.poster=hiThumb(r.thumb)||'';
   $('#wposter').hidden=true; $('#wstate').className='wstate'; $('#wstate').innerHTML='';
@@ -1411,7 +1421,7 @@ function renderWatchBody(){
     ${ch?`<div class="wch" ${(i.chUrl||r.chUrl)?`data-ch="${esc(i.chUrl||r.chUrl)}" data-chn="${esc(ch)}" role="button"`:''}><div class="wav">${esc(ch.trim().charAt(0).toUpperCase())}</div><div><b>${esc(ch)}</b>${i.subs?`<span>${fmtViews(i.subs)} ${t('subs')}</span>`:''}</div></div>`:''}
     <div class="wact">
       <button class="btn" id="wDl"><svg width="20" height="20"><use href="#i-dl"/></svg>${t('download')}</button>
-      <button class="btn sq${W.bg?' on':''}" id="wAud" aria-label="${t('bgListen')}"><svg width="22" height="22"><use href="#i-head"/></svg></button>
+      <button class="btn sq${W.bg||W.bgPending?' on':''}" id="wAud" aria-label="${t('bgListen')}"><svg width="22" height="22"><use href="#i-head"/></svg></button>
       <button class="btn sq" id="wPip" aria-label="${t('pipBtn')}"><svg width="22" height="22"><use href="#i-pip"/></svg></button>
       <button class="btn sq" id="wShare" aria-label="${t('shareLink')}"><svg width="22" height="22"><use href="#i-share"/></svg></button>
     </div>
@@ -1444,7 +1454,7 @@ function onWatchInfo(ev,p){
   if(!W.r.thumb) W.r.thumb=W.info.thumb;
   W.info.streams=(W.info.streams||[]).slice().sort((a,b)=>a.h-b.h);
   renderWatchBody(); syncNow();
-  if(W.bgPending){ W.bgPending=false; startBg() }
+  if(W.bgPending){ W.bgPending=false; if(W.info.audio){ startBg(); return } toast(t('bgErr')) }
   if(W.mode==='stream') startStream(0);
 }
 function startStream(time){
@@ -1490,7 +1500,8 @@ function playFail(){
 function toggleBg(){
   if(!W) return;
   if(!A||!A.bgPlay){ toast(t('webOnly')); return }
-  if(W.bg){ let pos=-1; try{ pos=A.bgStop() }catch(e){} W.bg=false; renderWatchBody(); if(pos>=0) resumePlayer(pos/1000); return }
+  if(W.bg){ let pos=-1; try{ pos=A.bgStop() }catch(e){} W.bg=false; BG_ON=false; renderWatchBody(); if(pos>=0) resumePlayer(pos/1000); return }
+  if(W.bgPending){ W.bgPending=false; renderWatchBody(); if(W.info) startStream(0); return }
   if(!W.info||!W.info.audio){ W.bgPending=true; toast(t('bgWait')); return }
   startBg();
 }
@@ -1498,12 +1509,13 @@ function startBg(){
   const i=W.info, pos=curPos();
   pausePlayer();
   try{ A.bgPlay(i.audio, i.audioUa||'', i.title||W.r.title||'', i.channel||W.r.channel||'', Math.round(pos*1000)) }catch(e){ toast(t('bgErr')); return }
-  W.bg=true; renderWatchBody(); toast(t('bgOn'));
+  W.bg=true; BG_ON=true; renderWatchBody(); toast(t('bgOn'));
 }
 function onBg(ev){
-  if(ev.state==='error'){ toast(t('bgErr')); if(W){ W.bg=false; renderWatchBody() } return }
-  if(ev.state==='stopped'){ if(W&&W.bg){ W.bg=false; renderWatchBody() } return }
-  if(ev.state==='started'){ if(W){ W.bg=true; pausePlayer(); renderWatchBody() } }
+  if(ev.state==='error'){ BG_ON=false; toast(t('bgErr')); if(W){ W.bg=false; renderWatchBody() } return }
+  if(ev.state==='stopped'){ BG_ON=false; if(W&&W.bg){ W.bg=false; renderWatchBody() } return }
+  if(ev.state==='playing'){ BG_ON=true }
+  if(ev.state==='started'){ BG_ON=true; if(W){ W.bg=true; pausePlayer(); renderWatchBody() } }
 }
 function watchMenu(){
   if(!W) return;
