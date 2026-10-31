@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0E1230">
+<title>Nexora Download Plus</title>
+<style>
+:root{
+  --bg:#0E1230; --surface:#171C45; --surface-2:#21275E; --line:rgba(255,255,255,.09);
+  --text:#EEF0FF; --muted:#9CA2D4; --accent:#46E0C4; --accent-ink:#06261F; --accent-2:#8C7BFF;
+  --danger:#FF7088; --ok:#46E0C4; --shadow:0 18px 40px rgba(3,5,25,.45);
+  --r-lg:22px; --r-md:14px; --r-sm:10px;
+  --font:system-ui,-apple-system,"Roboto","Segoe UI",Helvetica,Arial,sans-serif;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#F2F3FB; --surface:#FFFFFF; --surface-2:#E7E9F8; --line:rgba(22,26,61,.10);
+  --text:#161A3D; --muted:#5A608F; --accent:#0E9C84; --accent-ink:#FFFFFF; --accent-2:#5B4BE0;
+  --danger:#D63355; --ok:#0E9C84; --shadow:0 14px 34px rgba(30,36,90,.14);
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.45;
+  padding-top:env(safe-area-inset-top,0px);overflow:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{display:block}
+
+.app{display:flex;flex-direction:column;height:100%}
+.top{display:flex;align-items:center;gap:12px;padding:14px 20px 10px}
+.mark{width:36px;height:36px;flex:none}
+.brand{font-weight:750;font-size:20px;letter-spacing:-.01em}
+.brand small{display:block;font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0;margin-top:-2px}
+.top .spacer{flex:1}
+.icon-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:active{background:var(--surface)}
+
+main{flex:1;overflow-y:auto;padding:4px 20px 110px;-webkit-overflow-scrolling:touch}
+.view{display:none}
+.view.on{display:block;animation:in .22s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view.on{animation:none}*{transition:none!important}}
+
+h1{font-size:28px;line-height:1.15;letter-spacing:-.02em;margin:18px 0 6px;font-weight:750}
+h2{font-size:17px;margin:28px 0 12px;font-weight:700}
+.lede{color:var(--muted);margin:0 0 18px;max-width:34ch}
+
+/* The dock: the one bold element */
+.dock{position:relative;border-radius:var(--r-lg);padding:2px;
+  background:conic-gradient(from 210deg,var(--accent),var(--accent-2),var(--accent));box-shadow:var(--shadow)}
+.dock-in{background:var(--surface);border-radius:20px;padding:16px}
+.field{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:var(--r-md);padding:4px 4px 4px 14px;border:1px solid var(--line)}
+.field input{flex:1;min-width:0;border:0;background:none;outline:none;padding:12px 0;font-size:15px}
+.field input::placeholder{color:var(--muted)}
+.paste{padding:10px 14px;border-radius:var(--r-sm);background:var(--surface-2);font-weight:600;font-size:14px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:12px;
+  padding:15px;border-radius:var(--r-md);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:16px}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.45}
+.btn.ghost{background:var(--surface-2);color:var(--text)}
+.btn.danger{background:var(--danger);color:#fff}
+.hint{font-size:13px;color:var(--muted);margin:12px 2px 0}
+.clip{display:none;margin-top:12px;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);
+  background:var(--surface-2);font-size:13px}
+.clip.on{display:flex}
+.clip span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.clip button{color:var(--accent);font-weight:700}
+
+.types{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{padding:7px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.chip.on{background:var(--text);color:var(--bg);border-color:transparent;font-weight:600}
+
+/* list */
+.list{display:flex;flex-direction:column;gap:2px}
+.item{display:flex;align-items:center;gap:12px;padding:10px 4px;border-radius:var(--r-md)}
+.item:active{background:var(--surface)}
+.thumb{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none}
+.t-video{background:rgba(140,123,255,.18);color:var(--accent-2)}
+.t-audio{background:rgba(70,224,196,.16);color:var(--accent)}
+.t-image{background:rgba(255,184,77,.16);color:#F0A630}
+.t-doc,.t-file,.t-apk{background:var(--surface-2);color:var(--muted)}
+.meta{flex:1;min-width:0}
+.name{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.sub .err{color:var(--danger)}
+.sub .okc{color:var(--ok)}
+.bar{height:4px;border-radius:4px;background:var(--surface-2);margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:4px;transition:width .4s}
+.bar.ind i{width:35%;animation:slide 1.2s infinite ease-in-out}
+@keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
+
+.empty{text-align:center;padding:48px 16px;color:var(--muted)}
+.empty svg{margin:0 auto 14px;opacity:.6}
+.empty b{display:block;color:var(--text);font-size:16px;margin-bottom:4px}
+.link{color:var(--accent);font-weight:700;padding:8px}
+
+/* tools */
+.stat{display:flex;gap:12px;margin-top:14px}
+.stat div{flex:1;background:var(--surface);border-radius:var(--r-md);padding:14px}
+.stat b{display:block;font-size:22px;letter-spacing:-.01em}
+.stat span{font-size:12.5px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tool{text-align:left;background:var(--surface);border-radius:var(--r-md);padding:16px 14px;display:flex;flex-direction:column;gap:12px;min-height:104px}
+.tool:active{background:var(--surface-2)}
+.tool svg{color:var(--accent)}
+.tool b{font-size:14.5px;font-weight:600}
+.tool span{font-size:12px;color:var(--muted);margin-top:-8px}
+.foot{text-align:center;font-size:12.5px;color:var(--muted);margin:30px 0 8px}
+.foot a{color:var(--muted)}
+
+/* plus */
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:12px;display:block}
+.thumb{overflow:hidden}
+.credit{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.credit b{color:var(--text);font-weight:600}
+.cover{width:100%;aspect-ratio:16/9;border-radius:var(--r-md);object-fit:cover;background:var(--bg);display:block;margin-bottom:12px}
+.vtitle{font-weight:700;font-size:16px;line-height:1.3;margin:0 0 4px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border-radius:var(--r-md);border:1px solid var(--line);margin-top:8px;text-align:left}
+.opt.on{border-color:var(--accent);background:var(--bg)}
+.opt .dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);flex:none;display:grid;place-items:center}
+.opt.on .dot{border-color:var(--accent)}
+.opt.on .dot::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.opt .grow{flex:1}
+.opt small{color:var(--muted);font-size:12.5px}
+.note{font-size:12.5px;color:var(--muted);background:var(--bg);border-radius:var(--r-sm);padding:10px 12px;margin-top:12px;display:flex;gap:10px;align-items:flex-start}
+.note svg{flex:none;color:var(--accent);margin-top:1px}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface-2);border-top-color:var(--accent);animation:rot .8s linear infinite;margin:18px auto 12px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.center{text-align:center;color:var(--muted);padding-bottom:8px}
+
+/* search + sites */
+.sites{display:flex;gap:8px;overflow-x:auto;margin:16px -20px 0;padding:0 20px 2px;scrollbar-width:none}
+.sites::-webkit-scrollbar{display:none}
+.site{flex:none;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:13.5px;font-weight:600}
+.site i{width:8px;height:8px;border-radius:50%;display:block}
+.sitehint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+.reshead{display:flex;align-items:center;justify-content:space-between}
+.reshead button{color:var(--muted);font-size:14px;font-weight:600;padding:8px}
+.res{display:flex;gap:12px;align-items:flex-start;padding:8px 0}
+.rthumb{position:relative;width:132px;flex:none;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:var(--surface)}
+.rthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.dur{position:absolute;right:5px;bottom:5px;background:rgba(0,0,0,.75);color:#fff;font-size:11px;font-weight:600;padding:1px 5px;border-radius:4px}
+.rtitle{font-size:14px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.res .meta{padding-top:1px}
+.res .icon-btn{color:var(--accent);margin-top:-4px}
+.grp{font-size:13px;color:var(--muted);margin:16px 2px 2px;font-weight:600}
+.detail{font-size:12px;color:var(--muted);opacity:.8;margin:10px 0 0;word-break:break-word}
+.warnbox{font-size:13px;background:rgba(255,112,136,.12);color:var(--text);border-radius:var(--r-sm);padding:10px 12px;margin:10px 0}
+
+/* buscador tipo Snaptube */
+.sbar-wrap{position:sticky;top:0;z-index:5;background:var(--bg);margin:0 -20px;padding:4px 20px 10px}
+.sbar{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 14px;transition:border-color .2s}
+.sbar:focus-within{border-color:var(--accent)}
+.sbar .sic{color:var(--muted);flex:none}
+.sbar input{flex:1;min-width:0;border:0;background:none;outline:none;padding:11px 2px;font-size:15.5px}
+.sbar input::-webkit-search-cancel-button{display:none}
+.sbar input::placeholder{color:var(--muted)}
+.sbtn{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--muted);flex:none}
+.sbar .paste{border-radius:999px;padding:9px 12px}
+.gobtn{width:42px;height:42px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.gobtn:active{transform:scale(.95)}
+.ph{font-size:15px;margin:22px 0 10px}
+.sug{display:flex;align-items:center;gap:14px;width:100%;padding:12px 4px;text-align:left;font-size:15px;border-bottom:1px solid var(--line)}
+.sug svg{color:var(--muted);flex:none}
+.sug span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sug .fill{transform:rotate(-45deg);color:var(--muted)}
+.cats{display:flex;gap:8px;overflow-x:auto;margin:0 -20px;padding:2px 20px 4px;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cats .chip{flex:none}
+.card{margin-top:18px}
+.card .cthumb{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface)}
+.card .cthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.card .crow{display:flex;gap:10px;align-items:flex-start;margin-top:10px}
+.card .ctitle{font-weight:600;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .dlb{flex:none;width:40px;height:40px;border-radius:50%;background:var(--surface-2);color:var(--accent);display:grid;place-items:center;margin-top:-2px}
+.skel{background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);background-size:200% 100%;animation:sk 1.2s infinite linear;border-radius:10px}
+@keyframes sk{from{background-position:200% 0}to{background-position:-200% 0}}
+.elapsed{font-variant-numeric:tabular-nums}
+
+/* interruptor */
+.switch{width:46px;height:28px;border-radius:14px;background:var(--surface-2);position:relative;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.switch.on{background:var(--accent)}
+.switch.on::after{transform:translateX(18px);background:var(--accent-ink)}
+/* deslizar para recargar */
+.ptr{height:0;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;transition:height .2s}
+.ptr.drag{transition:none}
+.ptr .ring{width:34px;height:34px;border-radius:50%;background:var(--surface);display:grid;place-items:center;margin-bottom:8px;box-shadow:var(--shadow);color:var(--accent)}
+.ptr .ring svg{transition:transform .1s}
+.ptr.loading .ring svg{animation:rot .8s linear infinite}
+
+/* reproductor */
+.watch{position:fixed;inset:0;z-index:15;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.wplayer{position:relative;width:100%;aspect-ratio:16/9;background:#000;flex:none}
+.wplayer video{width:100%;height:100%;display:block;background:#000}
+.wposter{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.wstate{position:absolute;inset:0;display:grid;place-items:center;color:#fff;text-align:center;padding:16px;font-size:14px;pointer-events:none}
+.wstate:empty{display:none}
+.wstate .spin{margin:0 auto 8px;border-color:rgba(255,255,255,.25);border-top-color:#fff}
+.wstate.err{pointer-events:auto;background:rgba(0,0,0,.6)}
+.wstate .lnk{color:#46E0C4;font-weight:700;padding:8px;display:inline-block}
+.wbtn{position:absolute;top:8px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center}
+.wl{left:8px}.wr{right:8px}
+.wbody{flex:1;overflow-y:auto;padding:14px 20px calc(30px + env(safe-area-inset-bottom,0px))}
+.wtitle{font-size:18px;font-weight:700;line-height:1.3;margin:0}
+.wmeta{font-size:13px;color:var(--muted);margin-top:6px}
+.wch{display:flex;align-items:center;gap:12px;margin-top:14px}
+.wav{width:40px;height:40px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;color:var(--accent);flex:none}
+.wch b{display:block;font-size:15px}
+.wch span{font-size:12.5px;color:var(--muted)}
+.wact{display:flex;gap:8px;margin-top:14px}
+.wact .btn{margin-top:0;flex:1}
+.wact .sq{flex:none;width:52px;padding:0;background:var(--surface-2);color:var(--text)}
+.wact .sq.on{background:var(--accent-2);color:#fff}
+.wdesc{background:var(--surface);border-radius:var(--r-md);padding:12px 14px;margin-top:14px;font-size:13.5px;white-space:pre-wrap;word-break:break-word;max-height:7.5em;overflow:hidden;position:relative}
+.wdesc.open{max-height:none}
+.wdesc a{color:var(--accent)}
+.wdesc b{display:block;margin-bottom:4px;font-size:14px}
+.wmore{color:var(--muted);font-weight:700;font-size:13px;padding:8px 2px}
+.rel{display:flex;gap:12px;padding:8px 0}
+.rel .rthumb{width:150px}
+.ptrbar{height:3px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-top:12px}
+.ptrbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+/* perfil de canal */
+.chan{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.chtop{display:flex;align-items:center;gap:8px;padding:8px 12px}
+.chtop b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctabs{margin:0;padding:2px 16px 10px;border-bottom:1px solid var(--line)}
+.chbody{flex:1;overflow-y:auto;padding:0 20px calc(30px + env(safe-area-inset-bottom,0px))}
+.chban{margin:12px -20px 0;aspect-ratio:6/1;background:var(--surface) center/cover no-repeat}
+.chhead{display:flex;gap:14px;align-items:center;margin-top:14px}
+.chav{width:68px;height:68px;border-radius:50%;object-fit:cover;background:var(--surface-2);flex:none;display:grid;place-items:center;font-size:26px;font-weight:700;color:var(--accent)}
+.chhead h3{margin:0;font-size:19px;line-height:1.2}
+.chhead span{font-size:13px;color:var(--muted)}
+.chdesc{font-size:13px;color:var(--muted);margin:12px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.chsec{display:flex;justify-content:space-between;align-items:center}
+.chsec button{color:var(--accent);font-weight:700;font-size:13px;padding:8px}
+.vrow{display:flex;gap:12px;padding:8px 0;align-items:flex-start}
+.vrow .rthumb{width:150px}
+.vrow.short .rthumb{width:90px;aspect-ratio:9/16}
+.vrow .meta{flex:1}
+.vrow .dl2{flex:none;width:36px;height:36px;border-radius:50%;color:var(--accent);display:grid;place-items:center}
+.plbadge{position:absolute;right:0;top:0;bottom:0;width:42%;background:rgba(0,0,0,.65);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;gap:2px}
+.chlink{color:var(--text);font-weight:500}
+.wch[role=button]{cursor:pointer}
+
+/* permiso multimedia */
+.permbox{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;margin-top:14px}
+.permbox>svg{color:var(--accent);flex:none}
+.permbox .grow{flex:1;min-width:0}
+.permbox b{display:block;font-size:14px}
+.permbox span{font-size:12.5px;color:var(--muted)}
+.permbox .btn{width:auto;margin:0;padding:10px 14px;font-size:14px}
+/* actualización obligatoria */
+.upd{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 30px) 24px calc(env(safe-area-inset-bottom,0px) + 24px);overflow-y:auto}
+.upd .mark{width:84px;height:84px;margin:10px auto 18px}
+.upd h2{text-align:center;margin:0;font-size:24px}
+.upd .ver{text-align:center;font-size:40px;font-weight:800;letter-spacing:-.02em;margin:8px 0 2px;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.upd .cur{text-align:center;color:var(--muted);font-size:14px}
+.upd .notes{background:var(--surface);border-radius:var(--r-md);padding:14px 16px;margin:22px 0 8px;font-size:14.5px;flex:1}
+.upd .notes h4{margin:0 0 8px;font-size:15px}
+.upd .notes ul{margin:0;padding-left:20px}
+.upd .notes li{margin:5px 0}
+.upd .notes p{margin:6px 0}
+.upd .foot2{text-align:center;color:var(--muted);font-size:12.5px;margin-top:10px}
+
+/* nav */
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--surface);border-top:1px solid var(--line);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--muted);font-size:12px;font-weight:600;position:relative}
+nav button .pill{width:56px;height:30px;border-radius:999px;display:grid;place-items:center;transition:background .2s}
+nav button.on{color:var(--text)}
+nav button.on .pill{background:var(--surface-2);color:var(--accent)}
+.badge{position:absolute;top:2px;left:calc(50% + 10px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent-2);color:#fff;font-size:11px;display:none;place-items:center}
+.badge.on{display:grid}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(5,7,25,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:1001;background:var(--surface);border-radius:24px 24px 0 0;
+  padding:10px 20px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .26s cubic-bezier(.2,.8,.2,1);max-height:86vh;overflow-y:auto}
+.sheet.on{transform:none}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+.sheet h3{margin:0 0 14px;font-size:18px}
+.row{display:flex;align-items:center;gap:14px;width:100%;padding:14px 4px;text-align:left;border-bottom:1px solid var(--line);font-size:15px}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1}
+.row .check{color:var(--accent)}
+.row.warn{color:var(--danger)}
+.fileprev{display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:var(--r-md);padding:12px;margin-bottom:14px}
+label.lbl{display:block;font-size:13px;color:var(--muted);margin:4px 2px 6px}
+.input{width:100%;padding:13px 14px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--bg);outline:none;font-size:15px}
+.input:focus{border-color:var(--accent)}
+.kv{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);padding:10px 2px 0}
+.kv b{color:var(--text);font-weight:600}
+.about{text-align:center}
+.about .mark{width:72px;height:72px;margin:6px auto 12px}
+.about p{color:var(--muted);font-size:14px;margin:6px 0}
+
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translate(-50%,-20px);background:var(--text);color:var(--bg);
+  padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:.22s;z-index:30;max-width:88vw;text-align:center;pointer-events:none;z-index:1100}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast{box-shadow:var(--shadow)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46E0C4"/><stop offset="1" stop-color="#8C7BFF"/></linearGradient>
+    <symbol id="logo" viewBox="0 0 48 48">
+      <path d="M24 3 42.2 13.5v21L24 45 5.8 34.5v-21Z" fill="url(#g)"/>
+      <path d="M24 13v15m-7-6 7 7 7-7M15.5 34h17" fill="none" stroke="#0E1230" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lib" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="m10.5 9.5 4 2.5-4 2.5Z" fill="currentColor"/></symbol>
+    <symbol id="i-tools" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></g></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 10.5 5-3v9l-5-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-audio" viewBox="0 0 24 24"><path d="M9 18V6l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="16" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.8" fill="currentColor"/><path d="m4 18 5.5-5 4 3.5 2.5-2 4 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6Z M14 3v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="m3.5 16 6-6 4 4 7-7M15 7h5.5v5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5Z" fill="currentColor"/></symbol>
+    <symbol id="i-reload" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4.5H15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-head" viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a1 1 0 0 1-1-1Zm16 0h-3v6h2a1 1 0 0 0 1-1Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h11M4 12h11M4 18h7M17 14v6l4-3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="18.5" r="1.8" fill="currentColor"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-broom" viewBox="0 0 24 24"><path d="M14 4 9.5 11M6 12h9l2 8H4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 7a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="5.5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="18.5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m8.2 10.8 7-4M8.2 13.2l7 4" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5 19 6v6c0 4.2-3 7.4-7 8.5-4-1.1-7-4.3-7-8.5V6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5.5M12 7.6v.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="top">
+    <svg class="mark"><use href="#logo"/></svg>
+    <div class="brand">Nexora<small>Download Plus</small></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="openAbout" aria-label="Acerca de"><svg width="22" height="22"><use href="#i-info"/></svg></button>
+  </header>
+
+  <main>
+    <!-- DESCARGAR -->
+    <section class="view on" id="v-home">
+      <div class="sbar-wrap">
+        <div class="sbar" id="sbar">
+          <button class="sbtn" id="sBack" aria-label="Volver" hidden><svg width="22" height="22"><use href="#i-x"/></svg></button>
+          <svg class="sic" width="20" height="20"><use href="#i-search"/></svg>
+          <input id="url" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false" data-tp="urlPh" placeholder="Busca en YouTube o pega un enlace">
+          <button class="sbtn" id="clearQ" aria-label="Borrar" hidden><svg width="18" height="18"><use href="#i-x"/></svg></button>
+          <button class="paste" id="pasteBtn" data-t="paste">Pegar</button>
+          <button class="gobtn" id="goBtn" aria-label="Ir"><svg width="20" height="20" id="goIcon"><use href="#i-search"/></svg></button>
+        </div>
+        <div class="clip" id="clip"><span id="clipText"></span><button id="clipUse" data-t="use">Usar</button></div>
+      </div>
+
+      <!-- Panel al tocar la barra: sugerencias, recientes, populares y sitios -->
+      <div id="panel" hidden>
+        <div id="sugList"></div>
+        <div id="panelIdle">
+          <div id="recentQ"></div>
+          <h2 class="ph" data-t="popular">Búsquedas populares</h2>
+          <div class="types" id="popular"></div>
+          <h2 class="ph" data-t="seeSites">Ver sitios</h2>
+          <div class="sites" id="sites">
+            <button class="site" data-site="https://m.youtube.com"><i style="background:#FF4E45"></i>YouTube</button>
+            <button class="site" data-site="https://www.tiktok.com"><i style="background:#25F4EE"></i>TikTok</button>
+            <button class="site" data-site="https://www.instagram.com"><i style="background:#E1306C"></i>Instagram</button>
+            <button class="site" data-site="https://m.facebook.com"><i style="background:#1877F2"></i>Facebook</button>
+            <button class="site" data-site="https://x.com"><i style="background:var(--text)"></i>X</button>
+          </div>
+          <p class="sitehint" data-t="siteHint">Abre un video, toca Compartir y elige Nexora Plus.</p>
+        </div>
+      </div>
+
+      <!-- Inicio: categorías + videos -->
+      <div id="feedWrap">
+        <div class="ptr" id="ptr"><div class="ring"><svg width="20" height="20"><use href="#i-reload"/></svg></div></div>
+        <div class="cats" id="cats"></div>
+        <div id="feedHead" class="reshead" hidden><h2 id="feedTitle"></h2><button id="clearRes" data-t="clearRes">Limpiar</button></div>
+        <div id="feed"></div>
+      </div>
+    </section>
+
+    <!-- REPRODUCIR / MIS DESCARGAS -->
+    <section class="view" id="v-lib">
+      <h1 data-t="libTitle">Mis descargas</h1>
+      <div class="types" id="filters">
+        <button class="chip on" data-f="all" data-t="fAll">Todo</button>
+        <button class="chip" data-f="video" data-t="fVideo">Video</button>
+        <button class="chip" data-f="audio" data-t="fAudio">Música</button>
+        <button class="chip" data-f="image" data-t="fImage">Imágenes</button>
+        <button class="chip" data-f="other" data-t="fOther">Otros</button>
+      </div>
+      <div class="permbox" id="permBox" hidden>
+        <svg width="22" height="22"><use href="#i-folder"/></svg>
+        <div class="grow"><b data-t="permT">Ver todas tus descargas</b><span data-t="permD">Permite el acceso a videos y música para ver lo que descargaste antes, incluso si reinstalaste la app.</span></div>
+        <button class="btn" id="permBtn" data-t="permBtn">Permitir</button>
+      </div>
+      <div class="list" id="libList" style="margin-top:14px"></div>
+    </section>
+
+    <!-- HERRAMIENTAS -->
+    <section class="view" id="v-tools">
+      <h1 data-t="toolsTitle">Herramientas</h1>
+      <div class="stat">
+        <div><b id="stCount">0</b><span data-t="stFiles">archivos descargados</span></div>
+        <div><b id="stSize">0 MB</b><span data-t="stSize">en total</span></div>
+      </div>
+      <h2 data-t="general">General</h2>
+      <div class="grid">
+        <button class="tool" data-tool="clear"><svg width="24" height="24"><use href="#i-broom"/></svg><b data-t="tClear">Limpiar historial</b><span data-t="tClearS">Los archivos se conservan</span></button>
+        <button class="tool" data-tool="lang"><svg width="24" height="24"><use href="#i-globe"/></svg><b data-t="tLang">Idioma</b><span id="langName">Español</span></button>
+        <button class="tool" data-tool="theme"><svg width="24" height="24"><use href="#i-moon"/></svg><b data-t="tTheme">Tema</b><span id="themeName">Oscuro</span></button>
+        <button class="tool" data-tool="account"><svg width="24" height="24"><use href="#i-shield"/></svg><b data-t="tAccount">Cuenta de YouTube</b><span id="accName">…</span></button>
+        <button class="tool" data-tool="cache"><svg width="24" height="24"><use href="#i-broom"/></svg><b data-t="tCache">Liberar espacio</b><span data-t="tCacheS">Borra archivos temporales</span></button>
+        <button class="tool" data-tool="engine"><svg width="24" height="24"><use href="#i-dl"/></svg><b data-t="tEngine">Motor</b><span id="engineName">…</span></button>
+        <button class="tool" data-tool="folder"><svg width="24" height="24"><use href="#i-folder"/></svg><b data-t="tFolder">Carpeta</b><span>Download/Nexora</span></button>
+        <button class="tool" data-tool="share"><svg width="24" height="24"><use href="#i-share"/></svg><b data-t="tShare">Compartir Nexora</b><span data-t="tShareS">Envíala a un amigo</span></button>
+        <button class="tool" data-tool="feedback"><svg width="24" height="24"><use href="#i-info"/></svg><b data-t="tFeedback">Comentarios</b><span data-t="tFeedbackS">Reporta un problema</span></button>
+        <button class="tool" data-tool="settings"><svg width="24" height="24"><use href="#i-tools"/></svg><b data-t="tSettings">Configuración</b><span data-t="tSettingsS">Portapapeles y reproductor</span></button>
+        <button class="tool" data-tool="privacy"><svg width="24" height="24"><use href="#i-shield"/></svg><b data-t="tPrivacy">Privacidad</b><span data-t="tPrivacyS">Cómo tratamos tus datos</span></button>
+      </div>
+      <p class="foot"><span id="copy"></span><br><a href="privacy-policy.html" data-t="policy">Política de privacidad</a></p>
+    </section>
+  </main>
+
+  <nav>
+    <button class="on" data-v="home"><span class="pill"><svg width="22" height="22"><use href="#i-dl"/></svg></span><span data-t="navDl">Descargar</span></button>
+    <button data-v="lib"><span class="pill"><svg width="22" height="22"><use href="#i-lib"/></svg></span><span data-t="navLib">Reproducir</span><span class="badge" id="badge"></span></button>
+    <button data-v="tools"><span class="pill"><svg width="22" height="22"><use href="#i-tools"/></svg></span><span data-t="navTools">Herramientas</span></button>
+  </nav>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div id="sheetBody"></div></div>
+<!-- Reproductor dentro de la app (como Snaptube) -->
+<div class="watch" id="watch" hidden>
+  <div class="wplayer">
+    <video id="wv" controls playsinline preload="metadata"></video>
+    <img id="wposter" class="wposter" alt="" referrerpolicy="no-referrer" hidden>
+    <div class="wstate" id="wstate"></div>
+    <button class="wbtn wl" id="wBack" aria-label="Volver"><svg width="22" height="22"><use href="#i-x"/></svg></button>
+    <button class="wbtn wr" id="wMenu" aria-label="Opciones"><svg width="22" height="22"><use href="#i-more"/></svg></button>
+  </div>
+  <div class="wbody" id="wbody"></div>
+</div>
+<!-- Perfil de canal / playlist -->
+<div class="chan" id="chan" hidden>
+  <div class="chtop"><button class="icon-btn" id="chBack" aria-label="Volver"><svg width="22" height="22"><use href="#i-back"/></svg></button><b id="chTitle"></b></div>
+  <div class="cats ctabs" id="chTabs"></div>
+  <div class="chbody" id="chBody"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ====== Configuración ====== */
+const CONFIG = {
+  appName: 'Nexora Download Plus',
+  version: '1.0.0',
+  privacyUrl: 'privacy-policy.html',
+  copyright: '© 2026 Nexora: Eduard Gamer',
+  folder: 'Download/Nexora'
+};
+
+/* ====== Textos (ES / EN / PT) ====== */
+const I18N = {
+  es:{homeTitle:'Pega un enlace y descárgalo',homeLede:'Videos, música, imágenes y documentos directo a tu teléfono.',urlPh:'https://ejemplo.com/archivo.mp4',paste:'Pegar',use:'Usar',download:'Descargar',
+    hint:'Usa enlaces directos a archivos (terminan en .mp4, .mp3, .pdf…). También puedes compartir un enlace a Nexora desde otra app.',recent:'Recientes',libTitle:'Mis descargas',fAll:'Todo',fVideo:'Video',fAudio:'Música',fImage:'Imágenes',fOther:'Otros',
+    toolsTitle:'Herramientas',stFiles:'archivos descargados',stSize:'en total',general:'General',tClear:'Limpiar historial',tClearS:'Los archivos se conservan',tLang:'Idioma',tTheme:'Tema',tFolder:'Carpeta',tShare:'Compartir Nexora',tShareS:'Envíala a un amigo',tPrivacy:'Privacidad',tPrivacyS:'Cómo tratamos tus datos',policy:'Política de privacidad',
+    navDl:'Descargar',navLib:'Reproducir',navTools:'Herramientas',dlAs:'Descargar archivo',fileName:'Nombre del archivo',type:'Tipo',saveIn:'Se guarda en',cancel:'Cancelar',
+    emptyRecentT:'Aún no hay descargas',emptyRecent:'Pega un enlace arriba para empezar.',emptyLibT:'Nada por aquí',emptyLib:'Tus archivos descargados aparecerán en esta lista.',goDl:'Ir a Descargar',
+    sPending:'En cola',sRunning:'Descargando',sPaused:'En pausa, esperando red',sDone:'Completado',sFailed:'Falló la descarga',sRemoved:'Archivo eliminado',sBrowser:'Enviado al navegador',
+    open:'Abrir',shareLink:'Compartir enlace',retry:'Reintentar',del:'Eliminar archivo',delHist:'Quitar del historial',
+    badUrl:'Ese enlace no es válido. Debe empezar con http:// o https://',started:'Descarga iniciada',noClip:'El portapapeles no tiene un enlace',cantOpen:'No hay una app para abrir este archivo',
+    clearQ:'¿Limpiar el historial?',clearD:'Se borra la lista de Nexora. Los archivos en tu teléfono no se eliminan.',clear:'Limpiar',cleared:'Historial limpio',deleted:'Archivo eliminado',
+    folderMsg:'Tus archivos se guardan en Download/Nexora',themeDark:'Oscuro',themeLight:'Claro',themeSys:'Del sistema',about:'Acerca de',version:'Versión',
+    aboutD:'Gestor de descargas rápido y privado. Sin cuentas, sin anuncios, sin rastreo.',shareMsg:'Descarga archivos fácil con Nexora Download',
+    vVideo:'Video',vAudio:'Audio',vImage:'Imagen',vDoc:'Documento',vApk:'Aplicación',vFile:'Archivo',dupe:'Ya estás descargando este enlace',platTitle:'Enlace de {n}',platBody:'Nexora no descarga contenido de {n} para respetar los derechos de los creadores y las reglas de la plataforma. Para verlo sin conexión, usa la opción de descarga de la app oficial.',platOpen:'Abrir en {n}',ok:'Entendido',ytHint:'Pega un enlace de YouTube, TikTok, Instagram, Facebook y más, o un enlace directo a un archivo.',analyzing:'Analizando enlace…',enginePrepMsg:'Preparando el motor de descarga. La primera vez tarda un poco.',chooseFmt:'Formato',fV1080:'Video 1080p',fV720:'Video 720p',fV480:'Video 480p',fMp3:'Audio MP3',fM4a:'Audio M4A',fV1080s:'Mejor calidad',fV720s:'Equilibrado',fV480s:'Ahorra espacio',fMp3s:'Compatible con todo',fM4as:'Calidad original',channel:'Canal',credit:'Se guarda el título y el canal como crédito del creador.',notice:'Descarga solo contenido propio o con permiso del creador.',noticeTitle:'Antes de empezar',noticeBody:'Nexora Download Plus puede guardar videos y música de YouTube y otras redes. Respeta a los creadores: descarga solo contenido tuyo, con licencia libre o con su permiso. Cada descarga guarda el título y el canal como crédito.',accept:'Acepto',infoErr:'No se pudo leer este enlace',tryDirect:'Intentar descarga directa',tEngine:'Motor',engineReady:'Listo',enginePrep:'Preparando…',engineUpdating:'Actualizando…',engineErr:'Con error',engineUpd:'Actualizar motor',engineDesc:'El motor (yt-dlp) se actualiza solo cada día. Actualízalo a mano si una red deja de funcionar.',updated:'Motor actualizado',upToDate:'El motor ya está al día',updErr:'No se pudo actualizar. Revisa tu conexión.',busy:'Espera a que terminen las descargas',cancelDl:'Cancelar descarga',sCancelled:'Cancelada',sInterrupted:'Interrumpida',seeOriginal:'Ver original',webOnly:'Las descargas de redes solo funcionan en la app instalada',close:'Cerrar',homeTitle:'Busca o pega un enlace',urlPh:'Buscar o pegar enlace',search:'Buscar',siteHint:'Abre un video, toca Compartir y elige Nexora Plus.',results:'Resultados',clearRes:'Limpiar',searching:'Buscando…',noRes:'Sin resultados para esa búsqueda.',views:'vistas',grpMusic:'Música',grpVideo:'Video',fVbest:'Video',fVbests:'La mejor disponible',errBot:'YouTube pidió confirmar que no eres un robot.',errBotFix:'Cambia de red (Wi-Fi o datos) o inicia sesión en Herramientas → Cuenta de YouTube.',errFmt:'YouTube no entregó formatos para este video.',errFmtFix:'Nexora ya probó varios métodos. Actualiza el motor e inténtalo otra vez en unos minutos.',errGen:'Revisa el enlace o tu conexión e inténtalo de nuevo.',goLogin:'Iniciar sesión',tAccount:'Cuenta de YouTube',accOn:'Sesión iniciada',accOff:'Sin sesión',accTitle:'Cuenta de YouTube',accDesc:'Iniciar sesión ayuda cuando YouTube pide confirmar que no eres un robot. La sesión se guarda solo en tu teléfono.',accWarn:'YouTube puede limitar o suspender cuentas que descargan videos. Usa una cuenta secundaria, no tu cuenta principal ni la de tu canal.',login:'Iniciar sesión',importCk:'Importar cookies.txt',logout:'Cerrar sesión',loggedOut:'Sesión cerrada',tCache:'Liberar espacio',tCacheS:'Borra archivos temporales',cacheDone:'Espacio liberado',tFeedback:'Comentarios',tFeedbackS:'Reporta un problema',fV360:'Video 360p',fV360s:'Ocupa poco',popular:'Búsquedas populares',seeSites:'Ver sitios',recentSearches:'Búsquedas recientes',clearHist:'Borrar',cMusic:'Música',cGames:'Videojuegos',cFunny:'Risa',cTut:'Tutoriales',cNews:'Noticias',cSports:'Deportes',cKids:'Infantil',qMusic:'música nueva',qGames:'videojuegos gameplay',qFunny:'videos de risa',qTut:'tutoriales',qNews:'noticias hoy',qSports:'deportes resumen',qKids:'videos infantiles',pops:'Peso Pluma|Bad Bunny|videos de risa|Minecraft|Free Fire|películas completas|estados para WhatsApp|Karol G',resultsFor:'Resultados de',stageRetry:'Probando otro método…',stageUpdate:'Actualizando el motor…',feedErr:'No se pudieron cargar los videos.',retryBtn:'Reintentar',openYt:'Ver en YouTube',clipPasted:'Enlace pegado desde el portapapeles',moreFmts:'Más formatos',fV144s:'Calidad mínima',fV240s:'Baja calidad',fV1440s:'Pantalla grande',fV2160s:'Máxima calidad',tSettings:'Configuración',tSettingsS:'Portapapeles y reproductor',autoClip:'Detectar enlaces copiados',autoClipS:'Al abrir la app, ofrece descargar el enlace que copiaste',playerT:'Reproductor de videos y música',recommended:'recomendado',askEach:'Elegir cada vez',recTitle:'Reproduce con {n}',recBody:'Para ver tus videos y escuchar tu música con la mejor calidad, Nexora recomienda {n}. Es gratis.',install:'Instalar {n}',openOther:'Abrir con otra app',cForYou:'Para ti',qForYou:'',qMods:'nuevo|popular|en tendencia|2026|mejores|viral|en vivo|completo',watchLoading:'Preparando video…',playErr:'No se pudo reproducir aquí.',audioOnly:'Solo audio',options:'Opciones',quality:'Calidad',speed:'Velocidad',repeat:'Repetir video',autoplay:'Reproducción automática',related:'Más videos',subs:'suscriptores',showMore:'Ver más',showLess:'Ver menos',installing:'Instalando {n}',instStart:'Preparando la descarga…',instDl:'Descargando…',instPerm:'Permite que Nexora instale apps y vuelve aquí.',instReady:'Listo, confirma la instalación',instErr:'No se pudo descargar, abriendo la página…',instWeb:'Descargar desde la página web',recBody:'Para ver tus videos y escuchar tu música, Nexora recomienda {n}.',tHome:'Principal',tVideos:'Videos',tShorts:'Shorts',tLive:'En vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',noTab:'Este canal no tiene {n}',permT:'Ver todas tus descargas',permD:'Permite el acceso a videos y música para ver lo que descargaste antes, incluso si reinstalaste la app.',permBtn:'Permitir',updTitle:'Actualización obligatoria',updTitleOpt:'Nueva versión disponible',updCur:'Tu versión:',updNew:'Novedades de esta versión',updNow:'Actualizar ahora',updLater:'Más tarde',updConfirm:'Confirma la instalación en la ventana de Android',prefetch:'Precargar videos',prefetchS:'Analiza en segundo plano los videos que ves para que la descarga abra al instante'},
+  en:{homeTitle:'Paste a link and download it',homeLede:'Videos, music, images and documents straight to your phone.',urlPh:'https://example.com/file.mp4',paste:'Paste',use:'Use',download:'Download',
+    hint:'Use direct file links (ending in .mp4, .mp3, .pdf…). You can also share a link to Nexora from another app.',recent:'Recent',libTitle:'My downloads',fAll:'All',fVideo:'Video',fAudio:'Music',fImage:'Images',fOther:'Other',
+    toolsTitle:'Tools',stFiles:'files downloaded',stSize:'in total',general:'General',tClear:'Clear history',tClearS:'Files are kept',tLang:'Language',tTheme:'Theme',tFolder:'Folder',tShare:'Share Nexora',tShareS:'Send it to a friend',tPrivacy:'Privacy',tPrivacyS:'How we handle your data',policy:'Privacy policy',
+    navDl:'Download',navLib:'Play',navTools:'Tools',dlAs:'Download file',fileName:'File name',type:'Type',saveIn:'Saved to',cancel:'Cancel',
+    emptyRecentT:'No downloads yet',emptyRecent:'Paste a link above to start.',emptyLibT:'Nothing here',emptyLib:'Your downloaded files will show up in this list.',goDl:'Go to Download',
+    sPending:'Queued',sRunning:'Downloading',sPaused:'Paused, waiting for network',sDone:'Completed',sFailed:'Download failed',sRemoved:'File deleted',sBrowser:'Sent to browser',
+    open:'Open',shareLink:'Share link',retry:'Retry',del:'Delete file',delHist:'Remove from history',
+    badUrl:'That link isn’t valid. It must start with http:// or https://',started:'Download started',noClip:'Clipboard has no link',cantOpen:'No app can open this file',
+    clearQ:'Clear history?',clearD:'This clears Nexora’s list. Files on your phone are not deleted.',clear:'Clear',cleared:'History cleared',deleted:'File deleted',
+    folderMsg:'Your files are saved in Download/Nexora',themeDark:'Dark',themeLight:'Light',themeSys:'System',about:'About',version:'Version',
+    aboutD:'A fast, private download manager. No accounts, no ads, no tracking.',shareMsg:'Download files easily with Nexora Download',
+    vVideo:'Video',vAudio:'Audio',vImage:'Image',vDoc:'Document',vApk:'App',vFile:'File',dupe:'You’re already downloading this link',platTitle:'{n} link',platBody:'Nexora doesn’t download content from {n}, to respect creators’ rights and the platform’s rules. To watch it offline, use the download option in the official app.',platOpen:'Open in {n}',ok:'Got it',ytHint:'Paste a link from YouTube, TikTok, Instagram, Facebook and more, or a direct file link.',analyzing:'Reading link…',enginePrepMsg:'Getting the download engine ready. The first time takes a moment.',chooseFmt:'Format',fV1080:'Video 1080p',fV720:'Video 720p',fV480:'Video 480p',fMp3:'MP3 audio',fM4a:'M4A audio',fV1080s:'Best quality',fV720s:'Balanced',fV480s:'Saves space',fMp3s:'Plays everywhere',fM4as:'Original quality',channel:'Channel',credit:'The title and channel are saved as credit to the creator.',notice:'Only download your own content or content you have permission to save.',noticeTitle:'Before you start',noticeBody:'Nexora Download Plus can save videos and music from YouTube and other networks. Respect creators: only download your own content, freely licensed content, or content you have permission for. Every download keeps the title and channel as credit.',accept:'I agree',infoErr:'Couldn’t read this link',tryDirect:'Try direct download',tEngine:'Engine',engineReady:'Ready',enginePrep:'Preparing…',engineUpdating:'Updating…',engineErr:'Error',engineUpd:'Update engine',engineDesc:'The engine (yt-dlp) updates itself daily. Update it manually if a network stops working.',updated:'Engine updated',upToDate:'Engine is up to date',updErr:'Couldn’t update. Check your connection.',busy:'Wait for downloads to finish',cancelDl:'Cancel download',sCancelled:'Cancelled',sInterrupted:'Interrupted',seeOriginal:'View original',webOnly:'Network downloads only work in the installed app',close:'Close',homeTitle:'Search or paste a link',urlPh:'Search or paste a link',search:'Search',siteHint:'Open a video, tap Share and choose Nexora Plus.',results:'Results',clearRes:'Clear',searching:'Searching…',noRes:'No results for that search.',views:'views',grpMusic:'Music',grpVideo:'Video',fVbest:'Video',fVbests:'Best available',errBot:'YouTube asked to confirm you’re not a bot.',errBotFix:'Switch networks (Wi-Fi or mobile data) or sign in under Tools → YouTube account.',errFmt:'YouTube didn’t provide formats for this video.',errFmtFix:'Nexora already tried several methods. Update the engine and try again in a few minutes.',errGen:'Check the link or your connection and try again.',goLogin:'Sign in',tAccount:'YouTube account',accOn:'Signed in',accOff:'Not signed in',accTitle:'YouTube account',accDesc:'Signing in helps when YouTube asks you to confirm you’re not a bot. The session is stored only on your phone.',accWarn:'YouTube may limit or suspend accounts that download videos. Use a secondary account, not your main or channel account.',login:'Sign in',importCk:'Import cookies.txt',logout:'Sign out',loggedOut:'Signed out',tCache:'Free up space',tCacheS:'Deletes temporary files',cacheDone:'Space freed',tFeedback:'Feedback',tFeedbackS:'Report a problem',fV360:'Video 360p',fV360s:'Small size',popular:'Popular searches',seeSites:'Sites',recentSearches:'Recent searches',clearHist:'Clear',cMusic:'Music',cGames:'Gaming',cFunny:'Funny',cTut:'Tutorials',cNews:'News',cSports:'Sports',cKids:'Kids',qMusic:'new music',qGames:'gaming gameplay',qFunny:'funny videos',qTut:'tutorials',qNews:'news today',qSports:'sports highlights',qKids:'kids videos',pops:'Taylor Swift|funny videos|Minecraft|Fortnite|full movies|lofi music|MrBeast|workout',resultsFor:'Results for',stageRetry:'Trying another method…',stageUpdate:'Updating the engine…',feedErr:'Couldn’t load videos.',retryBtn:'Retry',openYt:'Watch on YouTube',clipPasted:'Link pasted from clipboard',moreFmts:'More formats',fV144s:'Lowest quality',fV240s:'Low quality',fV1440s:'Big screen',fV2160s:'Highest quality',tSettings:'Settings',tSettingsS:'Clipboard and player',autoClip:'Detect copied links',autoClipS:'When you open the app, offer to download the link you copied',playerT:'Video and music player',recommended:'recommended',askEach:'Choose every time',recTitle:'Play with {n}',recBody:'To watch your videos and listen to your music in the best quality, Nexora recommends {n}. It’s free.',install:'Install {n}',openOther:'Open with another app',cForYou:'For you',qForYou:'',qMods:'new|popular|trending|2026|best|viral|live|full',watchLoading:'Getting video ready…',playErr:'Couldn’t play it here.',audioOnly:'Audio only',options:'Options',quality:'Quality',speed:'Speed',repeat:'Repeat video',autoplay:'Autoplay',related:'More videos',subs:'subscribers',showMore:'Show more',showLess:'Show less',installing:'Installing {n}',instStart:'Preparing download…',instDl:'Downloading…',instPerm:'Allow Nexora to install apps, then come back.',instReady:'Done, confirm the installation',instErr:'Download failed, opening the page…',instWeb:'Download from the web page',recBody:'To watch your videos and listen to your music, Nexora recommends {n}.',tHome:'Home',tVideos:'Videos',tShorts:'Shorts',tLive:'Live',tPlaylists:'Playlists',seeAll:'See all',playlist:'Playlist',noTab:'This channel has no {n}',permT:'See all your downloads',permD:'Allow access to videos and music to see what you downloaded before, even after reinstalling.',permBtn:'Allow',updTitle:'Required update',updTitleOpt:'New version available',updCur:'Your version:',updNew:'What’s new',updNow:'Update now',updLater:'Later',updConfirm:'Confirm the installation in the Android window',prefetch:'Preload videos',prefetchS:'Analyzes videos you see in the background so downloads open instantly'},
+  pt:{homeTitle:'Cole um link e baixe',homeLede:'Vídeos, músicas, imagens e documentos direto no seu celular.',urlPh:'https://exemplo.com/arquivo.mp4',paste:'Colar',use:'Usar',download:'Baixar',
+    hint:'Use links diretos de arquivos (terminam em .mp4, .mp3, .pdf…). Você também pode compartilhar um link com o Nexora.',recent:'Recentes',libTitle:'Meus downloads',fAll:'Tudo',fVideo:'Vídeo',fAudio:'Música',fImage:'Imagens',fOther:'Outros',
+    toolsTitle:'Ferramentas',stFiles:'arquivos baixados',stSize:'no total',general:'Geral',tClear:'Limpar histórico',tClearS:'Os arquivos são mantidos',tLang:'Idioma',tTheme:'Tema',tFolder:'Pasta',tShare:'Compartilhar Nexora',tShareS:'Envie para um amigo',tPrivacy:'Privacidade',tPrivacyS:'Como tratamos seus dados',policy:'Política de privacidade',
+    navDl:'Baixar',navLib:'Reproduzir',navTools:'Ferramentas',dlAs:'Baixar arquivo',fileName:'Nome do arquivo',type:'Tipo',saveIn:'Salvo em',cancel:'Cancelar',
+    emptyRecentT:'Nenhum download ainda',emptyRecent:'Cole um link acima para começar.',emptyLibT:'Nada aqui',emptyLib:'Seus arquivos baixados aparecerão nesta lista.',goDl:'Ir para Baixar',
+    sPending:'Na fila',sRunning:'Baixando',sPaused:'Pausado, aguardando rede',sDone:'Concluído',sFailed:'Falha no download',sRemoved:'Arquivo excluído',sBrowser:'Enviado ao navegador',
+    open:'Abrir',shareLink:'Compartilhar link',retry:'Tentar de novo',del:'Excluir arquivo',delHist:'Remover do histórico',
+    badUrl:'Link inválido. Deve começar com http:// ou https://',started:'Download iniciado',noClip:'A área de transferência não tem um link',cantOpen:'Nenhum app abre este arquivo',
+    clearQ:'Limpar histórico?',clearD:'Isso limpa a lista do Nexora. Os arquivos no celular não são excluídos.',clear:'Limpar',cleared:'Histórico limpo',deleted:'Arquivo excluído',
+    folderMsg:'Seus arquivos ficam em Download/Nexora',themeDark:'Escuro',themeLight:'Claro',themeSys:'Do sistema',about:'Sobre',version:'Versão',
+    aboutD:'Gerenciador de downloads rápido e privado. Sem contas, sem anúncios, sem rastreamento.',shareMsg:'Baixe arquivos fácil com o Nexora Download',
+    vVideo:'Vídeo',vAudio:'Áudio',vImage:'Imagem',vDoc:'Documento',vApk:'Aplicativo',vFile:'Arquivo',dupe:'Você já está baixando este link',platTitle:'Link do {n}',platBody:'O Nexora não baixa conteúdo do {n}, para respeitar os direitos dos criadores e as regras da plataforma. Para assistir offline, use a opção de download do app oficial.',platOpen:'Abrir no {n}',ok:'Entendi',ytHint:'Cole um link do YouTube, TikTok, Instagram, Facebook e mais, ou um link direto de arquivo.',analyzing:'Lendo o link…',enginePrepMsg:'Preparando o motor de download. Na primeira vez demora um pouco.',chooseFmt:'Formato',fV1080:'Vídeo 1080p',fV720:'Vídeo 720p',fV480:'Vídeo 480p',fMp3:'Áudio MP3',fM4a:'Áudio M4A',fV1080s:'Melhor qualidade',fV720s:'Equilibrado',fV480s:'Economiza espaço',fMp3s:'Toca em tudo',fM4as:'Qualidade original',channel:'Canal',credit:'O título e o canal são salvos como crédito ao criador.',notice:'Baixe só conteúdo seu ou com permissão do criador.',noticeTitle:'Antes de começar',noticeBody:'O Nexora Download Plus pode salvar vídeos e músicas do YouTube e outras redes. Respeite os criadores: baixe só conteúdo seu, com licença livre ou com permissão. Cada download guarda o título e o canal como crédito.',accept:'Aceito',infoErr:'Não foi possível ler este link',tryDirect:'Tentar download direto',tEngine:'Motor',engineReady:'Pronto',enginePrep:'Preparando…',engineUpdating:'Atualizando…',engineErr:'Com erro',engineUpd:'Atualizar motor',engineDesc:'O motor (yt-dlp) se atualiza sozinho todo dia. Atualize manualmente se uma rede parar de funcionar.',updated:'Motor atualizado',upToDate:'O motor já está atualizado',updErr:'Não foi possível atualizar. Verifique a conexão.',busy:'Espere os downloads terminarem',cancelDl:'Cancelar download',sCancelled:'Cancelado',sInterrupted:'Interrompido',seeOriginal:'Ver original',webOnly:'Downloads de redes só funcionam no app instalado',close:'Fechar',homeTitle:'Pesquise ou cole um link',urlPh:'Pesquisar ou colar link',search:'Pesquisar',siteHint:'Abra um vídeo, toque em Compartilhar e escolha Nexora Plus.',results:'Resultados',clearRes:'Limpar',searching:'Pesquisando…',noRes:'Nenhum resultado para essa pesquisa.',views:'visualizações',grpMusic:'Música',grpVideo:'Vídeo',fVbest:'Vídeo',fVbests:'Melhor disponível',errBot:'O YouTube pediu para confirmar que você não é um robô.',errBotFix:'Troque de rede (Wi-Fi ou dados) ou entre em Ferramentas → Conta do YouTube.',errFmt:'O YouTube não entregou formatos para este vídeo.',errFmtFix:'O Nexora já tentou vários métodos. Atualize o motor e tente de novo em alguns minutos.',errGen:'Verifique o link ou a conexão e tente de novo.',goLogin:'Entrar',tAccount:'Conta do YouTube',accOn:'Conectado',accOff:'Sem login',accTitle:'Conta do YouTube',accDesc:'Entrar ajuda quando o YouTube pede para confirmar que você não é um robô. A sessão fica só no seu celular.',accWarn:'O YouTube pode limitar ou suspender contas que baixam vídeos. Use uma conta secundária, não a principal nem a do seu canal.',login:'Entrar',importCk:'Importar cookies.txt',logout:'Sair',loggedOut:'Sessão encerrada',tCache:'Liberar espaço',tCacheS:'Apaga arquivos temporários',cacheDone:'Espaço liberado',tFeedback:'Comentários',tFeedbackS:'Relatar um problema',fV360:'Vídeo 360p',fV360s:'Ocupa pouco',popular:'Pesquisas populares',seeSites:'Sites',recentSearches:'Pesquisas recentes',clearHist:'Limpar',cMusic:'Música',cGames:'Games',cFunny:'Engraçados',cTut:'Tutoriais',cNews:'Notícias',cSports:'Esportes',cKids:'Infantil',qMusic:'música nova',qGames:'games gameplay',qFunny:'vídeos engraçados',qTut:'tutoriais',qNews:'notícias hoje',qSports:'esportes melhores momentos',qKids:'vídeos infantis',pops:'funk|vídeos engraçados|Minecraft|Free Fire|filmes completos|status para WhatsApp|sertanejo|Anitta',resultsFor:'Resultados de',stageRetry:'Tentando outro método…',stageUpdate:'Atualizando o motor…',feedErr:'Não foi possível carregar os vídeos.',retryBtn:'Tentar de novo',openYt:'Ver no YouTube',clipPasted:'Link colado da área de transferência',moreFmts:'Mais formatos',fV144s:'Qualidade mínima',fV240s:'Baixa qualidade',fV1440s:'Tela grande',fV2160s:'Qualidade máxima',tSettings:'Configurações',tSettingsS:'Área de transferência e player',autoClip:'Detectar links copiados',autoClipS:'Ao abrir o app, oferece baixar o link que você copiou',playerT:'Player de vídeos e músicas',recommended:'recomendado',askEach:'Escolher sempre',recTitle:'Reproduza com {n}',recBody:'Para assistir seus vídeos e ouvir suas músicas com a melhor qualidade, o Nexora recomenda o {n}. É grátis.',install:'Instalar {n}',openOther:'Abrir com outro app',cForYou:'Para você',qForYou:'',qMods:'novo|popular|em alta|2026|melhores|viral|ao vivo|completo',watchLoading:'Preparando vídeo…',playErr:'Não foi possível reproduzir aqui.',audioOnly:'Só áudio',options:'Opções',quality:'Qualidade',speed:'Velocidade',repeat:'Repetir vídeo',autoplay:'Reprodução automática',related:'Mais vídeos',subs:'inscritos',showMore:'Mostrar mais',showLess:'Mostrar menos',installing:'Instalando {n}',instStart:'Preparando o download…',instDl:'Baixando…',instPerm:'Permita que o Nexora instale apps e volte aqui.',instReady:'Pronto, confirme a instalação',instErr:'Falha no download, abrindo a página…',instWeb:'Baixar pela página web',recBody:'Para ver seus vídeos e ouvir suas músicas, o Nexora recomenda o {n}.',tHome:'Início',tVideos:'Vídeos',tShorts:'Shorts',tLive:'Ao vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',noTab:'Este canal não tem {n}',permT:'Ver todos os seus downloads',permD:'Permita o acesso a vídeos e músicas para ver o que você baixou antes, mesmo após reinstalar.',permBtn:'Permitir',updTitle:'Atualização obrigatória',updTitleOpt:'Nova versão disponível',updCur:'Sua versão:',updNew:'Novidades desta versão',updNow:'Atualizar agora',updLater:'Mais tarde',updConfirm:'Confirme a instalação na janela do Android',prefetch:'Pré-carregar vídeos',prefetchS:'Analisa em segundo plano os vídeos que você vê para o download abrir na hora'}
+};
+const LANGS = {es:'Español',en:'English',pt:'Português'};
+
+/* ====== Estado ====== */
+const A = window.NexoraAndroid || null;     // puente nativo (solo dentro del APK)
+const KEY = 'nexora.v1';
+const store = {
+  get(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {} }catch(e){ return {} } },
+  set(v){ try{ localStorage.setItem(KEY, JSON.stringify(v)) }catch(e){} }
+};
+const saved = store.get();
+const S = { items: saved.items || [], lang: saved.lang || guessLang(), theme: saved.theme || 'dark', view:'home', filter:'all' };
+function save(){ store.set(Object.assign({}, saved, {items:S.items, lang:S.lang, theme:S.theme, accepted:!!saved.accepted})) }
+function guessLang(){ const l=(navigator.language||'es').slice(0,2); return I18N[l]?l:'es' }
+const t = k => (I18N[S.lang]&&I18N[S.lang][k]) || I18N.es[k] || k;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ====== Utilidades ====== */
+const EXT = {
+  video:['mp4','mkv','webm','mov','avi','3gp','m4v','flv','wmv'],
+  audio:['mp3','m4a','aac','wav','ogg','opus','flac','wma'],
+  image:['jpg','jpeg','png','gif','webp','bmp','heic','svg'],
+  apk:['apk','xapk'],
+  doc:['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','zip','rar','7z','epub','csv']
+};
+function kindOf(name){
+  const e=(name.split('.').pop()||'').toLowerCase();
+  for(const k in EXT) if(EXT[k].includes(e)) return k;
+  return 'file';
+}
+const ICON = {video:'i-video',audio:'i-audio',image:'i-image',doc:'i-file',apk:'i-file',file:'i-file'};
+const KNAME = {video:'vVideo',audio:'vAudio',image:'vImage',doc:'vDoc',apk:'vApk',file:'vFile'};
+function nameFromUrl(u){
+  try{
+    const p=new URL(u); let n=decodeURIComponent(p.pathname.split('/').filter(Boolean).pop()||'');
+    n=n.replace(/[\\/:*?"<>|]+/g,'_').trim();
+    return n || (p.hostname.replace(/^www\./,'')+'-'+Date.now());
+  }catch(e){ return 'archivo-'+Date.now() }
+}
+function validUrl(u){ try{ const p=new URL(u); return p.protocol==='http:'||p.protocol==='https:' }catch(e){ return false } }
+function extractUrl(text){ const m=String(text||'').match(/https?:\/\/[^\s"'<>]+/i); return m?m[0]:'' }
+function fmtSize(b){ if(!b||b<0) return ''; const u=['B','KB','MB','GB']; let i=0; while(b>=1024&&i<3){b/=1024;i++} return (i?b.toFixed(1):b)+' '+u[i] }
+function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('on'),2400) }
+
+/* ====== Tema e idioma ====== */
+function applyTheme(){
+  const light = S.theme==='light' || (S.theme==='system' && matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.dataset.theme = light?'light':'dark';
+  document.querySelector('meta[name=theme-color]').content = light?'#F2F3FB':'#0E1230';
+  if(A&&A.setBars) try{ A.setBars(light) }catch(e){}
+  $('#themeName').textContent = t({dark:'themeDark',light:'themeLight',system:'themeSys'}[S.theme]);
+}
+function applyLang(){
+  document.documentElement.lang=S.lang;
+  document.querySelectorAll('[data-t]').forEach(el=>el.textContent=t(el.dataset.t));
+  document.querySelectorAll('[data-tp]').forEach(el=>el.placeholder=t(el.dataset.tp));
+  $('#langName').textContent=LANGS[S.lang];
+  $('#copy').textContent=CONFIG.copyright;
+  applyTheme(); render(); if(typeof renderEngine==='function') renderEngine(); if(typeof renderAccount==='function') renderAccount(); if(typeof syncGo==='function') syncGo(); if(typeof loadFeed==='function'&&document.getElementById('cats')&&typeof CATS!=='undefined') loadFeed(false);
+}
+
+/* ====== Vistas ====== */
+function go(v){
+  if(v==='lib'){ renderPerm(); scanLibrary() }
+  S.view=v;
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on', s.id==='v-'+v));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.v===v));
+  $('main').scrollTop=0; render();
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+
+/* ====== Render de listas ====== */
+function statusText(it){
+  switch(it.status){
+    case 'pending': return t('sPending');
+    case 'running': { const p=pctOf(it); return t('sRunning')+(p!=null?' · '+Math.floor(p)+'%':''); }
+    case 'paused': return t('sPaused');
+    case 'done': return '<span class="okc">'+t('sDone')+'</span>';
+    case 'failed': return '<span class="err">'+t('sFailed')+'</span>';
+    case 'removed': return '<span class="err">'+t('sRemoved')+'</span>';
+    case 'browser': return t('sBrowser');
+    case 'cancelled': return '<span class="err">'+t('sCancelled')+'</span>';
+    case 'interrupted': return '<span class="err">'+t('sInterrupted')+'</span>';
+  }
+  return '';
+}
+function pctOf(it){
+  if(it.src==='yt') return it.pct!=null&&it.pct>0 ? Math.min(100,it.pct) : null;
+  return it.total>0 ? Math.min(100,it.done*100/it.total) : null;
+}
+function itemHTML(it){
+  const active = it.status==='running'||it.status==='pending'||it.status==='paused';
+  const p = pctOf(it);
+  const size = it.status==='done' ? fmtSize(it.total||it.done) : '';
+  const pic = it.thumb ? `<img src="${esc(it.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : `<svg width="24" height="24"><use href="#${ICON[it.kind]}"/></svg>`;
+  return `<div class="item" data-id="${esc(it.key)}" role="button" tabindex="0">
+    <div class="thumb t-${it.kind}">${pic}</div>
+    <div class="meta"><div class="name">${esc(it.name)}</div>
+      ${it.channel?`<div class="credit">${t('channel')}: <b>${esc(it.channel)}</b></div>`:''}
+      <div class="sub">${size?esc(size)+'  ·  ':''}${statusText(it)}</div>
+      ${active?`<div class="bar ${p!=null?'':'ind'}"><i style="width:${p||0}%"></i></div>`:''}
+    </div>
+    <button class="icon-btn" data-more="${esc(it.key)}" aria-label="Más opciones"><svg width="20" height="20"><use href="#i-more"/></svg></button>
+  </div>`;
+}
+function emptyHTML(title,desc,cta){
+  return `<div class="empty"><svg width="56" height="56"><use href="#logo"/></svg><b>${title}</b>${desc}${cta?`<div><button class="link" onclick="go('home')">${t('goDl')}</button></div>`:''}</div>`;
+}
+function render(){
+  const items=[...S.items].sort((a,b)=>b.date-a.date);
+  const rl=$('#recentList'); if(rl) rl.innerHTML = items.length ? items.slice(0,4).map(itemHTML).join('') : emptyHTML(t('emptyRecentT'),t('emptyRecent'));
+  const f=S.filter;
+  const lib=items.filter(i=>f==='all'||(f==='other'?!['video','audio','image'].includes(i.kind):i.kind===f));
+  $('#libList').innerHTML = lib.length ? lib.map(itemHTML).join('') : emptyHTML(t('emptyLibT'),t('emptyLib'),true);
+  const done=S.items.filter(i=>i.status==='done');
+  $('#stCount').textContent=done.length;
+  $('#stSize').textContent=fmtSize(done.reduce((s,i)=>s+(i.total||0),0))||'0 MB';
+  const act=S.items.filter(i=>['running','pending','paused'].includes(i.status)).length;
+  const bd=$('#badge'); bd.textContent=act; bd.classList.toggle('on',act>0);
+}
+document.querySelectorAll('#filters .chip').forEach(c=>c.onclick=()=>{
+  S.filter=c.dataset.f; document.querySelectorAll('#filters .chip').forEach(x=>x.classList.toggle('on',x===c)); render();
+});
+document.addEventListener('click',e=>{
+  const more=e.target.closest('[data-more]');
+  if(more){ e.stopPropagation(); itemMenu(more.dataset.more); return }
+  const row=e.target.closest('.item');
+  if(row){ openItem(row.dataset.id) }
+});
+
+/* ====== Sheet ====== */
+function sheet(html){ $('#sheetBody').innerHTML=html; $('#scrim').classList.add('on'); $('#sheet').classList.add('on') }
+function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
+const sheetOpen = () => $('#sheet').classList.contains('on');
+$('#scrim').onclick=closeSheet;
+
+/* ====== Descarga ====== */
+function askDownload(raw){
+  const url=(raw||'').trim();
+  if(!validUrl(url)){ toast(t('badUrl')); $('#url').focus(); return }
+  const plat=platformOf(url);
+  const name0=nameFromUrl(url);
+  if(plat || kindOf(name0)==='file'){ analyze(url,plat); return }
+  directSheet(url);
+}
+function directSheet(url){
+  const name=nameFromUrl(url), kind=kindOf(name);
+  sheet(`<h3>${t('dlAs')}</h3>
+    <div class="fileprev"><div class="thumb t-${kind}"><svg width="24" height="24"><use href="#${ICON[kind]}"/></svg></div>
+      <div class="meta"><div class="name">${esc(name)}</div><div class="sub">${esc(new URL(url).hostname)}</div></div></div>
+    <label class="lbl" for="fname">${t('fileName')}</label>
+    <input class="input" id="fname" value="${esc(name)}" autocomplete="off" spellcheck="false">
+    <div class="kv"><span>${t('type')}</span><b>${t(KNAME[kind])}</b></div>
+    <div class="kv"><span>${t('saveIn')}</span><b>${CONFIG.folder}</b></div>
+    <button class="btn" id="confirmDl"><svg width="20" height="20"><use href="#i-dl"/></svg>${t('download')}</button>
+    <button class="btn ghost" onclick="closeSheet()">${t('cancel')}</button>`);
+  $('#confirmDl').onclick=()=>{
+    const n=($('#fname').value||name).replace(/[\\/:*?"<>|]+/g,'_').trim()||name;
+    closeSheet(); startDownload(url,n);
+  };
+}
+/* ====== Plataformas que no se descargan ====== */
+const PLATFORMS = [
+  [/(^|\.)(youtube\.com|youtu\.be|youtube-nocookie\.com)$/,'YouTube'],
+  [/(^|\.)tiktok\.com$/,'TikTok'],
+  [/(^|\.)(instagram\.com|instagr\.am)$/,'Instagram'],
+  [/(^|\.)(facebook\.com|fb\.watch|fb\.com)$/,'Facebook'],
+  [/(^|\.)(x\.com|twitter\.com)$/,'X'],
+  [/(^|\.)twitch\.tv$/,'Twitch'],
+  [/(^|\.)vimeo\.com$/,'Vimeo'],
+  [/(^|\.)(dailymotion\.com|dai\.ly)$/,'Dailymotion'],
+  [/(^|\.)(spotify\.com|spotify\.link)$/,'Spotify'],
+  [/(^|\.)soundcloud\.com$/,'SoundCloud'],
+  [/(^|\.)kwai\.com$/,'Kwai'],
+  [/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/,'Pinterest']
+];
+function platformOf(url){
+  try{ const h=new URL(url).hostname.toLowerCase(); for(const [re,n] of PLATFORMS) if(re.test(h)) return n }catch(e){}
+  return null;
+}
+const tn = (k,n) => t(k).replace(/\{n\}/g,n);
+const HAS_YT = !!(A && A.ytInfo);
+const FORMATS = [
+  ['mp3','fMp3','fMp3s','audio'],
+  ['m4a','fM4a','fM4as','audio'],
+  ['v1080','fV1080','fV1080s','video'],
+  ['v720','fV720','fV720s','video'],
+  ['v480','fV480','fV480s','video'],
+  ['v360','fV360','fV360s','video'],
+  ['vbest','fVbest','fVbests','video']
+];
+const VSUB={144:'fV144s',240:'fV240s',360:'fV360s',480:'fV480s',720:'fV720s',1080:'fV1080s',1440:'fV1440s',2160:'fV2160s'};
+const fmtDef = id => {
+  const f=FORMATS.find(x=>x[0]===id); if(f) return f;
+  const h=parseInt(id.slice(1),10);
+  return [id, 'Video '+(h>=2160?'4K':h>=1440?'2K':h+'p'), VSUB[h]||'fVbests', 'video', true];
+};
+const fmtLabel = d => d[4] ? d[1] : t(d[1]);
+const MAIN_H=[360,720];
+function buildOptions(info){
+  const f=info.formats||[];
+  if(!f.length) return FORMATS.filter(x=>x[0]!=='vbest').map(x=>({id:x[0],size:0}));
+  const audioOnly=f.filter(x=>x.a&&!x.v);
+  const pickA=list=>list.reduce((m,x)=>x.s>m?x.s:m,0);
+  const aSize=pickA(audioOnly.filter(x=>x.e==='m4a'))||pickA(audioOnly);
+  const vids=f.filter(x=>x.v&&x.h);
+  const maxH=vids.reduce((m,x)=>Math.max(m,x.h),0);
+  const out=[];
+  if(audioOnly.length||f.some(x=>x.a)){ out.push({id:'mp3',size:aSize}); out.push({id:'m4a',size:aSize}) }
+  for(const h of [2160,1440,1080,720,480,360,240,144]){
+    if(maxH>=h*0.9){
+      const cand=vids.filter(x=>x.h<=h*1.1);
+      const best=cand.sort((a,b)=>(b.h-a.h)||((b.c?1:0)-(a.c?1:0))||(b.s-a.s))[0];
+      const size=best?(best.s+(best.a?0:aSize)):0;
+      out.push({id:'v'+h,size});
+    }
+  }
+  if(!out.some(o=>o.id[0]==='v') && (vids.length||f.some(x=>x.v))) out.push({id:'vbest',size:0});
+  return out;
+}
+const pending = {};      // peticiones de información en curso
+let engine = {status: HAS_YT ? 'prep' : 'none', version:''};
+let lastFmt = saved.fmt || 'v720';
+function fmtDur(s){ if(!s) return ''; const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0') }
+
+/* ====== Caché de información + precarga (para que sea casi instantáneo) ====== */
+const IC={}, INF={};
+const IC_TTL=3*3600*1000;
+function ytId(u){ const m=String(u||'').match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/); return m?m[1]:'' }
+function ikey(u){ return ytId(u)||u }
+function cachedInfo(u){ const c=IC[ikey(u)]; return c&&Date.now()-c.t<IC_TTL ? c.ev : null }
+function requestInfo(req,url){
+  const k=ikey(url), c=cachedInfo(url);
+  if(c){ setTimeout(()=>onEvent(Object.assign({},c,{req})),0); return }
+  if(INF[k]){ INF[k].reqs.push(req); return }
+  INF[k]={req,reqs:[req]};
+  try{ A.ytInfo(req,url) }catch(e){ delete INF[k] }
+}
+function cancelInfo(req,url){
+  const k=ikey(url), f=INF[k];
+  if(!f) return;
+  f.reqs=f.reqs.filter(r=>r!==req);
+  if(!f.reqs.length){ delete INF[k]; try{ A.ytCancelInfo&&A.ytCancelInfo(f.req) }catch(e){} }
+}
+function routeInfo(ev){
+  // reparte la respuesta a todos los que esperaban el mismo video
+  for(const k in INF){
+    const f=INF[k];
+    if(f.req===ev.req){
+      delete INF[k];
+      if(ev.ok) IC[k]={t:Date.now(),ev:Object.assign({},ev)};
+      f.reqs.forEach(r=>onInfo(Object.assign({},ev,{req:r})));
+      pumpPrefetch();
+      return;
+    }
+  }
+  onInfo(ev);
+}
+/* Precarga los videos que estás viendo en pantalla */
+const PF={queue:[],done:new Set(),max:1,limit:40};
+const pfRunning=()=>Object.values(INF).filter(f=>f.reqs.some(r=>r.startsWith('pf'))).length;
+const pfObs=('IntersectionObserver' in window) ? new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    const el=en.target;
+    if(en.isIntersecting){ el._pfT=setTimeout(()=>prefetch(el.dataset.res),700) }
+    else clearTimeout(el._pfT);
+  });
+},{threshold:0.6}) : null;
+function observeCards(root){
+  if(!pfObs||saved.prefetch===false||!HAS_YT) return;
+  (root||document).querySelectorAll('[data-res]').forEach(el=>{ if(!el._pfObs){ el._pfObs=1; pfObs.observe(el) } });
+}
+function prefetch(url){
+  if(!url||saved.prefetch===false||!HAS_YT) return;
+  const k=ikey(url);
+  if(PF.done.has(k)||cachedInfo(url)||INF[k]||PF.queue.includes(url)) return;
+  if(PF.done.size>=PF.limit) return;
+  PF.queue.push(url); pumpPrefetch();
+}
+function pumpPrefetch(){
+  while(pfRunning()<PF.max && PF.queue.length){
+    const url=PF.queue.shift(), k=ikey(url);
+    if(cachedInfo(url)||INF[k]) continue;
+    PF.done.add(k);
+    requestInfo('pf'+Date.now()+Math.random().toString(36).slice(2,5),url);
+  }
+}
+function analyze(url,plat){
+  if(!HAS_YT){ if(plat){ toast(t('webOnly')); return } directSheet(url); return }
+  const req='r'+Date.now();
+  pending[req]={url,plat};
+  sheet(`<div class="spin" aria-hidden="true"></div><p class="center" data-req="${req}">${t('analyzing')} <span class="elapsed" id="elapsed">0 s</span><br><span id="stage">${engine.status!=='ready'?t('enginePrepMsg'):''}</span></p>
+    <button class="btn ghost" id="cancelInfo">${t('cancel')}</button>`);
+  const t0=Date.now();
+  clearInterval(analyze._iv);
+  analyze._iv=setInterval(()=>{ const el=$('#elapsed'); if(!el||!pending[req]){ clearInterval(analyze._iv); return } el.textContent=Math.round((Date.now()-t0)/1000)+' s' },1000);
+  $('#cancelInfo').onclick=()=>{ closeSheet(); delete pending[req]; cancelInfo(req,url) };
+  requestInfo(req,url);
+}
+function errorSheet(p,raw){
+  const bot=/not a bot|Sign in to confirm|cookies/i.test(raw||'');
+  const fmt=/Requested format|No video formats|formats/i.test(raw||'');
+  const title = bot?t('errBot'):fmt?t('errFmt'):t('infoErr');
+  const fix = bot?t('errBotFix'):fmt?t('errFmtFix'):t('errGen');
+  sheet(`<h3>${title}</h3><p style="color:var(--muted);margin:0 0 6px">${fix}</p>
+    ${bot&&!account.logged?`<button class="btn" id="errLogin">${t('goLogin')}</button>`:''}
+    ${fmt?`<button class="btn" id="errUpd">${t('engineUpd')}</button>`:''}
+    ${!p.plat&&!bot&&!fmt?`<button class="btn" id="tryDirect">${t('tryDirect')}</button>`:''}
+    <button class="btn ghost" onclick="closeSheet()">${t('close')}</button>
+    <p class="detail">${esc(raw||'')}</p>`);
+  const td=$('#tryDirect'); if(td) td.onclick=()=>directSheet(p.url);
+  const el=$('#errLogin'); if(el) el.onclick=()=>{ closeSheet(); try{ A.login() }catch(e){} };
+  const eu=$('#errUpd'); if(eu) eu.onclick=()=>{ closeSheet(); engine.status='updating'; renderEngine(); toast(t('engineUpdating')); try{ A.ytUpdate() }catch(e){} };
+}
+function infoFrom(ev,url){
+  return {chUrl:ev.chUrl||'',url:ev.url||url,title:ev.title||nameFromUrl(url),channel:ev.uploader||'',thumb:ev.thumb||'',duration:ev.duration||0,formats:ev.formats||[],client:ev.client||0,
+    streams:ev.streams||[],audio:ev.audio||'',desc:ev.desc||'',views:ev.views||0,likes:ev.likes||0,date:ev.date||'',subs:ev.subs||0};
+}
+function onInfo(ev){
+  const p=pending[ev.req]; delete pending[ev.req]; if(!p) return;
+  if(p.watch){ onWatchInfo(ev,p); return }
+  const stillOpen = sheetOpen() && document.querySelector('[data-req="'+ev.req+'"]');
+  if(!stillOpen) return;
+  if(!ev.ok){ errorSheet(p,ev.error); return }
+  formatSheet(infoFrom(ev,p.url));
+}
+function formatSheet(info){
+  const opts=buildOptions(info);
+  if(!opts.some(o=>o.id===lastFmt)) lastFmt=(opts.find(o=>o.id==='v720')||opts.find(o=>o.id[0]==='v')||opts[0]||{id:'mp3'}).id;
+  const row=o=>{ const d=fmtDef(o.id); return `<button class="opt${o.id===lastFmt?' on':''}" data-fmt="${o.id}"><span class="dot"></span><span class="grow">${esc(fmtLabel(d))}</span><small>${o.size?'≈ '+fmtSize(o.size):t(d[2])}</small></button>` };
+  const aud=opts.filter(o=>fmtDef(o.id)[3]==='audio');
+  const vAll=opts.filter(o=>fmtDef(o.id)[3]==='video').sort((a,b)=>(parseInt(a.id.slice(1))||9999)-(parseInt(b.id.slice(1))||9999));
+  let vMain=vAll.filter(o=>MAIN_H.includes(parseInt(o.id.slice(1))));
+  if(!vMain.length) vMain=vAll.slice(0,2);
+  if(!vMain.some(o=>o.id===lastFmt) && vAll.some(o=>o.id===lastFmt)){ const sel=vAll.find(o=>o.id===lastFmt); vMain=[...vMain,sel].sort((a,b)=>(parseInt(a.id.slice(1))||9999)-(parseInt(b.id.slice(1))||9999)) }
+  const vMore=vAll.filter(o=>!vMain.includes(o));
+  const vid=vMain;
+  sheet(`${info.thumb?`<img class="cover" src="${esc(info.thumb)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`:''}
+    <p class="vtitle">${esc(info.title)}</p>
+    ${info.channel?`<div class="credit">${t('channel')}: <b>${esc(info.channel)}</b>${info.duration?'  ·  '+fmtDur(info.duration):''}</div>`:''}
+    <div id="fmts">
+      ${aud.length?`<div class="grp">${t('grpMusic')}</div>`+aud.map(row).join(''):''}
+      ${vid.length?`<div class="grp">${t('grpVideo')}</div>`+vid.map(row).join(''):''}
+      ${vMore.length?`<div id="moreF" hidden>${vMore.map(row).join('')}</div><button class="row" id="moreBtn" style="border:0"><span class="grow">${t('moreFmts')}</span><small style="color:var(--muted)">${vMore.length}</small></button>`:''}
+    </div>
+    <div class="note"><svg width="18" height="18"><use href="#i-shield"/></svg><span>${t('notice')} ${t('credit')}</span></div>
+    <button class="btn" id="ytGo"><svg width="20" height="20"><use href="#i-dl"/></svg>${t('download')}</button>
+    <button class="btn ghost" onclick="closeSheet()">${t('cancel')}</button>`);
+  $('#fmts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ lastFmt=b.dataset.fmt; $('#fmts').querySelectorAll('.opt').forEach(x=>x.classList.toggle('on',x===b)) });
+  const mb=$('#moreBtn'); if(mb) mb.onclick=()=>{ $('#moreF').hidden=false; mb.remove() };
+  $('#ytGo').onclick=()=>{ closeSheet(); saved.fmt=lastFmt; save(); startYt(info,lastFmt) };
+}
+
+/* ====== Buscador e inicio (estilo Snaptube) ====== */
+const CATS=[['foryou','cForYou','qForYou'],['music','cMusic','qMusic'],['games','cGames','qGames'],['funny','cFunny','qFunny'],['tut','cTut','qTut'],['news','cNews','qNews'],['sports','cSports','qSports'],['kids','cKids','qKids']];
+let curCat=saved.cat||'foryou';
+let refreshing=false;
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+function catQuery(fresh){
+  const c=CATS.find(x=>x[0]===curCat)||CATS[0];
+  if(c[0]==='foryou'){
+    const pool=[...recentQ().slice(0,5), ...t('pops').split('|')];
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  const base=t(c[2]);
+  if(!fresh) return base;
+  const mods=t('qMods').split('|');
+  return base+' '+mods[Math.floor(Math.random()*mods.length)];
+}
+let feedReq=null, feedMode='cat', feedQuery='';
+const FEED_TTL=30*60*1000;
+function cacheGet(k){ try{ const v=JSON.parse(localStorage.getItem('nexora.feed.'+k)); return v }catch(e){ return null } }
+function cacheSet(k,items){ try{ localStorage.setItem('nexora.feed.'+k,JSON.stringify({t:Date.now(),items})) }catch(e){} }
+function fmtViews(n){ if(!n) return ''; const u=[[1e9,'B'],[1e6,'M'],[1e3,'K']]; for(const [v,s] of u) if(n>=v) return (n/v).toFixed(n/v<10?1:0).replace('.0','')+s; return String(n) }
+
+function renderCats(){
+  $('#cats').innerHTML=CATS.map(([id,l])=>`<button class="chip${feedMode==='cat'&&id===curCat?' on':''}" data-cat="${id}">${t(l)}</button>`).join('');
+  $('#cats').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{ curCat=b.dataset.cat; saved.cat=curCat; save(); feedMode='cat'; loadFeed(false) });
+}
+function skeleton(){ return Array.from({length:3},()=>`<div class="card"><div class="cthumb skel"></div><div class="skel" style="height:14px;margin-top:10px;width:85%"></div><div class="skel" style="height:12px;margin-top:8px;width:50%"></div></div>`).join('') }
+function cardsHTML(items){
+  items.forEach(r=>RES[r.url]=r);
+  return items.map(r=>`<div class="card" data-res="${esc(r.url)}" role="button" tabindex="0">
+    <div class="cthumb"><img src="${esc(r.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${r.duration?`<span class="dur">${fmtDur(Math.round(r.duration))}</span>`:''}</div>
+    <div class="crow"><div class="meta"><div class="ctitle">${esc(r.title)}</div><div class="sub">${r.channel?`<span class="chlink" data-ch="${esc(r.chUrl||'')}" data-chn="${esc(r.channel)}">${esc(r.channel)}</span>`:''}${r.views?'  ·  '+fmtViews(r.views)+' '+t('views'):''}</div></div>
+    <button class="dlb" aria-label="${t('download')}"><svg width="20" height="20"><use href="#i-dl"/></svg></button></div></div>`).join('');
+}
+function feedKey(){ return feedMode==='cat' ? 'cat:'+S.lang+':'+curCat : 'q:'+feedQuery.toLowerCase() }
+function loadFeed(force){
+  renderCats();
+  const head=$('#feedHead');
+  if(feedMode==='q'){ head.hidden=false; $('#feedTitle').textContent=t('resultsFor')+' “'+feedQuery+'”' } else head.hidden=true;
+  const key=feedKey(), c=cacheGet(key);
+  F.more=false; F.loading=false; F.moreReq=null;
+  if(c&&c.items&&c.items.length){
+    F.items=c.items.slice(); F.q=c.q||''; F.start=c.items.length+1; F.more=!!F.q;
+    $('#feed').innerHTML=cardsHTML(F.items)+moreFooter(); observeCards($('#feed'));
+    if(!force&&Date.now()-c.t<FEED_TTL) return;
+  }
+  else { F.items=[]; $('#feed').innerHTML=skeleton() }
+  if(!HAS_YT){ if(!c) $('#feed').innerHTML=`<p class="center" style="padding-top:30px">${t('webOnly')}</p>`; return }
+  const q = feedMode==='cat' ? catQuery(force) : feedQuery;
+  feedReq='s'+Date.now(); feedReq_key=key; F.pendingQ=q;
+  try{ A.ytSearch(feedReq,q,20,1) }catch(e){}
+}
+/* Más videos al bajar (scroll infinito) */
+const F={items:[],q:'',start:1,more:false,loading:false,moreReq:null,pendingQ:''};
+function moreFooter(){ return `<div id="feedMore" class="center" style="padding:20px 0">${F.loading?'<div class="spin"></div>':''}</div>` }
+function loadMore(){
+  if(!HAS_YT||F.loading||!F.more||!F.q) return;
+  F.loading=true; const fm=$('#feedMore'); if(fm) fm.innerHTML='<div class="spin"></div>';
+  F.moreReq='m'+Date.now();
+  try{ A.ytSearch(F.moreReq,F.q,20,F.start) }catch(e){ F.loading=false }
+}
+function onMore(ev){
+  F.loading=false;
+  const fm=$('#feedMore');
+  const seen=new Set(F.items.map(x=>x.url));
+  const add=(ev.ok?ev.items||[]:[]).filter(x=>!seen.has(x.url));
+  F.start+=20;
+  if(!ev.ok||!(ev.items||[]).length){ F.more=false; if(fm) fm.innerHTML=ev.ok?'':`<button class="btn ghost" onclick="F.more=true;loadMore()">${t('retryBtn')}</button>`; return }
+  F.items=F.items.concat(add);
+  if(fm) fm.insertAdjacentHTML('beforebegin',cardsHTML(add)); observeCards($('#feed'));
+  if(fm) fm.innerHTML='';
+  if(F.items.length>=400) F.more=false;
+}
+$('main').addEventListener('scroll',()=>{
+  const m=$('main');
+  if(S.view==='home' && !panelOpen() && m.scrollTop+m.clientHeight > m.scrollHeight-900) loadMore();
+},{passive:true});
+let feedReq_key='';
+function onSearch(ev){
+  if(W&&ev.req===W.relReq){ onRelated(ev); return }
+  if(ev.req===F.moreReq){ onMore(ev); return }
+  if(ev.req!==feedReq) return;
+  endRefresh();
+  if(!ev.ok||!(ev.items||[]).length){
+    if(!cacheGet(feedReq_key)) $('#feed').innerHTML=`<p class="center" style="padding-top:30px">${ev.ok?t('noRes'):t('feedErr')}</p><button class="btn ghost" onclick="loadFeed(true)">${t('retryBtn')}</button>`;
+    return;
+  }
+  const items = refreshedOnce ? shuffle(ev.items) : ev.items;
+  F.items=items.slice(); F.q=F.pendingQ; F.start=21; F.more=true; F.loading=false;
+  try{ localStorage.setItem('nexora.feed.'+feedReq_key,JSON.stringify({t:Date.now(),items,q:F.q})) }catch(e){}
+  $('#feed').innerHTML=cardsHTML(items)+moreFooter(); observeCards($('#feed'));
+}
+let refreshedOnce=false;
+/* Deslizar hacia abajo para recargar (como YouTube) */
+(function(){
+  const main=$('main'), ptr=$('#ptr'); let y0=null, dy=0;
+  const can=()=>S.view==='home' && !panelOpen() && main.scrollTop<=0 && !refreshing && !sheetOpen();
+  main.addEventListener('touchstart',e=>{ if(can()){ y0=e.touches[0].clientY; dy=0 } else y0=null },{passive:true});
+  main.addEventListener('touchmove',e=>{
+    if(y0===null) return;
+    dy=e.touches[0].clientY-y0;
+    if(dy<=0){ ptr.style.height='0px'; return }
+    ptr.classList.add('drag');
+    const h=Math.min(80, dy*0.5); ptr.style.height=h+'px';
+    ptr.querySelector('svg').style.transform='rotate('+(h*4)+'deg)';
+  },{passive:true});
+  main.addEventListener('touchend',()=>{
+    if(y0===null) return; y0=null; ptr.classList.remove('drag');
+    if(dy*0.5>=60) refreshFeed(); else ptr.style.height='0px';
+  });
+})();
+function refreshFeed(){
+  if(refreshing) return;
+  refreshing=true; refreshedOnce=true;
+  const ptr=$('#ptr'); ptr.style.height='56px'; ptr.classList.add('loading');
+  if(!HAS_YT){ setTimeout(endRefresh,600); return }
+  loadFeed(true);
+  setTimeout(()=>{ if(refreshing){ endRefresh() } },45000);
+}
+function endRefresh(){
+  refreshing=false;
+  const ptr=$('#ptr'); if(!ptr) return; ptr.classList.remove('loading'); ptr.style.height='0px';
+}
+function doSearch(q){
+  q=q.trim(); if(!q) return;
+  addRecentQ(q); closePanel(); $('#url').blur();
+  feedMode='q'; feedQuery=q; $('main').scrollTop=0; loadFeed(false);
+}
+$('#clearRes').onclick=()=>{ feedMode='cat'; feedQuery=''; $('#url').value=''; syncBar(); loadFeed(false) };
+const RES={};
+document.addEventListener('touchstart',e=>{ const r=e.target.closest('[data-res]'); if(r) prefetch(r.dataset.res) },{passive:true});
+document.addEventListener('click',e=>{
+  const ch=e.target.closest('[data-ch]');
+  if(ch && ch.dataset.ch){ e.stopPropagation(); openChannel(ch.dataset.ch, ch.dataset.chn||''); return }
+  const pl=e.target.closest('[data-pl-url]');
+  if(pl){ openPlaylist(pl.dataset.plUrl, pl.dataset.plTitle||''); return }
+  const r=e.target.closest('[data-res]'); if(!r) return;
+  const u=r.dataset.res;
+  if(e.target.closest('.dlb')){ if(W&&W.info&&W.info.url===u) formatSheet(W.info); else analyze(u,'YouTube'); return }
+  openWatch(RES[u]||{url:u,title:'',channel:'',thumb:''});
+});
+document.querySelectorAll('[data-site]').forEach(b=>b.onclick=()=>{ const u=b.dataset.site; if(A) location.href=u; else window.open(u,'_blank','noopener') });
+
+/* Búsquedas recientes, populares y sugerencias */
+function recentQ(){ return saved.recentQ||[] }
+function addRecentQ(q){ const r=recentQ().filter(x=>x.toLowerCase()!==q.toLowerCase()); r.unshift(q); saved.recentQ=r.slice(0,8); save() }
+function sugRow(text,icon){ return `<button class="sug" data-q="${esc(text)}"><svg width="20" height="20"><use href="#${icon}"/></svg><span>${esc(text)}</span><svg class="fill" width="18" height="18" data-fill="${esc(text)}"><use href="#i-dl"/></svg></button>` }
+function renderPanelIdle(){
+  const r=recentQ();
+  $('#recentQ').innerHTML = r.length ? `<div class="reshead"><h2 class="ph" style="margin-top:8px">${t('recentSearches')}</h2><button id="clrQ">${t('clearHist')}</button></div>`+r.map(x=>sugRow(x,'i-clock')).join('') : '';
+  const c=$('#clrQ'); if(c) c.onclick=e=>{ e.stopPropagation(); saved.recentQ=[]; save(); renderPanelIdle() };
+  $('#popular').innerHTML=t('pops').split('|').map(x=>`<button class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join('');
+}
+function openPanel(){ $('#panel').hidden=false; $('#feedWrap').hidden=true; $('#sBack').hidden=false; $('.sbar .sic').style.display='none'; renderPanelIdle(); syncBar() }
+function closePanel(){ $('#panel').hidden=true; $('#feedWrap').hidden=false; $('#sBack').hidden=true; $('.sbar .sic').style.display=''; $('#sugList').innerHTML='' }
+const panelOpen=()=>!$('#panel').hidden;
+$('#panel').addEventListener('click',e=>{
+  const f=e.target.closest('[data-fill]'); if(f){ e.stopPropagation(); $('#url').value=f.dataset.fill+' '; $('#url').focus(); syncBar(); return }
+  const q=e.target.closest('[data-q]'); if(q){ $('#url').value=q.dataset.q; doSearch(q.dataset.q) }
+});
+let sugReq=null, sugT=null;
+function requestSuggest(){
+  const v=$('#url').value.trim();
+  clearTimeout(sugT);
+  if(!v||extractUrl(v)){ $('#sugList').innerHTML=''; $('#panelIdle').hidden=false; return }
+  $('#panelIdle').hidden=true;
+  const local=recentQ().filter(x=>x.toLowerCase().startsWith(v.toLowerCase())).slice(0,3);
+  $('#sugList').innerHTML=local.map(x=>sugRow(x,'i-clock')).join('')+sugRow(v,'i-search');
+  if(!A||!A.suggest) return;
+  sugT=setTimeout(()=>{ sugReq='g'+Date.now(); try{ A.suggest(sugReq,v,S.lang) }catch(e){} },220);
+}
+function onSuggest(ev){
+  if(ev.req!==sugReq||!panelOpen()) return;
+  const v=$('#url').value.trim(); if(!v) return;
+  const local=recentQ().filter(x=>x.toLowerCase().startsWith(v.toLowerCase())).slice(0,3);
+  const rest=(ev.items||[]).filter(x=>!local.some(l=>l.toLowerCase()===x.toLowerCase())).slice(0,10);
+  $('#sugList').innerHTML=local.map(x=>sugRow(x,'i-clock')).join('')+(rest.length?rest.map(x=>sugRow(x,'i-search')).join(''):sugRow(v,'i-search'));
+}
+function syncBar(){
+  const v=$('#url').value.trim(), isUrl=!!extractUrl(v);
+  $('#clearQ').hidden=!v; $('#pasteBtn').hidden=!!v;
+  $('#goIcon').innerHTML=`<use href="#${isUrl?'i-dl':'i-search'}"/>`;
+}
+/* ====== Reproductor dentro de la app ====== */
+let W=null;
+let ZL=15;
+const wv=()=>$('#wv');
+function hiThumb(u){ return (u||'').replace(/\/(mq|sd)default\.jpg/,'/hqdefault.jpg') }
+function fmtDate(d){ if(!/^\d{8}$/.test(d||'')) return ''; const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8)); return dt.toLocaleDateString(S.lang,{day:'numeric',month:'short',year:'numeric'}) }
+function linkify(txt){ return esc(txt).replace(/https?:\/\/[^\s<]+/g,u=>`<a href="${u}" data-ext="1">${u}</a>`) }
+function openWatch(r){
+  if(!HAS_YT){ if(r.url) window.open(r.url,'_blank','noopener'); return }
+  closeWatch(true);
+  const req='w'+Date.now();
+  W={open:true,r,req,info:null,cur:-1,audio:false,related:[],relReq:null,t0:Date.now()};
+  pending[req]={url:r.url,plat:'YouTube',watch:true};
+  $('#watch').hidden=false; $('#watch').style.zIndex=++ZL;
+  const v=wv(); v.removeAttribute('src'); v.load(); v.poster=hiThumb(r.thumb)||'';
+  v.loop=!!saved.repeat; v.playbackRate=1;
+  $('#wposter').hidden=true;
+  $('#wstate').className='wstate';
+  $('#wstate').innerHTML=`<div><div class="spin"></div>${t('watchLoading')} <span class="elapsed" id="welapsed">0 s</span></div>`;
+  clearInterval(openWatch._iv);
+  openWatch._iv=setInterval(()=>{ const el=$('#welapsed'); if(!el||!W||W.info){ clearInterval(openWatch._iv); return } el.textContent=Math.round((Date.now()-W.t0)/1000)+' s' },1000);
+  renderWatchBody();
+  requestInfo(req,r.url);
+  // videos relacionados
+  W.relReq='rel'+Date.now();
+  const q=((r.title||'').split(/\s+/).slice(0,5).join(' '))||r.channel||'';
+  if(q) try{ A.ytSearch(W.relReq,q,15,1) }catch(e){}
+}
+function closeWatch(silent){
+  if(!W) return;
+  const v=wv(); try{ v.pause() }catch(e){} v.removeAttribute('src'); v.load();
+  if(W.req&&pending[W.req]){ delete pending[W.req]; cancelInfo(W.req,W.r.url) }
+  W.open=false; if(!silent){ $('#watch').hidden=true; W=null }
+}
+function renderWatchBody(){
+  if(!W) return;
+  const r=W.r, i=W.info||{};
+  const title=i.title||r.title||'', ch=i.channel||r.channel||'';
+  const meta=[ (i.views||r.views)?fmtViews(i.views||r.views)+' '+t('views'):'', fmtDate(i.date) ].filter(Boolean).join('  ·  ');
+  $('#wbody').innerHTML=`<p class="wtitle">${esc(title)}</p>
+    ${meta?`<div class="wmeta">${meta}</div>`:''}
+    ${ch?`<div class="wch" ${(i.chUrl||r.chUrl)?`data-ch="${esc(i.chUrl||r.chUrl)}" data-chn="${esc(ch)}" role="button"`:''}><div class="wav">${esc(ch.trim().charAt(0).toUpperCase())}</div><div><b>${esc(ch)}</b>${i.subs?`<span>${fmtViews(i.subs)} ${t('subs')}</span>`:''}</div></div>`:''}
+    <div class="wact">
+      <button class="btn" id="wDl"><svg width="20" height="20"><use href="#i-dl"/></svg>${t('download')}</button>
+      <button class="btn sq${W.audio?' on':''}" id="wAud" aria-label="${t('audioOnly')}"><svg width="22" height="22"><use href="#i-head"/></svg></button>
+      <button class="btn sq" id="wShare" aria-label="${t('shareLink')}"><svg width="22" height="22"><use href="#i-share"/></svg></button>
+    </div>
+    ${i.desc?`<div class="wdesc" id="wdesc"><b>${t('about')}</b>${linkify(i.desc)}</div><button class="wmore" id="wmore">${t('showMore')}</button>`:''}
+    <h2 class="ph">${t('related')}</h2>
+    <div id="wrel">${W.related.length?relHTML(W.related):`<div class="skel" style="height:84px;margin-top:8px"></div><div class="skel" style="height:84px;margin-top:10px"></div>`}</div>`;
+  $('#wDl').onclick=()=>{ if(W.info) formatSheet(W.info); else toast(t('watchLoading')) };
+  $('#wAud').onclick=()=>toggleAudio();
+  $('#wShare').onclick=()=>shareText((title?title+(ch?' — '+ch:'')+'\n':'')+r.url);
+  const m=$('#wmore'); if(m) m.onclick=()=>{ const d=$('#wdesc'); d.classList.toggle('open'); m.textContent=d.classList.contains('open')?t('showLess'):t('showMore') };
+}
+function relHTML(items){
+  items.forEach(x=>RES[x.url]=x);
+  return items.map(x=>`<div class="rel" data-res="${esc(x.url)}" role="button" tabindex="0">
+    <div class="rthumb"><img src="${esc(x.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${x.duration?`<span class="dur">${fmtDur(Math.round(x.duration))}</span>`:''}</div>
+    <div class="meta"><div class="rtitle">${esc(x.title)}</div><div class="sub">${esc(x.channel||'')}${x.views?'<br>'+fmtViews(x.views)+' '+t('views'):''}</div></div></div>`).join('');
+}
+function onRelated(ev){
+  if(!W) return;
+  W.related=(ev.items||[]).filter(x=>x.url!==W.r.url);
+  const el=$('#wrel'); if(el) el.innerHTML=W.related.length?relHTML(W.related):'';
+}
+function onWatchInfo(ev,p){
+  if(!W||W.req!==ev.req) return;
+  if(!ev.ok){
+    $('#wstate').className='wstate err';
+    $('#wstate').innerHTML=`<div>${t('playErr')}<br><button class="lnk" id="wErrDl">${t('download')}</button><button class="lnk" id="wErrYt">${t('openYt')}</button></div>`;
+    $('#wErrDl').onclick=()=>analyze(W.r.url,'YouTube');
+    $('#wErrYt').onclick=()=>{ location.href=W.r.url };
+    return;
+  }
+  W.info=infoFrom(ev,p.url);
+  if(!W.r.thumb) W.r.thumb=W.info.thumb;
+  const st=(W.info.streams||[]).slice().sort((a,b)=>a.h-b.h);
+  W.info.streams=st;
+  // calidad inicial: la más alta hasta 720p
+  let idx=-1; st.forEach((x,k)=>{ if(x.h<=720) idx=k }); if(idx<0&&st.length) idx=0;
+  W.cur=idx;
+  renderWatchBody();
+  if(idx<0 && !W.info.audio){ playFail(); return }
+  if(idx<0){ W.audio=true; renderWatchBody() }
+  setSource(0,true);
+}
+function setSource(time,autoplay){
+  const v=wv(), i=W.info;
+  let src='';
+  if(W.audio && i.audio){ src=i.audio; $('#wposter').src=hiThumb(W.r.thumb||i.thumb); $('#wposter').hidden=false }
+  else { const s=i.streams[W.cur]; src=s?s.url:''; $('#wposter').hidden=true }
+  if(!src){ playFail(); return }
+  $('#wstate').className='wstate'; $('#wstate').innerHTML=`<div><div class="spin"></div></div>`;
+  v.src=src; v.load();
+  v.onloadedmetadata=()=>{ if(time) try{ v.currentTime=time }catch(e){} v.playbackRate=W.rate||1; $('#wstate').innerHTML=''; if(autoplay) v.play().catch(()=>{}) };
+  v.onerror=()=>{
+    // si falla, probar otra calidad; al final, solo audio
+    if(!W.audio && W.cur>0){ W.cur--; setSource(time,autoplay); return }
+    if(!W.audio && i.audio){ W.audio=true; renderWatchBody(); setSource(time,autoplay); return }
+    playFail();
+  };
+  v.onended=()=>{ if(!v.loop && saved.autoplayNext!==false && W.related[0]) openWatch(W.related[0]) };
+}
+function playFail(){
+  $('#wstate').className='wstate err';
+  $('#wstate').innerHTML=`<div>${t('playErr')}<br><button class="lnk" id="wErrDl">${t('download')}</button><button class="lnk" id="wErrYt">${t('openYt')}</button></div>`;
+  $('#wErrDl').onclick=()=>{ if(W.info) formatSheet(W.info); else analyze(W.r.url,'YouTube') };
+  $('#wErrYt').onclick=()=>{ location.href=W.r.url };
+}
+function toggleAudio(){
+  if(!W||!W.info){ toast(t('watchLoading')); return }
+  if(!W.info.audio && !W.audio){ toast(t('playErr')); return }
+  const time=wv().currentTime||0, playing=!wv().paused;
+  W.audio=!W.audio;
+  if(!W.audio && W.cur<0){ W.audio=true; return }
+  renderWatchBody(); setSource(time,playing||true);
+}
+function watchMenu(){
+  if(!W) return;
+  const i=W.info, st=(i&&i.streams)||[];
+  const q = W.audio ? t('audioOnly') : (st[W.cur]?st[W.cur].h+'p':'—');
+  sheet(`<h3>${t('options')}</h3>
+    <button class="row" id="mQ"><span class="grow">${t('quality')}</span><small style="color:var(--muted)">${q}</small></button>
+    <button class="row" id="mS"><span class="grow">${t('speed')}</span><small style="color:var(--muted)">${(W.rate||1)}x</small></button>
+    <button class="row" id="mR"><span class="grow">${t('repeat')}</span><span class="switch${saved.repeat?' on':''}"></span></button>
+    <button class="row" id="mA"><span class="grow">${t('autoplay')}</span><span class="switch${saved.autoplayNext!==false?' on':''}"></span></button>
+    <button class="row" id="mY"><span class="grow">${t('openYt')}</span></button>`);
+  $('#mQ').onclick=()=>{
+    if(!st.length){ toast(t('watchLoading')); return }
+    pick(t('quality'), st.map((x,k)=>[String(k),x.h+'p']).reverse(), W.audio?'':String(W.cur), v=>{ const time=wv().currentTime||0; W.cur=+v; W.audio=false; renderWatchBody(); setSource(time,true) });
+  };
+  $('#mS').onclick=()=>pick(t('speed'), ['0.5','0.75','1','1.25','1.5','2'].map(x=>[x,x+'x']), String(W.rate||1), v=>{ W.rate=+v; wv().playbackRate=+v });
+  $('#mR').onclick=()=>{ saved.repeat=!saved.repeat; save(); wv().loop=saved.repeat; $('#mR .switch').classList.toggle('on',saved.repeat) };
+  $('#mA').onclick=()=>{ saved.autoplayNext = saved.autoplayNext===false; save(); $('#mA .switch').classList.toggle('on',saved.autoplayNext!==false) };
+  $('#mY').onclick=()=>{ closeSheet(); location.href=W.r.url };
+}
+$('#wBack').onclick=()=>closeWatch();
+$('#wMenu').onclick=()=>watchMenu();
+document.addEventListener('click',e=>{ const a=e.target.closest('a[data-ext]'); if(a){ e.preventDefault(); if(A) location.href=a.href; else window.open(a.href,'_blank','noopener') } });
+
+/* ====== Perfil de canal y playlists ====== */
+let C=null;
+const CS=[];   // pila: canal -> playlist
+const CTABS=[['home','tHome','/videos'],['videos','tVideos','/videos'],['shorts','tShorts','/shorts'],['live','tLive','/streams'],['pls','tPlaylists','/playlists']];
+function chBase(u){ return (u||'').replace(/\/(featured|videos|shorts|streams|playlists|community|posts|about)\/?$/,'').replace(/\/+$/,'') }
+function openChannel(url,name){
+  if(!HAS_YT){ window.open(url,'_blank','noopener'); return }
+  CS.length=0;
+  C={mode:'ch',base:chBase(url),name,tab:'home',items:[],start:1,more:false,loading:false,req:null,meta:null};
+  showChan(); renderChTabs(); loadChan(true);
+}
+function openPlaylist(url,title){
+  if(!HAS_YT) return;
+  if(C){ C.scroll=$('#chBody').scrollTop; C.loading=false; CS.push(C) }
+  C={mode:'pl',base:url,name:title,tab:'pl',items:[],start:1,more:false,loading:false,req:null,meta:null};
+  showChan(); $('#chTabs').hidden=true; loadChan(true);
+}
+function showChan(){
+  const el=$('#chan'); el.hidden=false; el.style.zIndex=++ZL;
+  $('#chTitle').textContent=C.name||'';
+  $('#chTabs').hidden=false;
+  $('#chBody').scrollTop=0;
+}
+function closeChannel(){
+  if(CS.length){
+    C=CS.pop(); $('#chTitle').textContent=C.name||''; $('#chTabs').hidden=C.mode==='pl';
+    if(C.mode==='ch') renderChTabs();
+    renderChan(false); $('#chBody').scrollTop=C.scroll||0; return;
+  }
+  $('#chan').hidden=true; C=null;
+}
+$('#chBack').onclick=()=>closeChannel();
+function renderChTabs(){
+  $('#chTabs').innerHTML=CTABS.map(([id,l])=>`<button class="chip${C.tab===id?' on':''}" data-ctab="${id}">${t(l)}</button>`).join('');
+  $('#chTabs').querySelectorAll('[data-ctab]').forEach(b=>b.onclick=()=>{ if(!C) return; C.tab=b.dataset.ctab; renderChTabs(); loadChan(true) });
+}
+function chanUrl(){
+  if(C.mode==='pl') return C.base;
+  const tb=CTABS.find(x=>x[0]===C.tab)||CTABS[0];
+  return C.base+tb[2];
+}
+function loadChan(reset){
+  if(!C||C.loading) return;
+  if(reset){ C.items=[]; C.start=1; C.more=false; $('#chBody').scrollTop=0; renderChan(true) }
+  C.loading=true; C.req='c'+Date.now();
+  const n = C.tab==='home'?12:24;
+  try{ A.ytList(C.req, chanUrl(), C.start, n) }catch(e){ C.loading=false }
+}
+function onList(ev){
+  if(!C||ev.req!==C.req) return;
+  C.loading=false;
+  if(!ev.ok){
+    if(C.items.length){ C.more=false; const cm=$('#chMore'); if(cm) cm.innerHTML=''; return }
+    const tabName=t((CTABS.find(x=>x[0]===C.tab)||['','tVideos'])[1]);
+    $('#chBody').innerHTML = ev.notab
+      ? `<div class="empty"><svg width="56" height="56"><use href="#logo"/></svg><b>${esc(tn('noTab',tabName))}</b></div>`
+      : `<p class="center" style="padding-top:40px">${t('feedErr')}</p><button class="btn ghost" onclick="loadChan(true)">${t('retryBtn')}</button><p class="detail" style="text-align:center">${esc(ev.error||'')}</p>`;
+    return;
+  }
+  if(!C.meta || C.mode==='pl') C.meta=ev;
+  if(ev.channel && !C.name){ C.name=ev.channel; $('#chTitle').textContent=C.name }
+  if(C.mode==='pl' && ev.title){ C.name=ev.title; $('#chTitle').textContent=ev.title }
+  const n = C.tab==='home'?12:24;
+  const seen=new Set(C.items.map(x=>x.url));
+  const add=(ev.items||[]).filter(x=>!seen.has(x.url)).map(x=>Object.assign({chUrl:C.mode==='ch'?C.base:''},x));
+  C.items=C.items.concat(add); C.start+=n; C.more=!!ev.more && C.tab!=='home';
+  renderChan(false);
+}
+function chRow(x){
+  RES[x.url]=x;
+  if(x.kind==='pl') return `<div class="vrow" data-pl-url="${esc(x.url)}" data-pl-title="${esc(x.title)}" role="button" tabindex="0">
+    <div class="rthumb">${x.thumb?`<img src="${esc(x.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}<div class="plbadge"><svg width="20" height="20"><use href="#i-list"/></svg>${x.count||''}</div></div>
+    <div class="meta"><div class="rtitle">${esc(x.title)}</div><div class="sub">${t('playlist')}</div></div></div>`;
+  return `<div class="vrow${x.short?' short':''}" data-res="${esc(x.url)}" role="button" tabindex="0">
+    <div class="rthumb"><img src="${esc(x.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${x.duration?`<span class="dur">${fmtDur(Math.round(x.duration))}</span>`:''}</div>
+    <div class="meta"><div class="rtitle">${esc(x.title)}</div><div class="sub">${x.views?fmtViews(x.views)+' '+t('views'):''}</div></div>
+    <button class="dl2 dlb" aria-label="${t('download')}"><svg width="20" height="20"><use href="#i-dl"/></svg></button></div>`;
+}
+function renderChan(loading){
+  const m=C.meta||{};
+  let head='';
+  if(C.mode==='ch' && C.tab==='home'){
+    const nm=m.channel||C.name||'';
+    head=`${m.banner?`<div class="chban" style="background-image:url('${esc(m.banner)}')"></div>`:''}
+      <div class="chhead">${m.avatar?`<img class="chav" src="${esc(m.avatar)}" alt="" referrerpolicy="no-referrer">`:`<div class="chav">${esc((nm||'?').charAt(0).toUpperCase())}</div>`}
+      <div><h3>${esc(nm)}</h3>${m.subs?`<span>${fmtViews(m.subs)} ${t('subs')}</span>`:''}</div></div>
+      ${m.desc?`<p class="chdesc">${esc(m.desc)}</p>`:''}
+      <div class="chsec"><h2 class="ph">${t('tVideos')}</h2>${C.items.length?`<button id="seeAll">${t('seeAll')}</button>`:''}</div>`;
+  }
+  const list = C.items.length ? C.items.map(chRow).join('') : (loading||C.loading ? skeletonRows() : `<p class="center" style="padding-top:30px">${t('noRes')}</p>`);
+  $('#chBody').innerHTML = head + list + `<div id="chMore" class="center" style="padding:16px 0">${C.loading&&C.items.length?'<div class="spin"></div>':''}</div>`;
+  observeCards($('#chBody'));
+  const sa=$('#seeAll'); if(sa) sa.onclick=()=>{ C.tab='videos'; renderChTabs(); loadChan(true) };
+}
+function skeletonRows(){ return Array.from({length:5},()=>`<div class="vrow"><div class="rthumb skel"></div><div class="meta"><div class="skel" style="height:14px;width:90%"></div><div class="skel" style="height:12px;width:50%;margin-top:8px"></div></div></div>`).join('') }
+$('#chBody').addEventListener('scroll',()=>{
+  const b=$('#chBody');
+  if(C && C.more && !C.loading && b.scrollTop+b.clientHeight > b.scrollHeight-700){ loadChan(false); const cm=$('#chMore'); if(cm) cm.innerHTML='<div class="spin"></div>' }
+},{passive:true});
+
+/* ====== Biblioteca: recuperar descargas (también tras reinstalar) ====== */
+function parseCredit(name){
+  // "Título - Canal [ID].ext"
+  const m=name.match(/^(.*) - (.*) \[([\w-]{11})\]\.[^.]+$/);
+  if(m) return {title:m[1],channel:m[2],id:m[3]};
+  return {title:name.replace(/\.[^.]+$/,''),channel:'',id:''};
+}
+function scanLibrary(){
+  if(!A||!A.scanLibrary) return;
+  let list=[]; try{ list=JSON.parse(A.scanLibrary()) }catch(e){ return }
+  const byPath=new Set(S.items.map(i=>i.path).filter(Boolean)), byFile=new Set(S.items.map(i=>i.file||'').filter(Boolean));
+  let added=0;
+  list.forEach(f=>{
+    if(byPath.has(f.path)||byFile.has(f.name)) return;
+    // ¿ya está en la lista por nombre del título?
+    const cr=parseCredit(f.name);
+    if(S.items.some(i=>i.status==='done' && (i.file===f.name || (cr.id && (i.url||'').includes(cr.id) && i.kind===(f.mime.startsWith('audio/')?'audio':'video'))))) return;
+    const kind=f.mime.startsWith('video/')?'video':f.mime.startsWith('audio/')?'audio':f.mime.startsWith('image/')?'image':kindOf(f.name);
+    S.items.push({key:'l'+f.date+Math.random().toString(36).slice(2,5),src:'local',url:cr.id?'https://www.youtube.com/watch?v='+cr.id:'',name:cr.title,channel:cr.channel,
+      thumb:cr.id?'https://i.ytimg.com/vi/'+cr.id+'/mqdefault.jpg':'',kind,status:'done',total:f.size,done:f.size,date:f.date,uri:f.uri,path:f.path,file:f.name});
+    added++;
+  });
+  if(added){ save(); render() }
+}
+function renderPerm(){
+  const box=$('#permBox'); if(!box) return;
+  box.hidden = !A || !A.mediaPerm || A.mediaPerm();
+}
+$('#permBtn').onclick=()=>{ try{ A.requestMediaPerm() }catch(e){} };
+
+/* ====== Actualización obligatoria ====== */
+const UPDATE = {
+  repo: 'EduardYT9088/Download-Nexora',   // repositorio donde se publican las versiones
+  every: 30*60*1000                        // revisar cada 30 minutos como máximo
+};
+let updReq=null, updInfo=null, installCtx='player';
+function verNum(v){ return String(v||'').replace(/^[vV]/,'').split('.').map(x=>parseInt(x,10)||0) }
+function newer(a,b){ const x=verNum(a), y=verNum(b); for(let i=0;i<Math.max(x.length,y.length);i++){ const d=(x[i]||0)-(y[i]||0); if(d) return d>0 } return false }
+function myVersion(){ try{ return A&&A.version ? A.version() : CONFIG.version }catch(e){ return CONFIG.version } }
+function checkUpdate(force){
+  if(!A||!A.httpGet) return;
+  if(!force && Date.now()-(saved.updChecked||0)<UPDATE.every && !saved.updPending) return;
+  saved.updChecked=Date.now(); save();
+  updReq='u'+Date.now();
+  A.httpGet(updReq,'https://api.github.com/repos/'+UPDATE.repo+'/releases/latest');
+}
+function onHttp(ev){
+  if(ev.req!==updReq||!ev.ok) return;
+  let r; try{ r=JSON.parse(ev.body) }catch(e){ return }
+  const tag=r.tag_name||''; if(!tag||!newer(tag,myVersion())){ saved.updPending=false; save(); return }
+  const abi=(A.abi&&A.abi())||'';
+  const assets=r.assets||[];
+  const pick=assets.find(a=>/\.apk$/i.test(a.name)&&(abi.includes('64')?/arm64/i:/arm32|armeabi/i).test(a.name)) || assets.find(a=>/\.apk$/i.test(a.name));
+  if(!pick) return;
+  const body=r.body||'';
+  updInfo={tag,body,url:pick.browser_download_url,page:r.html_url,optional:/^\s*\[opcional\]/i.test(body)};
+  saved.updPending=true; save();
+  showUpdate();
+}
+function mdLite(txt){
+  const lines=String(txt).replace(/^\s*\[opcional\]\s*/i,'').split(/\r?\n/);
+  let html='', inList=false;
+  lines.forEach(l=>{
+    const li=l.match(/^\s*[-*•]\s+(.*)/);
+    if(li){ if(!inList){ html+='<ul>'; inList=true } html+='<li>'+esc(li[1])+'</li>'; return }
+    if(inList){ html+='</ul>'; inList=false }
+    const h=l.match(/^\s*#+\s+(.*)/);
+    if(h) html+='<h4>'+esc(h[1])+'</h4>'; else if(l.trim()) html+='<p>'+esc(l)+'</p>';
+  });
+  if(inList) html+='</ul>';
+  return html||'<p>—</p>';
+}
+function showUpdate(){
+  if(!updInfo) return;
+  let el=$('#upd');
+  if(!el){ el=document.createElement('div'); el.id='upd'; el.className='upd'; document.body.appendChild(el) }
+  const v=updInfo.tag.replace(/^v/i,'V');
+  el.innerHTML=`<svg class="mark"><use href="#logo"/></svg>
+    <h2>${t(updInfo.optional?'updTitleOpt':'updTitle')}</h2>
+    <div class="ver">${esc(v)}</div>
+    <div class="cur">${t('updCur')} V${esc(myVersion())}</div>
+    <div class="notes"><h4>${t('updNew')}</h4>${mdLite(updInfo.body)}</div>
+    <div class="ptrbar" id="updBarW" hidden><i id="updBar"></i></div>
+    <p class="foot2" id="updMsg"></p>
+    <button class="btn" id="updGo"><svg width="20" height="20"><use href="#i-dl"/></svg>${t('updNow')}</button>
+    ${updInfo.optional?`<button class="btn ghost" id="updLater">${t('updLater')}</button>`:''}
+    <button class="link" id="updWeb" style="margin:8px auto 0;display:block">${t('instWeb')}</button>`;
+  $('#updGo').onclick=()=>{
+    installCtx='update';
+    $('#updBarW').hidden=false; $('#updMsg').textContent=t('instStart'); $('#updGo').disabled=true;
+    try{ A.installApk(updInfo.url,'Nexora Download Plus '+v) }catch(e){ location.href=updInfo.page }
+  };
+  const lt=$('#updLater'); if(lt) lt.onclick=()=>{ el.remove(); saved.updPending=false; save() };
+  $('#updWeb').onclick=()=>{ location.href=updInfo.page };
+}
+function onUpdateInstall(ev){
+  const bar=$('#updBar'), msg=$('#updMsg'), go=$('#updGo');
+  if(ev.state==='progress'){ if(bar) bar.style.width=(ev.pct||0)+'%'; if(msg) msg.textContent=t('instDl')+' '+Math.floor(ev.pct||0)+'%' }
+  if(ev.state==='permission'){ if(msg) msg.textContent=t('instPerm') }
+  if(ev.state==='ready'){ if(bar) bar.style.width='100%'; if(msg) msg.textContent=t('updConfirm'); if(go) go.disabled=false }
+  if(ev.state==='error'){ if(msg) msg.textContent=t('instErr'); if(go) go.disabled=false }
+}
+
+/* ====== Cuenta ====== */
+let account={logged:false};
+function renderAccount(){ const el=$('#accName'); if(el) el.textContent = !HAS_YT?'—':(account.logged?t('accOn'):t('accOff')) }
+function accountSheet(){
+  sheet(`<h3>${t('accTitle')}</h3><p style="color:var(--muted);margin:0 0 6px">${t('accDesc')}</p>
+    <div class="warnbox">${t('accWarn')}</div>
+    <div class="kv" style="padding-bottom:6px"><span>${t('tAccount')}</span><b>${account.logged?t('accOn'):t('accOff')}</b></div>
+    ${account.logged?`<button class="btn ghost" id="accOut">${t('logout')}</button>`:`<button class="btn" id="accIn">${t('login')}</button><button class="btn ghost" id="accImp">${t('importCk')}</button>`}
+    <button class="btn ghost" onclick="closeSheet()">${t('close')}</button>`);
+  const a=$('#accIn'), b=$('#accImp'), c=$('#accOut');
+  if(a) a.onclick=()=>{ closeSheet(); if(!HAS_YT){toast(t('webOnly'));return} A.login() };
+  if(b) b.onclick=()=>{ closeSheet(); if(!HAS_YT){toast(t('webOnly'));return} A.importCookies() };
+  if(c) c.onclick=()=>{ closeSheet(); A.logout(); toast(t('loggedOut')) };
+}
+function startYt(info,fmt){
+  const f=fmtDef(fmt)||fmtDef('v720');
+  if(S.items.some(i=>i.url===info.url&&i.mode===fmt&&['running','pending'].includes(i.status))){ toast(t('dupe')); return }
+  const it={key:'y'+Date.now()+Math.random().toString(36).slice(2,6),src:'yt',url:info.url,name:info.title,channel:info.channel,thumb:info.thumb,
+    kind:f[3],mode:fmt,status:'pending',pct:null,done:0,total:0,date:Date.now()};
+  S.items.push(it); save(); render(); toast(t('started')); $('#url').value='';
+  try{ A.ytDownload(it.key,info.url,fmt,info.client||0) }catch(e){ it.status='failed'; save(); render() }
+}
+function onEvent(ev){
+  if(ev.type==='info') return routeInfo(ev);
+  if(ev.type==='search') return onSearch(ev);
+  if(ev.type==='suggest') return onSuggest(ev);
+  if(ev.type==='install') return installCtx==='update' ? onUpdateInstall(ev) : onInstall(ev);
+  if(ev.type==='http') return onHttp(ev);
+  if(ev.type==='perm'){ renderPerm(); if(ev.granted) scanLibrary(); return }
+  if(ev.type==='deleted'){ return }
+  if(ev.type==='list') return onList(ev);
+  if(ev.type==='stage'){ if(pending[ev.req]){ const el=$('#stage'); if(el) el.textContent= ev.stage==='update'?t('stageUpdate'):t('stageRetry') } return }
+  if(ev.type==='account'){ account.logged=!!ev.logged; renderAccount(); if(ev.msg) toast(ev.msg); return }
+  if(ev.type==='engine'){
+    if(ev.version) engine.version=ev.version;
+    if(ev.manual){
+      toast({updated:t('updated'),current:t('upToDate'),busy:t('busy')}[ev.status]||t('updErr'));
+      engine.status='ready';
+    } else engine.status=ev.status;
+    renderEngine(); return;
+  }
+  const it=S.items.find(i=>i.key===ev.key); if(!it) return;
+  if(ev.type==='progress'){ it.status='running'; if(ev.pct>=0) it.pct=ev.pct }
+  if(ev.type==='done'){ it.status='done'; it.pct=100; it.path=ev.path||''; it.uri=ev.uri||''; it.total=ev.size||0; it.file=ev.file||'' }
+  if(ev.type==='error'){ it.status='failed'; it.error=ev.error||'' }
+  if(ev.type==='cancelled'){ it.status='cancelled' }
+  save(); render();
+}
+window.nxEvent = ev => { try{ onEvent(ev) }catch(e){ console.error(e) } };
+function renderEngine(){
+  const el=$('#engineName'); if(!el) return;
+  el.textContent = !HAS_YT ? '—' : ({prep:t('enginePrep'),updating:t('engineUpdating'),error:t('engineErr')}[engine.status] || (t('engineReady')+(engine.version?' · '+engine.version:'')));
+}
+function engineSheet(){
+  sheet(`<h3>${t('tEngine')}: yt-dlp</h3><p style="color:var(--muted);margin:0 0 6px">${t('engineDesc')}</p>
+    <div class="kv"><span>${t('version')}</span><b>${esc(engine.version||'—')}</b></div>
+    <button class="btn" id="updEngine">${t('engineUpd')}</button><button class="btn ghost" onclick="closeSheet()">${t('close')}</button>`);
+  $('#updEngine').onclick=()=>{ closeSheet(); if(!HAS_YT){ toast(t('webOnly')); return } engine.status='updating'; renderEngine(); toast(t('engineUpdating')); try{ A.ytUpdate() }catch(e){} };
+}
+function settingsSheet(){
+  const pk=playerPkg();
+  sheet(`<h3>${t('tSettings')}</h3>
+    <button class="row" id="tgClip"><span class="grow">${t('autoClip')}<br><small style="color:var(--muted)">${t('autoClipS')}</small></span><span class="switch${saved.autoClip!==false?' on':''}"></span></button>
+    <button class="row" id="tgPf"><span class="grow">${t('prefetch')}<br><small style="color:var(--muted)">${t('prefetchS')}</small></span><span class="switch${saved.prefetch!==false?' on':''}"></span></button>
+    <div class="grp">${t('playerT')}</div>
+    ${[[MY_PLAYER.pkg,MY_PLAYER.name+' ('+t('recommended')+')'],['org.videolan.vlc','VLC'],['com.mxtech.videoplayer.ad','MX Player'],['',t('askEach')]].map(([v,l])=>`<button class="opt${v===pk?' on':''}" data-pl="${v}"><span class="dot"></span><span class="grow">${esc(l)}</span></button>`).join('')}
+    <button class="btn ghost" onclick="closeSheet()">${t('close')}</button>`);
+  $('#tgPf').onclick=()=>{ saved.prefetch = saved.prefetch===false; save(); $('#tgPf .switch').classList.toggle('on', saved.prefetch!==false) };
+  $('#tgClip').onclick=()=>{ saved.autoClip = saved.autoClip===false; save(); $('#tgClip .switch').classList.toggle('on', saved.autoClip!==false) };
+  $('#sheetBody').querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{ saved.player=b.dataset.pl; save(); $('#sheetBody').querySelectorAll('[data-pl]').forEach(x=>x.classList.toggle('on',x===b)) });
+}
+function firstRunNotice(){
+  if(saved.accepted) return;
+  sheet(`<div class="about"><svg class="mark"><use href="#logo"/></svg><h3>${t('noticeTitle')}</h3><p>${t('noticeBody')}</p></div>
+    <button class="btn" id="acceptBtn">${t('accept')}</button>`);
+  $('#acceptBtn').onclick=()=>{ saved.accepted=true; save(); closeSheet() };
+}
+function startDownload(url,name){
+  if(S.items.some(i=>i.url===url&&['running','pending','paused'].includes(i.status))){ toast(t('dupe')); return }
+  const it={key:'k'+Date.now()+Math.random().toString(36).slice(2,6),url,name,kind:kindOf(name),status:'pending',done:0,total:0,date:Date.now(),sysId:null};
+  if(A){
+    let r; try{ r=JSON.parse(A.download(url,name,'')) }catch(e){ r={ok:false} }
+    if(!r.ok){ toast(t('sFailed')+(r.error?': '+r.error:'')); return }
+    it.sysId=String(r.id); it.name=r.file||name; it.kind=kindOf(it.name);
+  }else{
+    const a=document.createElement('a'); a.href=url; a.download=name; a.target='_blank'; a.rel='noopener';
+    document.body.appendChild(a); a.click(); a.remove(); it.status='browser';
+  }
+  S.items.push(it); save(); render(); toast(t('started'));
+  $('#url').value=''; poll();
+}
+let pollT=null;
+function poll(){
+  clearTimeout(pollT);
+  if(!A) return;
+  const act=S.items.filter(i=>i.sysId&&['running','pending','paused'].includes(i.status));
+  if(!act.length) return;
+  let res=[]; try{ res=JSON.parse(A.status(act.map(i=>i.sysId).join(','))) }catch(e){}
+  const byId={}; res.forEach(r=>byId[String(r.id)]=r);
+  act.forEach(i=>{
+    const r=byId[i.sysId];
+    if(!r){ i.status='removed'; return }
+    i.status=r.status; i.done=r.done||0; if(r.total>0) i.total=r.total;
+  });
+  save(); render();
+  pollT=setTimeout(poll,1000);
+}
+function find(key){ return S.items.find(i=>i.key===key) }
+/* Tu reproductor propio. Cambia apkUrl / pageUrl por los tuyos. */
+const MY_PLAYER = {
+  pkg: 'com.nexora.pro',
+  name: 'Nexora Pro',
+  apkUrl: 'https://github.com/EduardYT9088/Nexora-Pro/releases/latest/download/NexoraPro.apk',  // descarga directa del APK
+  pageUrl: 'https://github.com/EduardYT9088/Nexora-Pro/releases/latest'                          // página si falla la descarga
+};
+const PLAYERS={[MY_PLAYER.pkg]:MY_PLAYER.name,'org.videolan.vlc':'VLC','com.mxtech.videoplayer.ad':'MX Player'};
+function playerPkg(){ return saved.player===undefined ? MY_PLAYER.pkg : saved.player }
+function openMedia(it){
+  if(!A) { window.open(it.url,'_blank','noopener'); return }
+  const media = it.kind==='video'||it.kind==='audio';
+  const pkg = media ? playerPkg() : '';
+  let r='error';
+  try{ r = A.openMedia ? A.openMedia(it.uri||'', it.path||'', it.sysId||'', pkg) : (it.src==='yt'?(A.openFile(it.uri||'',it.path||'')?'ok':'error'):(A.open(it.sysId)?'ok':'error')) }catch(e){}
+  if(r==='missing'){ recommendPlayer(it,pkg); return }
+  if(r!=='ok') toast(t('cantOpen'));
+}
+function recommendPlayer(it,pkg){
+  const name=PLAYERS[pkg]||pkg;
+  sheet(`<div class="about"><svg class="mark"><use href="#logo"/></svg><h3>${esc(tn('recTitle',name))}</h3><p>${esc(tn('recBody',name))}</p></div>
+    <button class="btn" id="instPl">${esc(tn('install',name))}</button>
+    <button class="btn ghost" id="otherPl">${t('openOther')}</button>`);
+  $('#instPl').onclick=()=>{
+    if(pkg===MY_PLAYER.pkg){ installMyPlayer(); return }
+    closeSheet(); try{ A.installApp(pkg) }catch(e){}
+  };
+  $('#otherPl').onclick=()=>{ closeSheet(); try{ A.openMedia(it.uri||'', it.path||'', it.sysId||'', '') }catch(e){} };
+}
+function installMyPlayer(){
+  installCtx='player';
+  const n=MY_PLAYER.name;
+  if(!A.installApk || !MY_PLAYER.apkUrl){ closeSheet(); location.href=MY_PLAYER.pageUrl; return }
+  sheet(`<div class="about"><svg class="mark"><use href="#logo"/></svg><h3>${esc(tn('installing',n))}</h3><p id="instMsg">${t('instStart')}</p></div>
+    <div class="ptrbar"><i id="instBar"></i></div>
+    <button class="btn ghost" id="instWeb">${t('instWeb')}</button>`);
+  $('#instWeb').onclick=()=>{ closeSheet(); location.href=MY_PLAYER.pageUrl };
+  try{ A.installApk(MY_PLAYER.apkUrl, n) }catch(e){ closeSheet(); location.href=MY_PLAYER.pageUrl }
+}
+function onInstall(ev){
+  const bar=$('#instBar'), msg=$('#instMsg');
+  if(ev.state==='progress'){ if(bar) bar.style.width=(ev.pct||0)+'%'; if(msg) msg.textContent=t('instDl')+' '+Math.floor(ev.pct||0)+'%' }
+  if(ev.state==='permission'){ if(msg) msg.textContent=t('instPerm') }
+  if(ev.state==='ready'){ if(bar) bar.style.width='100%'; closeSheet(); toast(t('instReady')) }
+  if(ev.state==='error'){ closeSheet(); toast(t('instErr')); location.href=MY_PLAYER.pageUrl }
+}
+function openItem(key){
+  const it=find(key); if(!it) return;
+  if(['failed','removed','cancelled','interrupted'].includes(it.status)){ askDownload(it.url); return }
+  if(it.src==='yt'){
+    if(it.status!=='done'){ itemMenu(key); return }
+    openMedia(it); return;
+  }
+  if(A){
+    if(it.status!=='done') { itemMenu(key); return }
+    openMedia(it);
+  }else window.open(it.url,'_blank','noopener');
+}
+function itemMenu(key){
+  const it=find(key); if(!it) return;
+  const canOpen = it.status==='done'||it.status==='browser';
+  const retry = ['failed','removed','cancelled','interrupted'].includes(it.status);
+  const ytActive = it.src==='yt' && ['running','pending'].includes(it.status);
+  sheet(`<h3 class="name" style="white-space:normal">${esc(it.name)}</h3>
+    ${canOpen?`<button class="row" data-a="open"><svg width="22" height="22"><use href="#i-lib"/></svg><span class="grow">${t('open')}</span></button>`:''}
+    ${retry?`<button class="row" data-a="retry"><svg width="22" height="22"><use href="#i-dl"/></svg><span class="grow">${t('retry')}</span></button>`:''}
+    ${ytActive?`<button class="row warn" data-a="cancel"><svg width="22" height="22"><use href="#i-broom"/></svg><span class="grow">${t('cancelDl')}</span></button>`:''}
+    ${it.src==='yt'?`<button class="row" data-a="orig"><svg width="22" height="22"><use href="#i-globe"/></svg><span class="grow">${t('seeOriginal')}</span></button>`:''}
+    <button class="row" data-a="share"><svg width="22" height="22"><use href="#i-share"/></svg><span class="grow">${t('shareLink')}</span></button>
+    <button class="row" data-a="hist"><svg width="22" height="22"><use href="#i-broom"/></svg><span class="grow">${t('delHist')}</span></button>
+    ${A&&(it.sysId||((it.src==='yt'||it.src==='local')&&it.status==='done'))&&it.status!=='removed'?`<button class="row warn" data-a="del"><svg width="22" height="22"><use href="#i-file"/></svg><span class="grow">${t('del')}</span></button>`:''}`);
+  $('#sheetBody').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{
+    const a=b.dataset.a; closeSheet();
+    if(a==='open') openItem(key);
+    if(a==='retry') askDownload(it.url);
+    if(a==='share') shareText(it.channel ? it.name+' — '+it.channel+'\n'+it.url : it.url);
+    if(a==='hist'){ S.items=S.items.filter(i=>i.key!==key); save(); render() }
+    if(a==='cancel'){ try{ A.ytCancel(it.key) }catch(e){} }
+    if(a==='orig'){ if(A) location.href=it.url; else window.open(it.url,'_blank','noopener') }
+    if(a==='del'){ try{ if(it.src==='yt'||it.src==='local') A.deleteFile(it.uri||'',it.path||''); else A.remove(it.sysId) }catch(e){} S.items=S.items.filter(i=>i.key!==key); save(); render(); toast(t('deleted')) }
+  });
+}
+function shareText(text){
+  if(A&&A.share) { A.share(text); return }
+  if(navigator.share) navigator.share({text}).catch(()=>{});
+  else if(navigator.clipboard) navigator.clipboard.writeText(text).then(()=>toast('✓'));
+}
+
+/* ====== Portapapeles ====== */
+async function readClip(){
+  try{ if(A&&A.clipboard) return A.clipboard()||''; if(navigator.clipboard) return await navigator.clipboard.readText() }catch(e){}
+  return '';
+}
+$('#pasteBtn').onclick=async()=>{
+  const u=extractUrl(await readClip());
+  if(u){ $('#url').value=u; $('#clip').classList.remove('on'); syncBar(); closePanel(); askDownload(u) } else toast(t('noClip'));
+};
+async function checkClip(){
+  if(!A || saved.autoClip===false) return;
+  if(sheetOpen()) return;
+  const u=extractUrl(await readClip());
+  if(!u || u===saved.lastClip) return;
+  saved.lastClip=u; save();
+  if(S.items.some(i=>i.url===u)) return;
+  go('home'); closePanel(); $('#url').value=u; syncBar();
+  toast(t('clipPasted'));
+  askDownload(u);
+}
+function goAction(){
+  const v=$('#url').value.trim();
+  if(!v){ $('#url').focus(); return }
+  const u=extractUrl(v);
+  if(u){ closePanel(); $('#url').blur(); askDownload(u) } else doSearch(v);
+}
+function syncGo(){ syncBar() }
+$('#goBtn').onclick=goAction;
+$('#url').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); goAction() } });
+$('#url').addEventListener('input',()=>{ syncBar(); if(!panelOpen()) openPanel(); requestSuggest() });
+$('#url').addEventListener('focus',()=>{ if(!panelOpen()) openPanel(); requestSuggest() });
+$('#sBack').onclick=()=>{ closePanel(); $('#url').blur() };
+$('#clearQ').onclick=()=>{ $('#url').value=''; syncBar(); $('#url').focus(); requestSuggest() };
+
+/* ====== Herramientas ====== */
+function pick(title,opts,current,onPick){
+  sheet(`<h3>${title}</h3>`+opts.map(([v,label])=>`<button class="row" data-v="${v}"><span class="grow">${label}</span>${v===current?'<svg class="check" width="22" height="22"><use href="#i-check"/></svg>':''}</button>`).join(''));
+  $('#sheetBody').querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ closeSheet(); onPick(b.dataset.v) });
+}
+function about(){
+  sheet(`<div class="about"><svg class="mark"><use href="#logo"/></svg><h3>${CONFIG.appName}</h3>
+    <p>${t('aboutD')}</p><p>${t('version')} V${esc(myVersion())}</p><p>${CONFIG.copyright}</p>
+    <button class="btn ghost" onclick="location.href=CONFIG.privacyUrl">${t('policy')}</button></div>`);
+}
+$('#openAbout').onclick=about;
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{
+  switch(b.dataset.tool){
+    case 'clear':
+      sheet(`<h3>${t('clearQ')}</h3><p style="color:var(--muted);margin:0 0 6px">${t('clearD')}</p>
+        <button class="btn danger" id="doClear">${t('clear')}</button><button class="btn ghost" onclick="closeSheet()">${t('cancel')}</button>`);
+      $('#doClear').onclick=()=>{ S.items=S.items.filter(i=>['running','pending','paused'].includes(i.status)); save(); render(); closeSheet(); toast(t('cleared')) };
+      break;
+    case 'lang': pick(t('tLang'),Object.entries(LANGS),S.lang,v=>{ S.lang=v; save(); applyLang() }); break;
+    case 'theme': pick(t('tTheme'),[['dark',t('themeDark')],['light',t('themeLight')],['system',t('themeSys')]],S.theme,v=>{ S.theme=v; save(); applyTheme() }); break;
+    case 'engine': engineSheet(); break;
+    case 'account': accountSheet(); break;
+    case 'cache': { if(!A||!A.clearCache){ toast(t('cacheDone')); break } const n=Number(A.clearCache()); if(n<0) toast(t('busy')); else toast(t('cacheDone')+(n>0?': '+fmtSize(n):'')); break }
+    case 'settings': settingsSheet(); break;
+    case 'feedback': location.href='mailto:tu-correo@ejemplo.com?subject='+encodeURIComponent('Nexora Download Plus'); break;
+    case 'folder': toast(t('folderMsg')); break;
+    case 'share': shareText(t('shareMsg')); break;
+    case 'privacy': location.href=CONFIG.privacyUrl; break;
+  }
+});
+
+/* ====== Integración con Android ====== */
+window.onSharedLink = (text)=>{ const u=extractUrl(text)||text; go('home'); closePanel(); $('#url').value=u; syncBar(); askDownload(u) };
+window.nexoraBack = ()=>{
+  if($('#upd')){ return true }
+  if(sheetOpen()){ closeSheet(); return true }
+  const wz=(W&&W.open)?+$('#watch').style.zIndex||0:-1, cz=C?+$('#chan').style.zIndex||0:-1;
+  if(cz>wz&&C){ closeChannel(); return true }
+  if(W&&W.open){ closeWatch(); return true }
+  if(C){ closeChannel(); return true }
+  if(S.view==='home'&&panelOpen()){ closePanel(); $('#url').blur(); return true }
+  if(S.view==='home'&&feedMode==='q'){ $('#clearRes').click(); return true }
+  if(S.view!=='home'){ go('home'); return true }
+  return false;
+};
+window.nexoraResume = ()=>{ checkClip(); poll(); renderPerm(); if(S.view==='lib') scanLibrary(); checkUpdate(false) };
+
+/* ====== Inicio ====== */
+// Las descargas de redes que quedaron a medias al cerrar la app
+let stillRunning=[]; try{ if(A&&A.ytActive) stillRunning=JSON.parse(A.ytActive()) }catch(e){}
+S.items.forEach(i=>{ if(i.src==='yt'&&['running','pending'].includes(i.status)&&!stillRunning.includes(i.key)) i.status='interrupted' });
+save();
+applyLang();
+renderEngine();
+if(HAS_YT){ try{ const e=JSON.parse(A.ytEngine()); onEvent(Object.assign({type:'engine'},e)) }catch(e){} }
+if(HAS_YT&&A.account){ try{ account.logged=JSON.parse(A.account()).logged }catch(e){} }
+renderAccount();
+setTimeout(firstRunNotice,300);
+setTimeout(()=>{ scanLibrary(); checkUpdate(true) },1200);
+syncBar();
+if(A&&A.takeShared){ const s=A.takeShared(); if(s) setTimeout(()=>onSharedLink(s),250) }
+setTimeout(checkClip,600);
+poll();
+matchMedia('(prefers-color-scheme: light)').addEventListener?.('change',()=>{ if(S.theme==='system') applyTheme() });
+</script>
+</body>
+</html>
