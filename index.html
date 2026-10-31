@@ -277,6 +277,51 @@ body.pip .watch{z-index:5000!important;padding:0}
 body.pip .wbody,body.pip .wbtn,body.pip .toast{display:none!important}
 body.pip .wplayer{position:fixed;inset:0;aspect-ratio:auto;width:100%;height:100%}
 
+/* temas de color */
+:root[data-accent="neon"]{--accent:#22D3EE;--accent-2:#D946EF;--accent-ink:#04222A}
+:root[data-accent="ocean"]{--accent:#38BDF8;--accent-2:#6366F1;--accent-ink:#04203A}
+:root[data-accent="fire"]{--accent:#FB923C;--accent-2:#EF4444;--accent-ink:#2A1004}
+:root[data-accent="rose"]{--accent:#F472B6;--accent-2:#A855F7;--accent-ink:#2A0718}
+:root[data-accent="emerald"]{--accent:#34D399;--accent-2:#14B8A6;--accent-ink:#032A1C}
+:root[data-accent="gold"]{--accent:#FBBF24;--accent-2:#F97316;--accent-ink:#2A1C02}
+:root[data-accent="ruby"]{--accent:#F43F5E;--accent-2:#FB7185;--accent-ink:#FFFFFF}
+:root[data-theme="light"][data-accent]:not([data-accent="aurora"]){--accent-ink:#fff}
+:root[data-theme="amoled"]{--bg:#000;--surface:#0E0E12;--surface-2:#1B1B22;--line:rgba(255,255,255,.08)}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:6px 0 4px}
+.sw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:var(--r-md);border:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+.sw i{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));display:block}
+.sw.on{border-color:var(--text);color:var(--text)}
+
+.fbbox{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md)}
+.fbbox textarea{width:100%;min-height:150px;border:0;background:none;outline:none;resize:vertical;padding:14px 14px 26px;font:inherit;color:var(--text)}
+.fbbox small{position:absolute;right:12px;bottom:8px;color:var(--muted);font-size:12px}
+.fbbox:focus-within,.input:focus{border-color:var(--accent)}
+.fbmedia{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+.fbmedia .add,.fbmedia .pic{width:84px;height:84px;border-radius:12px;background:var(--surface);border:1px dashed var(--line);display:grid;place-items:center;color:var(--muted);position:relative;overflow:hidden}
+.fbmedia .pic{border-style:solid}
+.fbmedia .pic img{width:100%;height:100%;object-fit:cover}
+.fbmedia .pic .x{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center}
+.fbmedia .pic .vid{position:absolute;left:6px;bottom:6px;color:#fff}
+
+/* biblioteca */
+.sechead{display:flex;align-items:center;justify-content:space-between;margin-top:18px}
+.sechead h2{margin:0;font-size:17px}
+.secact{display:flex;gap:2px}
+.secact .icon-btn{color:var(--text)}
+#libSearch{margin-top:8px}
+#filters{margin-top:10px}
+.item .q{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--surface-2);color:var(--muted);margin-left:6px;vertical-align:1px}
+.item .ck,.selall .ck{width:22px;height:22px;border-radius:50%;border:2px solid var(--muted);flex:none;display:grid;place-items:center}
+.item.sel .ck,.selall.on .ck{border-color:var(--accent);background:var(--accent)}
+.item.sel .ck::after,.selall.on .ck::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent-ink)}
+.selall{border-bottom:0;padding:10px 4px}
+.item .pbtn{width:38px;height:38px;border-radius:50%;background:var(--surface-2);color:var(--accent);display:grid;place-items:center;flex:none}
+.selbar{position:fixed;left:0;right:0;top:0;bottom:0;pointer-events:none;z-index:12}
+.selbar .seltop{pointer-events:auto;position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px;background:var(--bg)}
+.selbar .seltop b{font-size:18px}
+.selbar .btn{pointer-events:auto;position:absolute;left:20px;right:20px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);width:auto}
+.btn[disabled]{opacity:.45}
+
 /* nav */
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--surface);border-top:1px solid var(--line);
   padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
@@ -341,6 +386,9 @@ label.lbl{display:block;font-size:13px;color:var(--muted);margin:4px 2px 6px}
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h11M4 12h11M4 18h7M17 14v6l4-3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-pip" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="12" y="11" width="7" height="6" rx="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 7.5V19l-4-2v-4.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
     <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="18.5" r="1.8" fill="currentColor"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-broom" viewBox="0 0 24 24"><path d="M14 4 9.5 11M6 12h9l2 8H4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
@@ -407,20 +455,33 @@ label.lbl{display:block;font-size:13px;color:var(--muted);margin:4px 2px 6px}
 
     <!-- REPRODUCIR / MIS DESCARGAS -->
     <section class="view" id="v-lib">
-      <h1 data-t="libTitle">Mis descargas</h1>
-      <div class="types" id="filters">
-        <button class="chip on" data-f="all" data-t="fAll">Todo</button>
-        <button class="chip" data-f="video" data-t="fVideo">Video</button>
-        <button class="chip" data-f="audio" data-t="fAudio">Música</button>
-        <button class="chip" data-f="image" data-t="fImage">Imágenes</button>
-        <button class="chip" data-f="other" data-t="fOther">Otros</button>
+      <div class="libtop" id="libTop">
+        <h1 data-t="libTitle">Mis descargas</h1>
       </div>
       <div class="permbox" id="permBox" hidden>
         <svg width="22" height="22"><use href="#i-folder"/></svg>
         <div class="grow"><b data-t="permT">Ver todas tus descargas</b><span data-t="permD">Permite el acceso a videos y música para ver lo que descargaste antes, incluso si reinstalaste la app.</span></div>
         <button class="btn" id="permBtn" data-t="permBtn">Permitir</button>
       </div>
-      <div class="list" id="libList" style="margin-top:14px"></div>
+      <div id="dlSec"></div>
+      <div class="sechead" id="doneHead">
+        <h2 data-t="secDone">Descargado</h2>
+        <div class="secact">
+          <button class="icon-btn" id="libFilterBtn" aria-label="Filtrar"><svg width="20" height="20"><use href="#i-filter"/></svg></button>
+          <button class="icon-btn" id="libSelBtn" aria-label="Eliminar"><svg width="20" height="20"><use href="#i-trash"/></svg></button>
+          <button class="icon-btn" id="libSearchBtn" aria-label="Buscar"><svg width="20" height="20"><use href="#i-search"/></svg></button>
+        </div>
+      </div>
+      <input class="input" id="libSearch" type="search" hidden data-tp="libSearchPh" placeholder="Buscar en tus descargas">
+      <div class="types" id="filters" hidden>
+        <button class="chip on" data-f="all" data-t="fAll">Todo</button>
+        <button class="chip" data-f="video" data-t="fVideo">Video</button>
+        <button class="chip" data-f="audio" data-t="fAudio">Música</button>
+        <button class="chip" data-f="image" data-t="fImage">Imágenes</button>
+        <button class="chip" data-f="other" data-t="fOther">Otros</button>
+      </div>
+      <button class="row selall" id="selAll" hidden><span class="ck"></span><span class="grow" data-t="selAll">Seleccionar todo</span></button>
+      <div class="list" id="libList" style="margin-top:6px"></div>
     </section>
 
     <!-- HERRAMIENTAS -->
@@ -476,6 +537,20 @@ label.lbl{display:block;font-size:13px;color:var(--muted);margin:4px 2px 6px}
   <div class="cats ctabs" id="chTabs"></div>
   <div class="chbody" id="chBody"></div>
 </div>
+<!-- Enviar comentarios -->
+<div class="chan" id="fb" hidden>
+  <div class="chtop"><button class="icon-btn" id="fbBack" aria-label="Volver"><svg width="22" height="22"><use href="#i-back"/></svg></button><b data-t="fbTitle">Enviar comentarios</b></div>
+  <div class="chbody">
+    <label class="lbl" style="margin-top:14px"><span data-t="fbDetails">Detalles</span> <span style="color:var(--danger)">*</span></label>
+    <div class="fbbox"><textarea id="fbText" maxlength="1000" rows="6" data-tp="fbPh" placeholder="Cuéntanos un poco más sobre tus preguntas o sugerencias."></textarea><small id="fbCount">0/1000</small></div>
+    <label class="lbl" style="margin-top:18px" data-t="fbContact">Datos de contacto</label>
+    <input class="input" id="fbContactIn" type="text" data-tp="fbContactPh" placeholder="WhatsApp, número o correo electrónico">
+    <label class="lbl" style="margin-top:18px"><span data-t="fbMedia">Fotos y videos</span> (<span id="fbN">0</span>/9)</label>
+    <div class="fbmedia" id="fbMedia"></div>
+    <button class="btn" id="fbSend" disabled data-t="fbSend">Enviar</button>
+  </div>
+</div>
+<div class="selbar" id="selBar" hidden><div class="seltop"><button class="icon-btn" id="selClose"><svg width="22" height="22"><use href="#i-x"/></svg></button><b id="selCount"></b></div><button class="btn danger" id="selDel" data-t="del2">Eliminar</button></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -485,7 +560,8 @@ const CONFIG = {
   version: '1.0.0',
   privacyUrl: 'privacy-policy.html',
   copyright: '© 2026 Nexora: Eduard Gamer',
-  folder: 'Download/Nexora'
+  folder: 'Download/Nexora',
+  feedbackEmail: 'tu-correo@ejemplo.com'   // ← cambia por tu correo para recibir los comentarios
 };
 
 /* ====== Textos (ES / EN / PT) ====== */
@@ -501,7 +577,7 @@ const I18N = {
     clearQ:'¿Limpiar el historial?',clearD:'Se borra la lista de Nexora. Los archivos en tu teléfono no se eliminan.',clear:'Limpiar',cleared:'Historial limpio',deleted:'Archivo eliminado',
     folderMsg:'Tus archivos se guardan en Download/Nexora',themeDark:'Oscuro',themeLight:'Claro',themeSys:'Del sistema',about:'Acerca de',version:'Versión',
     aboutD:'Gestor de descargas rápido y privado. Sin cuentas, sin anuncios, sin rastreo.',shareMsg:'Descarga archivos fácil con Nexora Download',
-    vVideo:'Video',vAudio:'Audio',vImage:'Imagen',vDoc:'Documento',vApk:'Aplicación',vFile:'Archivo',dupe:'Ya estás descargando este enlace',platTitle:'Enlace de {n}',platBody:'Nexora no descarga contenido de {n} para respetar los derechos de los creadores y las reglas de la plataforma. Para verlo sin conexión, usa la opción de descarga de la app oficial.',platOpen:'Abrir en {n}',ok:'Entendido',ytHint:'Pega un enlace de YouTube, TikTok, Instagram, Facebook y más, o un enlace directo a un archivo.',analyzing:'Analizando enlace…',enginePrepMsg:'Preparando el motor de descarga. La primera vez tarda un poco.',chooseFmt:'Formato',fV1080:'Video 1080p',fV720:'Video 720p',fV480:'Video 480p',fMp3:'Audio MP3',fM4a:'Audio M4A',fV1080s:'Mejor calidad',fV720s:'Equilibrado',fV480s:'Ahorra espacio',fMp3s:'Compatible con todo',fM4as:'Calidad original',channel:'Canal',credit:'Se guarda el título y el canal como crédito del creador.',notice:'Descarga solo contenido propio o con permiso del creador.',noticeTitle:'Antes de empezar',noticeBody:'Nexora Download Plus puede guardar videos y música de YouTube y otras redes. Respeta a los creadores: descarga solo contenido tuyo, con licencia libre o con su permiso. Cada descarga guarda el título y el canal como crédito.',accept:'Acepto',infoErr:'No se pudo leer este enlace',tryDirect:'Intentar descarga directa',tEngine:'Motor',engineReady:'Listo',enginePrep:'Preparando…',engineUpdating:'Actualizando…',engineErr:'Con error',engineUpd:'Actualizar motor',engineDesc:'El motor (yt-dlp) se actualiza solo cada día. Actualízalo a mano si una red deja de funcionar.',updated:'Motor actualizado',upToDate:'El motor ya está al día',updErr:'No se pudo actualizar. Revisa tu conexión.',busy:'Espera a que terminen las descargas',cancelDl:'Cancelar descarga',sCancelled:'Cancelada',sInterrupted:'Interrumpida',seeOriginal:'Ver original',webOnly:'Las descargas de redes solo funcionan en la app instalada',close:'Cerrar',homeTitle:'Busca o pega un enlace',urlPh:'Buscar o pegar enlace',search:'Buscar',siteHint:'Abre un video, toca Compartir y elige Nexora Download Plus.',results:'Resultados',clearRes:'Limpiar',searching:'Buscando…',noRes:'Sin resultados para esa búsqueda.',views:'vistas',grpMusic:'Música',grpVideo:'Video',fVbest:'Video',fVbests:'La mejor disponible',errBot:'YouTube pidió confirmar que no eres un robot.',errBotFix:'Cambia de red (Wi-Fi o datos) o inicia sesión en Herramientas → Cuenta de YouTube.',errFmt:'YouTube no entregó formatos para este video.',errFmtFix:'Nexora ya probó varios métodos. Actualiza el motor e inténtalo otra vez en unos minutos.',errGen:'Revisa el enlace o tu conexión e inténtalo de nuevo.',goLogin:'Iniciar sesión',tAccount:'Cuenta de YouTube',accOn:'Sesión iniciada',accOff:'Sin sesión',accTitle:'Cuenta de YouTube',accDesc:'Iniciar sesión ayuda cuando YouTube pide confirmar que no eres un robot. La sesión se guarda solo en tu teléfono.',accWarn:'YouTube puede limitar o suspender cuentas que descargan videos. Usa una cuenta secundaria, no tu cuenta principal ni la de tu canal.',login:'Iniciar sesión',importCk:'Importar cookies.txt',logout:'Cerrar sesión',loggedOut:'Sesión cerrada',tCache:'Liberar espacio',tCacheS:'Borra archivos temporales',cacheDone:'Espacio liberado',tFeedback:'Comentarios',tFeedbackS:'Reporta un problema',fV360:'Video 360p',fV360s:'Ocupa poco',popular:'Búsquedas populares',seeSites:'Ver sitios',recentSearches:'Búsquedas recientes',clearHist:'Borrar',cMusic:'Música',cGames:'Videojuegos',cFunny:'Risa',cTut:'Tutoriales',cNews:'Noticias',cSports:'Deportes',cKids:'Infantil',qMusic:'música nueva',qGames:'videojuegos gameplay',qFunny:'videos de risa',qTut:'tutoriales',qNews:'noticias hoy',qSports:'deportes resumen',qKids:'videos infantiles',pops:'Peso Pluma|Bad Bunny|videos de risa|Minecraft|Free Fire|películas completas|estados para WhatsApp|Karol G',resultsFor:'Resultados de',stageRetry:'Probando otro método…',stageUpdate:'Actualizando el motor…',feedErr:'No se pudieron cargar los videos.',retryBtn:'Reintentar',openYt:'Ver en YouTube',clipPasted:'Enlace pegado desde el portapapeles',moreFmts:'Más formatos',fV144s:'Calidad mínima',fV240s:'Baja calidad',fV1440s:'Pantalla grande',fV2160s:'Máxima calidad',tSettings:'Configuración',tSettingsS:'Portapapeles y reproductor',autoClip:'Detectar enlaces copiados',autoClipS:'Al abrir la app, ofrece descargar el enlace que copiaste',playerT:'Reproductor de videos y música',recommended:'recomendado',askEach:'Elegir cada vez',recTitle:'Reproduce con {n}',recBody:'Para ver tus videos y escuchar tu música con la mejor calidad, Nexora recomienda {n}. Es gratis.',install:'Instalar {n}',openOther:'Abrir con otra app',cForYou:'Para ti',qForYou:'',qMods:'nuevo|popular|en tendencia|2026|mejores|viral|en vivo|completo',watchLoading:'Preparando video…',playErr:'No se pudo reproducir aquí.',audioOnly:'Solo audio',options:'Opciones',quality:'Calidad',speed:'Velocidad',repeat:'Repetir video',autoplay:'Reproducción automática',related:'Más videos',subs:'suscriptores',showMore:'Ver más',showLess:'Ver menos',installing:'Instalando {n}',instStart:'Preparando la descarga…',instDl:'Descargando…',instPerm:'Permite que Nexora instale apps y vuelve aquí.',instReady:'Listo, confirma la instalación',instErr:'No se pudo descargar, abriendo la página…',instWeb:'Descargar desde la página web',recBody:'Para ver tus videos y escuchar tu música, Nexora recomienda {n}.',tHome:'Principal',tVideos:'Videos',tShorts:'Shorts',tLive:'En vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',sizing:'Calculando tamaños… ya puedes descargar',sizingEst:'Tamaños aproximados · ya puedes descargar',bgListen:'Escuchar en segundo plano',bgOn:'Escuchando en segundo plano. Controla la música desde la notificación.',bgWait:'Preparando el audio… empezará en unos segundos',bgErr:'No se pudo reproducir el audio',pipBtn:'Ventana flotante',pipNo:'Tu teléfono no permite ventana flotante',leaveT:'Al salir de la app con un video',leavePip:'Ventana flotante',leaveAudio:'Seguir escuchando',leavePause:'Pausar',qualityAuto:'Automática',qualityEmbed:'Cámbiala con el engranaje del reproductor',tUpdate:'Buscar actualización',checking:'Buscando actualización…',upToDateV:'Ya tienes la última versión (V{n})',updCheckErr:'No se pudo comprobar. Revisa tu conexión.',basedOn:'Basado en lo que ves:',noTab:'Este canal no tiene {n}',permT:'Ver todas tus descargas',permD:'Permite el acceso a videos y música para ver lo que descargaste antes, incluso si reinstalaste la app.',permBtn:'Permitir',updTitle:'Actualización obligatoria',updTitleOpt:'Nueva versión disponible',updCur:'Tu versión:',updNew:'Novedades de esta versión',updNow:'Actualizar ahora',updLater:'Más tarde',updConfirm:'Confirma la instalación en la ventana de Android',prefetch:'Precargar videos',prefetchS:'Analiza en segundo plano los videos que ves para que la descarga abra al instante'},
+    vVideo:'Video',vAudio:'Audio',vImage:'Imagen',vDoc:'Documento',vApk:'Aplicación',vFile:'Archivo',dupe:'Ya estás descargando este enlace',platTitle:'Enlace de {n}',platBody:'Nexora no descarga contenido de {n} para respetar los derechos de los creadores y las reglas de la plataforma. Para verlo sin conexión, usa la opción de descarga de la app oficial.',platOpen:'Abrir en {n}',ok:'Entendido',ytHint:'Pega un enlace de YouTube, TikTok, Instagram, Facebook y más, o un enlace directo a un archivo.',analyzing:'Analizando enlace…',enginePrepMsg:'Preparando el motor de descarga. La primera vez tarda un poco.',chooseFmt:'Formato',fV1080:'Video 1080p',fV720:'Video 720p',fV480:'Video 480p',fMp3:'Audio MP3',fM4a:'Audio M4A',fV1080s:'Mejor calidad',fV720s:'Equilibrado',fV480s:'Ahorra espacio',fMp3s:'Compatible con todo',fM4as:'Calidad original',channel:'Canal',credit:'Se guarda el título y el canal como crédito del creador.',notice:'Descarga solo contenido propio o con permiso del creador.',noticeTitle:'Antes de empezar',noticeBody:'Nexora Download Plus puede guardar videos y música de YouTube y otras redes. Respeta a los creadores: descarga solo contenido tuyo, con licencia libre o con su permiso. Cada descarga guarda el título y el canal como crédito.',accept:'Acepto',infoErr:'No se pudo leer este enlace',tryDirect:'Intentar descarga directa',tEngine:'Motor',engineReady:'Listo',enginePrep:'Preparando…',engineUpdating:'Actualizando…',engineErr:'Con error',engineUpd:'Actualizar motor',engineDesc:'El motor (yt-dlp) se actualiza solo cada día. Actualízalo a mano si una red deja de funcionar.',updated:'Motor actualizado',upToDate:'El motor ya está al día',updErr:'No se pudo actualizar. Revisa tu conexión.',busy:'Espera a que terminen las descargas',cancelDl:'Cancelar descarga',sCancelled:'Cancelada',sInterrupted:'Interrumpida',seeOriginal:'Ver original',webOnly:'Las descargas de redes solo funcionan en la app instalada',close:'Cerrar',homeTitle:'Busca o pega un enlace',urlPh:'Buscar o pegar enlace',search:'Buscar',siteHint:'Abre un video, toca Compartir y elige Nexora Download Plus.',results:'Resultados',clearRes:'Limpiar',searching:'Buscando…',noRes:'Sin resultados para esa búsqueda.',views:'vistas',grpMusic:'Música',grpVideo:'Video',fVbest:'Video',fVbests:'La mejor disponible',errBot:'YouTube pidió confirmar que no eres un robot.',errBotFix:'Cambia de red (Wi-Fi o datos) o inicia sesión en Herramientas → Cuenta de YouTube.',errFmt:'YouTube no entregó formatos para este video.',errFmtFix:'Nexora ya probó varios métodos. Actualiza el motor e inténtalo otra vez en unos minutos.',errGen:'Revisa el enlace o tu conexión e inténtalo de nuevo.',goLogin:'Iniciar sesión',tAccount:'Cuenta de YouTube',accOn:'Sesión iniciada',accOff:'Sin sesión',accTitle:'Cuenta de YouTube',accDesc:'Iniciar sesión ayuda cuando YouTube pide confirmar que no eres un robot. La sesión se guarda solo en tu teléfono.',accWarn:'YouTube puede limitar o suspender cuentas que descargan videos. Usa una cuenta secundaria, no tu cuenta principal ni la de tu canal.',login:'Iniciar sesión',importCk:'Importar cookies.txt',logout:'Cerrar sesión',loggedOut:'Sesión cerrada',tCache:'Liberar espacio',tCacheS:'Borra archivos temporales',cacheDone:'Espacio liberado',tFeedback:'Comentarios',tFeedbackS:'Reporta un problema',fV360:'Video 360p',fV360s:'Ocupa poco',popular:'Búsquedas populares',seeSites:'Ver sitios',recentSearches:'Búsquedas recientes',clearHist:'Borrar',cMusic:'Música',cGames:'Videojuegos',cFunny:'Risa',cTut:'Tutoriales',cNews:'Noticias',cSports:'Deportes',cKids:'Infantil',qMusic:'música nueva',qGames:'videojuegos gameplay',qFunny:'videos de risa',qTut:'tutoriales',qNews:'noticias hoy',qSports:'deportes resumen',qKids:'videos infantiles',pops:'Peso Pluma|Bad Bunny|videos de risa|Minecraft|Free Fire|películas completas|estados para WhatsApp|Karol G',resultsFor:'Resultados de',stageRetry:'Probando otro método…',stageUpdate:'Actualizando el motor…',feedErr:'No se pudieron cargar los videos.',retryBtn:'Reintentar',openYt:'Ver en YouTube',clipPasted:'Enlace pegado desde el portapapeles',moreFmts:'Más formatos',fV144s:'Calidad mínima',fV240s:'Baja calidad',fV1440s:'Pantalla grande',fV2160s:'Máxima calidad',tSettings:'Configuración',tSettingsS:'Portapapeles y reproductor',autoClip:'Detectar enlaces copiados',autoClipS:'Al abrir la app, ofrece descargar el enlace que copiaste',playerT:'Reproductor de videos y música',recommended:'recomendado',askEach:'Elegir cada vez',recTitle:'Reproduce con {n}',recBody:'Para ver tus videos y escuchar tu música con la mejor calidad, Nexora recomienda {n}. Es gratis.',install:'Instalar {n}',openOther:'Abrir con otra app',cForYou:'Para ti',qForYou:'',qMods:'nuevo|popular|en tendencia|2026|mejores|viral|en vivo|completo',watchLoading:'Preparando video…',playErr:'No se pudo reproducir aquí.',audioOnly:'Solo audio',options:'Opciones',quality:'Calidad',speed:'Velocidad',repeat:'Repetir video',autoplay:'Reproducción automática',related:'Más videos',subs:'suscriptores',showMore:'Ver más',showLess:'Ver menos',installing:'Instalando {n}',instStart:'Preparando la descarga…',instDl:'Descargando…',instPerm:'Permite que Nexora instale apps y vuelve aquí.',instReady:'Listo, confirma la instalación',instErr:'No se pudo descargar, abriendo la página…',instWeb:'Descargar desde la página web',recBody:'Para ver tus videos y escuchar tu música, Nexora recomienda {n}.',tHome:'Principal',tVideos:'Videos',tShorts:'Shorts',tLive:'En vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',sizing:'Calculando tamaños… ya puedes descargar',sizingEst:'Tamaños aproximados · ya puedes descargar',bgListen:'Escuchar en segundo plano',bgOn:'Escuchando en segundo plano. Controla la música desde la notificación.',bgWait:'Preparando el audio… empezará en unos segundos',bgErr:'No se pudo reproducir el audio',pipBtn:'Ventana flotante',pipNo:'Tu teléfono no permite ventana flotante',leaveT:'Al salir de la app con un video',leavePip:'Ventana flotante',leaveAudio:'Seguir escuchando',leavePause:'Pausar',qualityAuto:'Automática',qualityEmbed:'Cámbiala con el engranaje del reproductor',tUpdate:'Buscar actualización',checking:'Buscando actualización…',upToDateV:'Ya tienes la última versión (V{n})',updCheckErr:'No se pudo comprobar. Revisa tu conexión.',apkPrep:'Preparando el APK para compartir…',themeMode:'Modo',themeColor:'Color',themeAmoled:'Negro AMOLED',acc_aurora:'Aurora',acc_neon:'Neón',acc_ocean:'Océano',acc_fire:'Fuego',acc_rose:'Rosa',acc_emerald:'Esmeralda',acc_gold:'Oro',acc_ruby:'Rubí',fbTitle:'Enviar comentarios',fbDetails:'Detalles',fbPh:'Cuéntanos un poco más sobre tus preguntas o sugerencias.',fbContact:'Datos de contacto',fbContactPh:'WhatsApp, número o correo electrónico',fbMedia:'Fotos y videos',fbSend:'Enviar',fbThanks:'¡Gracias! Envía el correo para terminar.',secDl:'Descargando',secDone:'Descargado',pauseAll:'Pausar todo',resumeAll:'Continuar todo',pause:'Pausar',resume:'Continuar',sPausedU:'En pausa',selAll:'Seleccionar todo',nSel:'{n} elementos',del2:'Eliminar',delQ:'¿Eliminar {n} elementos?',delFiles:'Borrar también los archivos del teléfono',deletedN:'{n} elementos eliminados',libSearchPh:'Buscar en tus descargas',basedOn:'Basado en lo que ves:',noTab:'Este canal no tiene {n}',permT:'Ver todas tus descargas',permD:'Permite el acceso a videos y música para ver lo que descargaste antes, incluso si reinstalaste la app.',permBtn:'Permitir',updTitle:'Actualización obligatoria',updTitleOpt:'Nueva versión disponible',updCur:'Tu versión:',updNew:'Novedades de esta versión',updNow:'Actualizar ahora',updLater:'Más tarde',updConfirm:'Confirma la instalación en la ventana de Android',prefetch:'Precargar videos',prefetchS:'Analiza en segundo plano los videos que ves para que la descarga abra al instante'},
   en:{homeTitle:'Paste a link and download it',homeLede:'Videos, music, images and documents straight to your phone.',urlPh:'https://example.com/file.mp4',paste:'Paste',use:'Use',download:'Download',
     hint:'Use direct file links (ending in .mp4, .mp3, .pdf…). You can also share a link to Nexora from another app.',recent:'Recent',libTitle:'My downloads',fAll:'All',fVideo:'Video',fAudio:'Music',fImage:'Images',fOther:'Other',
     toolsTitle:'Tools',stFiles:'files downloaded',stSize:'in total',general:'General',tClear:'Clear history',tClearS:'Files are kept',tLang:'Language',tTheme:'Theme',tFolder:'Folder',tShare:'Share Nexora',tShareS:'Send it to a friend',tPrivacy:'Privacy',tPrivacyS:'How we handle your data',policy:'Privacy policy',
@@ -513,7 +589,7 @@ const I18N = {
     clearQ:'Clear history?',clearD:'This clears Nexora’s list. Files on your phone are not deleted.',clear:'Clear',cleared:'History cleared',deleted:'File deleted',
     folderMsg:'Your files are saved in Download/Nexora',themeDark:'Dark',themeLight:'Light',themeSys:'System',about:'About',version:'Version',
     aboutD:'A fast, private download manager. No accounts, no ads, no tracking.',shareMsg:'Download files easily with Nexora Download',
-    vVideo:'Video',vAudio:'Audio',vImage:'Image',vDoc:'Document',vApk:'App',vFile:'File',dupe:'You’re already downloading this link',platTitle:'{n} link',platBody:'Nexora doesn’t download content from {n}, to respect creators’ rights and the platform’s rules. To watch it offline, use the download option in the official app.',platOpen:'Open in {n}',ok:'Got it',ytHint:'Paste a link from YouTube, TikTok, Instagram, Facebook and more, or a direct file link.',analyzing:'Reading link…',enginePrepMsg:'Getting the download engine ready. The first time takes a moment.',chooseFmt:'Format',fV1080:'Video 1080p',fV720:'Video 720p',fV480:'Video 480p',fMp3:'MP3 audio',fM4a:'M4A audio',fV1080s:'Best quality',fV720s:'Balanced',fV480s:'Saves space',fMp3s:'Plays everywhere',fM4as:'Original quality',channel:'Channel',credit:'The title and channel are saved as credit to the creator.',notice:'Only download your own content or content you have permission to save.',noticeTitle:'Before you start',noticeBody:'Nexora Download Plus can save videos and music from YouTube and other networks. Respect creators: only download your own content, freely licensed content, or content you have permission for. Every download keeps the title and channel as credit.',accept:'I agree',infoErr:'Couldn’t read this link',tryDirect:'Try direct download',tEngine:'Engine',engineReady:'Ready',enginePrep:'Preparing…',engineUpdating:'Updating…',engineErr:'Error',engineUpd:'Update engine',engineDesc:'The engine (yt-dlp) updates itself daily. Update it manually if a network stops working.',updated:'Engine updated',upToDate:'Engine is up to date',updErr:'Couldn’t update. Check your connection.',busy:'Wait for downloads to finish',cancelDl:'Cancel download',sCancelled:'Cancelled',sInterrupted:'Interrupted',seeOriginal:'View original',webOnly:'Network downloads only work in the installed app',close:'Close',homeTitle:'Search or paste a link',urlPh:'Search or paste a link',search:'Search',siteHint:'Open a video, tap Share and choose Nexora Download Plus.',results:'Results',clearRes:'Clear',searching:'Searching…',noRes:'No results for that search.',views:'views',grpMusic:'Music',grpVideo:'Video',fVbest:'Video',fVbests:'Best available',errBot:'YouTube asked to confirm you’re not a bot.',errBotFix:'Switch networks (Wi-Fi or mobile data) or sign in under Tools → YouTube account.',errFmt:'YouTube didn’t provide formats for this video.',errFmtFix:'Nexora already tried several methods. Update the engine and try again in a few minutes.',errGen:'Check the link or your connection and try again.',goLogin:'Sign in',tAccount:'YouTube account',accOn:'Signed in',accOff:'Not signed in',accTitle:'YouTube account',accDesc:'Signing in helps when YouTube asks you to confirm you’re not a bot. The session is stored only on your phone.',accWarn:'YouTube may limit or suspend accounts that download videos. Use a secondary account, not your main or channel account.',login:'Sign in',importCk:'Import cookies.txt',logout:'Sign out',loggedOut:'Signed out',tCache:'Free up space',tCacheS:'Deletes temporary files',cacheDone:'Space freed',tFeedback:'Feedback',tFeedbackS:'Report a problem',fV360:'Video 360p',fV360s:'Small size',popular:'Popular searches',seeSites:'Sites',recentSearches:'Recent searches',clearHist:'Clear',cMusic:'Music',cGames:'Gaming',cFunny:'Funny',cTut:'Tutorials',cNews:'News',cSports:'Sports',cKids:'Kids',qMusic:'new music',qGames:'gaming gameplay',qFunny:'funny videos',qTut:'tutorials',qNews:'news today',qSports:'sports highlights',qKids:'kids videos',pops:'Taylor Swift|funny videos|Minecraft|Fortnite|full movies|lofi music|MrBeast|workout',resultsFor:'Results for',stageRetry:'Trying another method…',stageUpdate:'Updating the engine…',feedErr:'Couldn’t load videos.',retryBtn:'Retry',openYt:'Watch on YouTube',clipPasted:'Link pasted from clipboard',moreFmts:'More formats',fV144s:'Lowest quality',fV240s:'Low quality',fV1440s:'Big screen',fV2160s:'Highest quality',tSettings:'Settings',tSettingsS:'Clipboard and player',autoClip:'Detect copied links',autoClipS:'When you open the app, offer to download the link you copied',playerT:'Video and music player',recommended:'recommended',askEach:'Choose every time',recTitle:'Play with {n}',recBody:'To watch your videos and listen to your music in the best quality, Nexora recommends {n}. It’s free.',install:'Install {n}',openOther:'Open with another app',cForYou:'For you',qForYou:'',qMods:'new|popular|trending|2026|best|viral|live|full',watchLoading:'Getting video ready…',playErr:'Couldn’t play it here.',audioOnly:'Audio only',options:'Options',quality:'Quality',speed:'Speed',repeat:'Repeat video',autoplay:'Autoplay',related:'More videos',subs:'subscribers',showMore:'Show more',showLess:'Show less',installing:'Installing {n}',instStart:'Preparing download…',instDl:'Downloading…',instPerm:'Allow Nexora to install apps, then come back.',instReady:'Done, confirm the installation',instErr:'Download failed, opening the page…',instWeb:'Download from the web page',recBody:'To watch your videos and listen to your music, Nexora recommends {n}.',tHome:'Home',tVideos:'Videos',tShorts:'Shorts',tLive:'Live',tPlaylists:'Playlists',seeAll:'See all',playlist:'Playlist',sizing:'Calculating sizes… you can download now',sizingEst:'Approximate sizes · you can download now',bgListen:'Listen in background',bgOn:'Playing in the background. Control it from the notification.',bgWait:'Preparing audio… it will start in a few seconds',bgErr:'Couldn’t play the audio',pipBtn:'Floating window',pipNo:'Your phone doesn’t support floating windows',leaveT:'When leaving the app with a video',leavePip:'Floating window',leaveAudio:'Keep listening',leavePause:'Pause',qualityAuto:'Automatic',qualityEmbed:'Change it with the player’s gear icon',tUpdate:'Check for updates',checking:'Checking for updates…',upToDateV:'You already have the latest version (V{n})',updCheckErr:'Couldn’t check. Check your connection.',basedOn:'Based on what you watch:',noTab:'This channel has no {n}',permT:'See all your downloads',permD:'Allow access to videos and music to see what you downloaded before, even after reinstalling.',permBtn:'Allow',updTitle:'Required update',updTitleOpt:'New version available',updCur:'Your version:',updNew:'What’s new',updNow:'Update now',updLater:'Later',updConfirm:'Confirm the installation in the Android window',prefetch:'Preload videos',prefetchS:'Analyzes videos you see in the background so downloads open instantly'},
+    vVideo:'Video',vAudio:'Audio',vImage:'Image',vDoc:'Document',vApk:'App',vFile:'File',dupe:'You’re already downloading this link',platTitle:'{n} link',platBody:'Nexora doesn’t download content from {n}, to respect creators’ rights and the platform’s rules. To watch it offline, use the download option in the official app.',platOpen:'Open in {n}',ok:'Got it',ytHint:'Paste a link from YouTube, TikTok, Instagram, Facebook and more, or a direct file link.',analyzing:'Reading link…',enginePrepMsg:'Getting the download engine ready. The first time takes a moment.',chooseFmt:'Format',fV1080:'Video 1080p',fV720:'Video 720p',fV480:'Video 480p',fMp3:'MP3 audio',fM4a:'M4A audio',fV1080s:'Best quality',fV720s:'Balanced',fV480s:'Saves space',fMp3s:'Plays everywhere',fM4as:'Original quality',channel:'Channel',credit:'The title and channel are saved as credit to the creator.',notice:'Only download your own content or content you have permission to save.',noticeTitle:'Before you start',noticeBody:'Nexora Download Plus can save videos and music from YouTube and other networks. Respect creators: only download your own content, freely licensed content, or content you have permission for. Every download keeps the title and channel as credit.',accept:'I agree',infoErr:'Couldn’t read this link',tryDirect:'Try direct download',tEngine:'Engine',engineReady:'Ready',enginePrep:'Preparing…',engineUpdating:'Updating…',engineErr:'Error',engineUpd:'Update engine',engineDesc:'The engine (yt-dlp) updates itself daily. Update it manually if a network stops working.',updated:'Engine updated',upToDate:'Engine is up to date',updErr:'Couldn’t update. Check your connection.',busy:'Wait for downloads to finish',cancelDl:'Cancel download',sCancelled:'Cancelled',sInterrupted:'Interrupted',seeOriginal:'View original',webOnly:'Network downloads only work in the installed app',close:'Close',homeTitle:'Search or paste a link',urlPh:'Search or paste a link',search:'Search',siteHint:'Open a video, tap Share and choose Nexora Download Plus.',results:'Results',clearRes:'Clear',searching:'Searching…',noRes:'No results for that search.',views:'views',grpMusic:'Music',grpVideo:'Video',fVbest:'Video',fVbests:'Best available',errBot:'YouTube asked to confirm you’re not a bot.',errBotFix:'Switch networks (Wi-Fi or mobile data) or sign in under Tools → YouTube account.',errFmt:'YouTube didn’t provide formats for this video.',errFmtFix:'Nexora already tried several methods. Update the engine and try again in a few minutes.',errGen:'Check the link or your connection and try again.',goLogin:'Sign in',tAccount:'YouTube account',accOn:'Signed in',accOff:'Not signed in',accTitle:'YouTube account',accDesc:'Signing in helps when YouTube asks you to confirm you’re not a bot. The session is stored only on your phone.',accWarn:'YouTube may limit or suspend accounts that download videos. Use a secondary account, not your main or channel account.',login:'Sign in',importCk:'Import cookies.txt',logout:'Sign out',loggedOut:'Signed out',tCache:'Free up space',tCacheS:'Deletes temporary files',cacheDone:'Space freed',tFeedback:'Feedback',tFeedbackS:'Report a problem',fV360:'Video 360p',fV360s:'Small size',popular:'Popular searches',seeSites:'Sites',recentSearches:'Recent searches',clearHist:'Clear',cMusic:'Music',cGames:'Gaming',cFunny:'Funny',cTut:'Tutorials',cNews:'News',cSports:'Sports',cKids:'Kids',qMusic:'new music',qGames:'gaming gameplay',qFunny:'funny videos',qTut:'tutorials',qNews:'news today',qSports:'sports highlights',qKids:'kids videos',pops:'Taylor Swift|funny videos|Minecraft|Fortnite|full movies|lofi music|MrBeast|workout',resultsFor:'Results for',stageRetry:'Trying another method…',stageUpdate:'Updating the engine…',feedErr:'Couldn’t load videos.',retryBtn:'Retry',openYt:'Watch on YouTube',clipPasted:'Link pasted from clipboard',moreFmts:'More formats',fV144s:'Lowest quality',fV240s:'Low quality',fV1440s:'Big screen',fV2160s:'Highest quality',tSettings:'Settings',tSettingsS:'Clipboard and player',autoClip:'Detect copied links',autoClipS:'When you open the app, offer to download the link you copied',playerT:'Video and music player',recommended:'recommended',askEach:'Choose every time',recTitle:'Play with {n}',recBody:'To watch your videos and listen to your music in the best quality, Nexora recommends {n}. It’s free.',install:'Install {n}',openOther:'Open with another app',cForYou:'For you',qForYou:'',qMods:'new|popular|trending|2026|best|viral|live|full',watchLoading:'Getting video ready…',playErr:'Couldn’t play it here.',audioOnly:'Audio only',options:'Options',quality:'Quality',speed:'Speed',repeat:'Repeat video',autoplay:'Autoplay',related:'More videos',subs:'subscribers',showMore:'Show more',showLess:'Show less',installing:'Installing {n}',instStart:'Preparing download…',instDl:'Downloading…',instPerm:'Allow Nexora to install apps, then come back.',instReady:'Done, confirm the installation',instErr:'Download failed, opening the page…',instWeb:'Download from the web page',recBody:'To watch your videos and listen to your music, Nexora recommends {n}.',tHome:'Home',tVideos:'Videos',tShorts:'Shorts',tLive:'Live',tPlaylists:'Playlists',seeAll:'See all',playlist:'Playlist',sizing:'Calculating sizes… you can download now',sizingEst:'Approximate sizes · you can download now',bgListen:'Listen in background',bgOn:'Playing in the background. Control it from the notification.',bgWait:'Preparing audio… it will start in a few seconds',bgErr:'Couldn’t play the audio',pipBtn:'Floating window',pipNo:'Your phone doesn’t support floating windows',leaveT:'When leaving the app with a video',leavePip:'Floating window',leaveAudio:'Keep listening',leavePause:'Pause',qualityAuto:'Automatic',qualityEmbed:'Change it with the player’s gear icon',tUpdate:'Check for updates',checking:'Checking for updates…',upToDateV:'You already have the latest version (V{n})',updCheckErr:'Couldn’t check. Check your connection.',apkPrep:'Preparing the APK to share…',themeMode:'Mode',themeColor:'Color',themeAmoled:'AMOLED black',acc_aurora:'Aurora',acc_neon:'Neon',acc_ocean:'Ocean',acc_fire:'Fire',acc_rose:'Rose',acc_emerald:'Emerald',acc_gold:'Gold',acc_ruby:'Ruby',fbTitle:'Send feedback',fbDetails:'Details',fbPh:'Tell us more about your questions or suggestions.',fbContact:'Contact info',fbContactPh:'WhatsApp, phone or email',fbMedia:'Photos and videos',fbSend:'Send',fbThanks:'Thanks! Send the email to finish.',secDl:'Downloading',secDone:'Downloaded',pauseAll:'Pause all',resumeAll:'Resume all',pause:'Pause',resume:'Resume',sPausedU:'Paused',selAll:'Select all',nSel:'{n} items',del2:'Delete',delQ:'Delete {n} items?',delFiles:'Also delete the files from the phone',deletedN:'{n} items deleted',libSearchPh:'Search your downloads',basedOn:'Based on what you watch:',noTab:'This channel has no {n}',permT:'See all your downloads',permD:'Allow access to videos and music to see what you downloaded before, even after reinstalling.',permBtn:'Allow',updTitle:'Required update',updTitleOpt:'New version available',updCur:'Your version:',updNew:'What’s new',updNow:'Update now',updLater:'Later',updConfirm:'Confirm the installation in the Android window',prefetch:'Preload videos',prefetchS:'Analyzes videos you see in the background so downloads open instantly'},
   pt:{homeTitle:'Cole um link e baixe',homeLede:'Vídeos, músicas, imagens e documentos direto no seu celular.',urlPh:'https://exemplo.com/arquivo.mp4',paste:'Colar',use:'Usar',download:'Baixar',
     hint:'Use links diretos de arquivos (terminam em .mp4, .mp3, .pdf…). Você também pode compartilhar um link com o Nexora.',recent:'Recentes',libTitle:'Meus downloads',fAll:'Tudo',fVideo:'Vídeo',fAudio:'Música',fImage:'Imagens',fOther:'Outros',
     toolsTitle:'Ferramentas',stFiles:'arquivos baixados',stSize:'no total',general:'Geral',tClear:'Limpar histórico',tClearS:'Os arquivos são mantidos',tLang:'Idioma',tTheme:'Tema',tFolder:'Pasta',tShare:'Compartilhar Nexora',tShareS:'Envie para um amigo',tPrivacy:'Privacidade',tPrivacyS:'Como tratamos seus dados',policy:'Política de privacidade',
@@ -525,7 +601,7 @@ const I18N = {
     clearQ:'Limpar histórico?',clearD:'Isso limpa a lista do Nexora. Os arquivos no celular não são excluídos.',clear:'Limpar',cleared:'Histórico limpo',deleted:'Arquivo excluído',
     folderMsg:'Seus arquivos ficam em Download/Nexora',themeDark:'Escuro',themeLight:'Claro',themeSys:'Do sistema',about:'Sobre',version:'Versão',
     aboutD:'Gerenciador de downloads rápido e privado. Sem contas, sem anúncios, sem rastreamento.',shareMsg:'Baixe arquivos fácil com o Nexora Download',
-    vVideo:'Vídeo',vAudio:'Áudio',vImage:'Imagem',vDoc:'Documento',vApk:'Aplicativo',vFile:'Arquivo',dupe:'Você já está baixando este link',platTitle:'Link do {n}',platBody:'O Nexora não baixa conteúdo do {n}, para respeitar os direitos dos criadores e as regras da plataforma. Para assistir offline, use a opção de download do app oficial.',platOpen:'Abrir no {n}',ok:'Entendi',ytHint:'Cole um link do YouTube, TikTok, Instagram, Facebook e mais, ou um link direto de arquivo.',analyzing:'Lendo o link…',enginePrepMsg:'Preparando o motor de download. Na primeira vez demora um pouco.',chooseFmt:'Formato',fV1080:'Vídeo 1080p',fV720:'Vídeo 720p',fV480:'Vídeo 480p',fMp3:'Áudio MP3',fM4a:'Áudio M4A',fV1080s:'Melhor qualidade',fV720s:'Equilibrado',fV480s:'Economiza espaço',fMp3s:'Toca em tudo',fM4as:'Qualidade original',channel:'Canal',credit:'O título e o canal são salvos como crédito ao criador.',notice:'Baixe só conteúdo seu ou com permissão do criador.',noticeTitle:'Antes de começar',noticeBody:'O Nexora Download Plus pode salvar vídeos e músicas do YouTube e outras redes. Respeite os criadores: baixe só conteúdo seu, com licença livre ou com permissão. Cada download guarda o título e o canal como crédito.',accept:'Aceito',infoErr:'Não foi possível ler este link',tryDirect:'Tentar download direto',tEngine:'Motor',engineReady:'Pronto',enginePrep:'Preparando…',engineUpdating:'Atualizando…',engineErr:'Com erro',engineUpd:'Atualizar motor',engineDesc:'O motor (yt-dlp) se atualiza sozinho todo dia. Atualize manualmente se uma rede parar de funcionar.',updated:'Motor atualizado',upToDate:'O motor já está atualizado',updErr:'Não foi possível atualizar. Verifique a conexão.',busy:'Espere os downloads terminarem',cancelDl:'Cancelar download',sCancelled:'Cancelado',sInterrupted:'Interrompido',seeOriginal:'Ver original',webOnly:'Downloads de redes só funcionam no app instalado',close:'Fechar',homeTitle:'Pesquise ou cole um link',urlPh:'Pesquisar ou colar link',search:'Pesquisar',siteHint:'Abra um vídeo, toque em Compartilhar e escolha Nexora Download Plus.',results:'Resultados',clearRes:'Limpar',searching:'Pesquisando…',noRes:'Nenhum resultado para essa pesquisa.',views:'visualizações',grpMusic:'Música',grpVideo:'Vídeo',fVbest:'Vídeo',fVbests:'Melhor disponível',errBot:'O YouTube pediu para confirmar que você não é um robô.',errBotFix:'Troque de rede (Wi-Fi ou dados) ou entre em Ferramentas → Conta do YouTube.',errFmt:'O YouTube não entregou formatos para este vídeo.',errFmtFix:'O Nexora já tentou vários métodos. Atualize o motor e tente de novo em alguns minutos.',errGen:'Verifique o link ou a conexão e tente de novo.',goLogin:'Entrar',tAccount:'Conta do YouTube',accOn:'Conectado',accOff:'Sem login',accTitle:'Conta do YouTube',accDesc:'Entrar ajuda quando o YouTube pede para confirmar que você não é um robô. A sessão fica só no seu celular.',accWarn:'O YouTube pode limitar ou suspender contas que baixam vídeos. Use uma conta secundária, não a principal nem a do seu canal.',login:'Entrar',importCk:'Importar cookies.txt',logout:'Sair',loggedOut:'Sessão encerrada',tCache:'Liberar espaço',tCacheS:'Apaga arquivos temporários',cacheDone:'Espaço liberado',tFeedback:'Comentários',tFeedbackS:'Relatar um problema',fV360:'Vídeo 360p',fV360s:'Ocupa pouco',popular:'Pesquisas populares',seeSites:'Sites',recentSearches:'Pesquisas recentes',clearHist:'Limpar',cMusic:'Música',cGames:'Games',cFunny:'Engraçados',cTut:'Tutoriais',cNews:'Notícias',cSports:'Esportes',cKids:'Infantil',qMusic:'música nova',qGames:'games gameplay',qFunny:'vídeos engraçados',qTut:'tutoriais',qNews:'notícias hoje',qSports:'esportes melhores momentos',qKids:'vídeos infantis',pops:'funk|vídeos engraçados|Minecraft|Free Fire|filmes completos|status para WhatsApp|sertanejo|Anitta',resultsFor:'Resultados de',stageRetry:'Tentando outro método…',stageUpdate:'Atualizando o motor…',feedErr:'Não foi possível carregar os vídeos.',retryBtn:'Tentar de novo',openYt:'Ver no YouTube',clipPasted:'Link colado da área de transferência',moreFmts:'Mais formatos',fV144s:'Qualidade mínima',fV240s:'Baixa qualidade',fV1440s:'Tela grande',fV2160s:'Qualidade máxima',tSettings:'Configurações',tSettingsS:'Área de transferência e player',autoClip:'Detectar links copiados',autoClipS:'Ao abrir o app, oferece baixar o link que você copiou',playerT:'Player de vídeos e músicas',recommended:'recomendado',askEach:'Escolher sempre',recTitle:'Reproduza com {n}',recBody:'Para assistir seus vídeos e ouvir suas músicas com a melhor qualidade, o Nexora recomenda o {n}. É grátis.',install:'Instalar {n}',openOther:'Abrir com outro app',cForYou:'Para você',qForYou:'',qMods:'novo|popular|em alta|2026|melhores|viral|ao vivo|completo',watchLoading:'Preparando vídeo…',playErr:'Não foi possível reproduzir aqui.',audioOnly:'Só áudio',options:'Opções',quality:'Qualidade',speed:'Velocidade',repeat:'Repetir vídeo',autoplay:'Reprodução automática',related:'Mais vídeos',subs:'inscritos',showMore:'Mostrar mais',showLess:'Mostrar menos',installing:'Instalando {n}',instStart:'Preparando o download…',instDl:'Baixando…',instPerm:'Permita que o Nexora instale apps e volte aqui.',instReady:'Pronto, confirme a instalação',instErr:'Falha no download, abrindo a página…',instWeb:'Baixar pela página web',recBody:'Para ver seus vídeos e ouvir suas músicas, o Nexora recomenda o {n}.',tHome:'Início',tVideos:'Vídeos',tShorts:'Shorts',tLive:'Ao vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',sizing:'Calculando tamanhos… já pode baixar',sizingEst:'Tamanhos aproximados · já pode baixar',bgListen:'Ouvir em segundo plano',bgOn:'Tocando em segundo plano. Controle pela notificação.',bgWait:'Preparando o áudio… começa em alguns segundos',bgErr:'Não foi possível tocar o áudio',pipBtn:'Janela flutuante',pipNo:'Seu celular não permite janela flutuante',leaveT:'Ao sair do app com um vídeo',leavePip:'Janela flutuante',leaveAudio:'Continuar ouvindo',leavePause:'Pausar',qualityAuto:'Automática',qualityEmbed:'Mude pela engrenagem do player',tUpdate:'Buscar atualização',checking:'Buscando atualização…',upToDateV:'Você já tem a versão mais recente (V{n})',updCheckErr:'Não foi possível verificar. Verifique a conexão.',basedOn:'Com base no que você assiste:',noTab:'Este canal não tem {n}',permT:'Ver todos os seus downloads',permD:'Permita o acesso a vídeos e músicas para ver o que você baixou antes, mesmo após reinstalar.',permBtn:'Permitir',updTitle:'Atualização obrigatória',updTitleOpt:'Nova versão disponível',updCur:'Sua versão:',updNew:'Novidades desta versão',updNow:'Atualizar agora',updLater:'Mais tarde',updConfirm:'Confirme a instalação na janela do Android',prefetch:'Pré-carregar vídeos',prefetchS:'Analisa em segundo plano os vídeos que você vê para o download abrir na hora'}
+    vVideo:'Vídeo',vAudio:'Áudio',vImage:'Imagem',vDoc:'Documento',vApk:'Aplicativo',vFile:'Arquivo',dupe:'Você já está baixando este link',platTitle:'Link do {n}',platBody:'O Nexora não baixa conteúdo do {n}, para respeitar os direitos dos criadores e as regras da plataforma. Para assistir offline, use a opção de download do app oficial.',platOpen:'Abrir no {n}',ok:'Entendi',ytHint:'Cole um link do YouTube, TikTok, Instagram, Facebook e mais, ou um link direto de arquivo.',analyzing:'Lendo o link…',enginePrepMsg:'Preparando o motor de download. Na primeira vez demora um pouco.',chooseFmt:'Formato',fV1080:'Vídeo 1080p',fV720:'Vídeo 720p',fV480:'Vídeo 480p',fMp3:'Áudio MP3',fM4a:'Áudio M4A',fV1080s:'Melhor qualidade',fV720s:'Equilibrado',fV480s:'Economiza espaço',fMp3s:'Toca em tudo',fM4as:'Qualidade original',channel:'Canal',credit:'O título e o canal são salvos como crédito ao criador.',notice:'Baixe só conteúdo seu ou com permissão do criador.',noticeTitle:'Antes de começar',noticeBody:'O Nexora Download Plus pode salvar vídeos e músicas do YouTube e outras redes. Respeite os criadores: baixe só conteúdo seu, com licença livre ou com permissão. Cada download guarda o título e o canal como crédito.',accept:'Aceito',infoErr:'Não foi possível ler este link',tryDirect:'Tentar download direto',tEngine:'Motor',engineReady:'Pronto',enginePrep:'Preparando…',engineUpdating:'Atualizando…',engineErr:'Com erro',engineUpd:'Atualizar motor',engineDesc:'O motor (yt-dlp) se atualiza sozinho todo dia. Atualize manualmente se uma rede parar de funcionar.',updated:'Motor atualizado',upToDate:'O motor já está atualizado',updErr:'Não foi possível atualizar. Verifique a conexão.',busy:'Espere os downloads terminarem',cancelDl:'Cancelar download',sCancelled:'Cancelado',sInterrupted:'Interrompido',seeOriginal:'Ver original',webOnly:'Downloads de redes só funcionam no app instalado',close:'Fechar',homeTitle:'Pesquise ou cole um link',urlPh:'Pesquisar ou colar link',search:'Pesquisar',siteHint:'Abra um vídeo, toque em Compartilhar e escolha Nexora Download Plus.',results:'Resultados',clearRes:'Limpar',searching:'Pesquisando…',noRes:'Nenhum resultado para essa pesquisa.',views:'visualizações',grpMusic:'Música',grpVideo:'Vídeo',fVbest:'Vídeo',fVbests:'Melhor disponível',errBot:'O YouTube pediu para confirmar que você não é um robô.',errBotFix:'Troque de rede (Wi-Fi ou dados) ou entre em Ferramentas → Conta do YouTube.',errFmt:'O YouTube não entregou formatos para este vídeo.',errFmtFix:'O Nexora já tentou vários métodos. Atualize o motor e tente de novo em alguns minutos.',errGen:'Verifique o link ou a conexão e tente de novo.',goLogin:'Entrar',tAccount:'Conta do YouTube',accOn:'Conectado',accOff:'Sem login',accTitle:'Conta do YouTube',accDesc:'Entrar ajuda quando o YouTube pede para confirmar que você não é um robô. A sessão fica só no seu celular.',accWarn:'O YouTube pode limitar ou suspender contas que baixam vídeos. Use uma conta secundária, não a principal nem a do seu canal.',login:'Entrar',importCk:'Importar cookies.txt',logout:'Sair',loggedOut:'Sessão encerrada',tCache:'Liberar espaço',tCacheS:'Apaga arquivos temporários',cacheDone:'Espaço liberado',tFeedback:'Comentários',tFeedbackS:'Relatar um problema',fV360:'Vídeo 360p',fV360s:'Ocupa pouco',popular:'Pesquisas populares',seeSites:'Sites',recentSearches:'Pesquisas recentes',clearHist:'Limpar',cMusic:'Música',cGames:'Games',cFunny:'Engraçados',cTut:'Tutoriais',cNews:'Notícias',cSports:'Esportes',cKids:'Infantil',qMusic:'música nova',qGames:'games gameplay',qFunny:'vídeos engraçados',qTut:'tutoriais',qNews:'notícias hoje',qSports:'esportes melhores momentos',qKids:'vídeos infantis',pops:'funk|vídeos engraçados|Minecraft|Free Fire|filmes completos|status para WhatsApp|sertanejo|Anitta',resultsFor:'Resultados de',stageRetry:'Tentando outro método…',stageUpdate:'Atualizando o motor…',feedErr:'Não foi possível carregar os vídeos.',retryBtn:'Tentar de novo',openYt:'Ver no YouTube',clipPasted:'Link colado da área de transferência',moreFmts:'Mais formatos',fV144s:'Qualidade mínima',fV240s:'Baixa qualidade',fV1440s:'Tela grande',fV2160s:'Qualidade máxima',tSettings:'Configurações',tSettingsS:'Área de transferência e player',autoClip:'Detectar links copiados',autoClipS:'Ao abrir o app, oferece baixar o link que você copiou',playerT:'Player de vídeos e músicas',recommended:'recomendado',askEach:'Escolher sempre',recTitle:'Reproduza com {n}',recBody:'Para assistir seus vídeos e ouvir suas músicas com a melhor qualidade, o Nexora recomenda o {n}. É grátis.',install:'Instalar {n}',openOther:'Abrir com outro app',cForYou:'Para você',qForYou:'',qMods:'novo|popular|em alta|2026|melhores|viral|ao vivo|completo',watchLoading:'Preparando vídeo…',playErr:'Não foi possível reproduzir aqui.',audioOnly:'Só áudio',options:'Opções',quality:'Qualidade',speed:'Velocidade',repeat:'Repetir vídeo',autoplay:'Reprodução automática',related:'Mais vídeos',subs:'inscritos',showMore:'Mostrar mais',showLess:'Mostrar menos',installing:'Instalando {n}',instStart:'Preparando o download…',instDl:'Baixando…',instPerm:'Permita que o Nexora instale apps e volte aqui.',instReady:'Pronto, confirme a instalação',instErr:'Falha no download, abrindo a página…',instWeb:'Baixar pela página web',recBody:'Para ver seus vídeos e ouvir suas músicas, o Nexora recomenda o {n}.',tHome:'Início',tVideos:'Vídeos',tShorts:'Shorts',tLive:'Ao vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',sizing:'Calculando tamanhos… já pode baixar',sizingEst:'Tamanhos aproximados · já pode baixar',bgListen:'Ouvir em segundo plano',bgOn:'Tocando em segundo plano. Controle pela notificação.',bgWait:'Preparando o áudio… começa em alguns segundos',bgErr:'Não foi possível tocar o áudio',pipBtn:'Janela flutuante',pipNo:'Seu celular não permite janela flutuante',leaveT:'Ao sair do app com um vídeo',leavePip:'Janela flutuante',leaveAudio:'Continuar ouvindo',leavePause:'Pausar',qualityAuto:'Automática',qualityEmbed:'Mude pela engrenagem do player',tUpdate:'Buscar atualização',checking:'Buscando atualização…',upToDateV:'Você já tem a versão mais recente (V{n})',updCheckErr:'Não foi possível verificar. Verifique a conexão.',apkPrep:'Preparando o APK para compartilhar…',themeMode:'Modo',themeColor:'Cor',themeAmoled:'Preto AMOLED',acc_aurora:'Aurora',acc_neon:'Neon',acc_ocean:'Oceano',acc_fire:'Fogo',acc_rose:'Rosa',acc_emerald:'Esmeralda',acc_gold:'Ouro',acc_ruby:'Rubi',fbTitle:'Enviar comentários',fbDetails:'Detalhes',fbPh:'Conte um pouco mais sobre suas dúvidas ou sugestões.',fbContact:'Contato',fbContactPh:'WhatsApp, número ou e-mail',fbMedia:'Fotos e vídeos',fbSend:'Enviar',fbThanks:'Obrigado! Envie o e-mail para terminar.',secDl:'Baixando',secDone:'Baixado',pauseAll:'Pausar tudo',resumeAll:'Continuar tudo',pause:'Pausar',resume:'Continuar',sPausedU:'Pausado',selAll:'Selecionar tudo',nSel:'{n} itens',del2:'Excluir',delQ:'Excluir {n} itens?',delFiles:'Excluir também os arquivos do celular',deletedN:'{n} itens excluídos',libSearchPh:'Pesquisar nos downloads',basedOn:'Com base no que você assiste:',noTab:'Este canal não tem {n}',permT:'Ver todos os seus downloads',permD:'Permita o acesso a vídeos e músicas para ver o que você baixou antes, mesmo após reinstalar.',permBtn:'Permitir',updTitle:'Atualização obrigatória',updTitleOpt:'Nova versão disponível',updCur:'Sua versão:',updNew:'Novidades desta versão',updNow:'Atualizar agora',updLater:'Mais tarde',updConfirm:'Confirme a instalação na janela do Android',prefetch:'Pré-carregar vídeos',prefetchS:'Analisa em segundo plano os vídeos que você vê para o download abrir na hora'}
 };
 const LANGS = {es:'Español',en:'English',pt:'Português'};
 
@@ -572,12 +648,26 @@ function fmtSize(b){ if(!b||b<0) return ''; const u=['B','KB','MB','GB']; let i=
 function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('on'),2400) }
 
 /* ====== Tema e idioma ====== */
+const ACCENTS=[['aurora','#46E0C4','#8C7BFF'],['neon','#22D3EE','#D946EF'],['ocean','#38BDF8','#6366F1'],['fire','#FB923C','#EF4444'],['rose','#F472B6','#A855F7'],['emerald','#34D399','#14B8A6'],['gold','#FBBF24','#F97316'],['ruby','#F43F5E','#FB7185']];
 function applyTheme(){
   const light = S.theme==='light' || (S.theme==='system' && matchMedia('(prefers-color-scheme: light)').matches);
-  document.documentElement.dataset.theme = light?'light':'dark';
-  document.querySelector('meta[name=theme-color]').content = light?'#F2F3FB':'#0E1230';
-  if(A&&A.setBars) try{ A.setBars(light) }catch(e){}
-  $('#themeName').textContent = t({dark:'themeDark',light:'themeLight',system:'themeSys'}[S.theme]);
+  const mode = light?'light':(S.theme==='amoled'?'amoled':'dark');
+  document.documentElement.dataset.theme = mode;
+  document.documentElement.dataset.accent = saved.accent||'aurora';
+  const bg = light?'#F2F3FB':mode==='amoled'?'#000000':'#0E1230';
+  document.querySelector('meta[name=theme-color]').content = bg;
+  if(A&&A.setBarColor) try{ A.setBarColor(bg,light) }catch(e){} else if(A&&A.setBars) try{ A.setBars(light) }catch(e){}
+  const el=$('#themeName'); if(el) el.textContent = t({dark:'themeDark',light:'themeLight',system:'themeSys',amoled:'themeAmoled'}[S.theme]||'themeDark')+' · '+t('acc_'+(saved.accent||'aurora'));
+}
+function themeSheet(){
+  sheet(`<h3>${t('tTheme')}</h3>
+    <div class="grp">${t('themeMode')}</div>
+    ${[['dark','themeDark'],['light','themeLight'],['amoled','themeAmoled'],['system','themeSys']].map(([v,l])=>`<button class="opt${S.theme===v?' on':''}" data-tm="${v}"><span class="dot"></span><span class="grow">${t(l)}</span></button>`).join('')}
+    <div class="grp">${t('themeColor')}</div>
+    <div class="swatches">${ACCENTS.map(([id,a,b])=>`<button class="sw${(saved.accent||'aurora')===id?' on':''}" data-acc="${id}" style="--a:${a};--b:${b}" aria-label="${t('acc_'+id)}"><i></i><span>${t('acc_'+id)}</span></button>`).join('')}</div>
+    <button class="btn ghost" onclick="closeSheet()">${t('close')}</button>`);
+  $('#sheetBody').querySelectorAll('[data-tm]').forEach(b=>b.onclick=()=>{ S.theme=b.dataset.tm; save(); applyTheme(); $('#sheetBody').querySelectorAll('[data-tm]').forEach(x=>x.classList.toggle('on',x===b)) });
+  $('#sheetBody').querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{ saved.accent=b.dataset.acc; save(); applyTheme(); $('#sheetBody').querySelectorAll('[data-acc]').forEach(x=>x.classList.toggle('on',x===b)) });
 }
 function applyLang(){
   document.documentElement.lang=S.lang;
@@ -603,6 +693,7 @@ function statusText(it){
   switch(it.status){
     case 'pending': return t('sPending');
     case 'running': { const p=pctOf(it); return t('sRunning')+(p!=null?' · '+Math.floor(p)+'%':''); }
+    case 'paused': if(it.src==='yt') return t('sPausedU'); return t('sPaused');
     case 'paused': return t('sPaused');
     case 'done': return '<span class="okc">'+t('sDone')+'</span>';
     case 'failed': return '<span class="err">'+t('sFailed')+'</span>';
@@ -617,19 +708,25 @@ function pctOf(it){
   if(it.src==='yt') return it.pct!=null&&it.pct>0 ? Math.min(100,it.pct) : null;
   return it.total>0 ? Math.min(100,it.done*100/it.total) : null;
 }
+function qTag(it){ const m=it.mode||''; if(m==='mp3') return 'MP3'; if(m==='m4a') return 'M4A'; if(/^v\d+/.test(m)) return m.slice(1)+'P'; return '' }
+const isActive = it => ['running','pending','paused','interrupted'].includes(it.status) && (it.src==='yt'||it.sysId);
 function itemHTML(it){
-  const active = it.status==='running'||it.status==='pending'||it.status==='paused';
+  const active = ['running','pending','paused'].includes(it.status);
   const p = pctOf(it);
   const size = it.status==='done' ? fmtSize(it.total||it.done) : '';
-  const pic = it.thumb ? `<img src="${esc(it.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : `<svg width="24" height="24"><use href="#${ICON[it.kind]}"/></svg>`;
-  return `<div class="item" data-id="${esc(it.key)}" role="button" tabindex="0">
+  const pic = it.thumb ? imgHQ(it.thumb,it.url).replace('/hq720.jpg','/hqdefault.jpg') : `<svg width="24" height="24"><use href="#${ICON[it.kind]}"/></svg>`;
+  const canPause = it.src==='yt' && ['running','pending','paused','interrupted','cancelled'].includes(it.status) && it.status!=='done';
+  const sel = LS.sel && LS.picked.has(it.key);
+  const q=qTag(it);
+  return `<div class="item${sel?' sel':''}" data-id="${esc(it.key)}" role="button" tabindex="0">
+    ${LS.sel?'<span class="ck"></span>':''}
     <div class="thumb t-${it.kind}">${pic}</div>
     <div class="meta"><div class="name">${esc(it.name)}</div>
       ${it.channel?`<div class="credit">${t('channel')}: <b>${esc(it.channel)}</b></div>`:''}
-      <div class="sub">${size?esc(size)+'  ·  ':''}${statusText(it)}</div>
+      <div class="sub">${it.duration?fmtDur(it.duration)+'  ·  ':''}${size?esc(size)+'  ·  ':''}${statusText(it)}${q?`<span class="q">${q}</span>`:''}</div>
       ${active?`<div class="bar ${p!=null?'':'ind'}"><i style="width:${p||0}%"></i></div>`:''}
     </div>
-    <button class="icon-btn" data-more="${esc(it.key)}" aria-label="Más opciones"><svg width="20" height="20"><use href="#i-more"/></svg></button>
+    ${LS.sel?'':canPause?`<button class="pbtn" data-pause="${esc(it.key)}" aria-label="${it.status==='running'||it.status==='pending'?t('pause'):t('resume')}"><svg width="18" height="18"><use href="#${it.status==='running'||it.status==='pending'?'i-pause':'i-play'}"/></svg></button>`:`<button class="icon-btn" data-more="${esc(it.key)}" aria-label="Más opciones"><svg width="20" height="20"><use href="#i-more"/></svg></button>`}
   </div>`;
 }
 function emptyHTML(title,desc,cta){
@@ -638,15 +735,56 @@ function emptyHTML(title,desc,cta){
 function render(){
   const items=[...S.items].sort((a,b)=>b.date-a.date);
   const rl=$('#recentList'); if(rl) rl.innerHTML = items.length ? items.slice(0,4).map(itemHTML).join('') : emptyHTML(t('emptyRecentT'),t('emptyRecent'));
-  const f=S.filter;
-  const lib=items.filter(i=>f==='all'||(f==='other'?!['video','audio','image'].includes(i.kind):i.kind===f));
-  $('#libList').innerHTML = lib.length ? lib.map(itemHTML).join('') : emptyHTML(t('emptyLibT'),t('emptyLib'),true);
+  const f=S.filter, q=(LS.q||'').toLowerCase();
+  const dl=items.filter(i=>i.src==='yt'&&['running','pending','paused','interrupted','cancelled'].includes(i.status));
+  const rest=items.filter(i=>!dl.includes(i));
+  const lib=rest.filter(i=>(f==='all'||(f==='other'?!['video','audio','image'].includes(i.kind):i.kind===f)) && (!q||(i.name+' '+(i.channel||'')).toLowerCase().includes(q)));
+  LS.visible=lib.map(i=>i.key);
+  const anyRunning=dl.some(i=>['running','pending'].includes(i.status));
+  $('#dlSec').innerHTML = dl.length&&!LS.sel ? `<div class="sechead"><h2>${t('secDl')} (${dl.length})</h2><button class="link" id="allPause">${anyRunning?t('pauseAll'):t('resumeAll')}</button></div>`+dl.map(itemHTML).join('') : '';
+  const ap=$('#allPause'); if(ap) ap.onclick=()=>{ dl.forEach(i=>{ const run=['running','pending'].includes(i.status); if(anyRunning&&run) pauseItem(i); if(!anyRunning&&!run) resumeItem(i) }) };
+  $('#libList').innerHTML = lib.length ? lib.map(itemHTML).join('') : (dl.length?'':emptyHTML(t('emptyLibT'),t('emptyLib'),true));
+  if(LS.sel){ $('#selCount').textContent=tn('nSel',LS.picked.size); $('#selAll').classList.toggle('on',lib.length>0&&lib.every(i=>LS.picked.has(i.key))); $('#selDel').disabled=!LS.picked.size }
   const done=S.items.filter(i=>i.status==='done');
   $('#stCount').textContent=done.length;
   $('#stSize').textContent=fmtSize(done.reduce((s,i)=>s+(i.total||0),0))||'0 MB';
   const act=S.items.filter(i=>['running','pending','paused'].includes(i.status)).length;
   const bd=$('#badge'); bd.textContent=act; bd.classList.toggle('on',act>0);
 }
+/* Selección múltiple, búsqueda, pausa */
+const LS={sel:false,picked:new Set(),q:'',visible:[]};
+function enterSel(key){ LS.sel=true; LS.picked=new Set(key?[key]:[]); $('#selBar').hidden=false; $('#selAll').hidden=false; $('nav').style.visibility='hidden'; render() }
+function exitSel(){ LS.sel=false; LS.picked.clear(); $('#selBar').hidden=true; $('#selAll').hidden=true; $('nav').style.visibility=''; render() }
+$('#libSelBtn').onclick=()=>enterSel();
+$('#selClose').onclick=exitSel;
+$('#selAll').onclick=()=>{ const all=LS.visible.every(k=>LS.picked.has(k)); LS.picked=new Set(all?[]:LS.visible); render() };
+$('#selDel').onclick=()=>{
+  const n=LS.picked.size; if(!n) return;
+  let files=true;
+  sheet(`<h3>${tn('delQ',n)}</h3>
+    <button class="row" id="delFiles"><span class="grow">${t('delFiles')}</span><span class="switch on"></span></button>
+    <button class="btn danger" id="delGo">${t('del2')}</button><button class="btn ghost" onclick="closeSheet()">${t('cancel')}</button>`);
+  $('#delFiles').onclick=()=>{ files=!files; $('#delFiles .switch').classList.toggle('on',files) };
+  $('#delGo').onclick=()=>{
+    S.items.filter(i=>LS.picked.has(i.key)).forEach(it=>{
+      if(files&&A) try{ if(it.src==='yt'||it.src==='local') A.deleteFile(it.uri||'',it.path||''); else if(it.sysId) A.remove(it.sysId) }catch(e){}
+    });
+    S.items=S.items.filter(i=>!LS.picked.has(i.key)); save(); closeSheet(); exitSel(); toast(tn('deletedN',n));
+  };
+};
+$('#libSearchBtn').onclick=()=>{ const el=$('#libSearch'); el.hidden=!el.hidden; if(!el.hidden) el.focus(); else { el.value=''; LS.q=''; render() } };
+$('#libSearch').addEventListener('input',e=>{ LS.q=e.target.value; render() });
+$('#libFilterBtn').onclick=()=>{ const el=$('#filters'); el.hidden=!el.hidden };
+function pauseItem(it){ it.pausing=true; try{ A.ytCancel(it.key) }catch(e){} it.status='paused'; save(); render() }
+function resumeItem(it){ it.status='pending'; it.pausing=false; save(); render(); try{ A.ytDownload(it.key,it.url,it.mode,it.client||0) }catch(e){ it.status='failed'; render() } }
+document.addEventListener('click',e=>{
+  const pb=e.target.closest('[data-pause]'); if(pb){ e.stopPropagation(); const it=find(pb.dataset.pause); if(!it) return; (['running','pending'].includes(it.status)?pauseItem:resumeItem)(it); return }
+  if(LS.sel){ const row=e.target.closest('#libList .item'); if(row){ e.stopPropagation(); const k=row.dataset.id; LS.picked.has(k)?LS.picked.delete(k):LS.picked.add(k); render() } }
+},true);
+(function(){ let tm=null;
+  document.addEventListener('touchstart',e=>{ const row=e.target.closest('#libList .item'); if(!row||LS.sel) return; tm=setTimeout(()=>{ enterSel(row.dataset.id); if(navigator.vibrate) navigator.vibrate(20) },550) },{passive:true});
+  ['touchend','touchmove','touchcancel'].forEach(ev=>document.addEventListener(ev,()=>clearTimeout(tm),{passive:true}));
+})();
 document.querySelectorAll('#filters .chip').forEach(c=>c.onclick=()=>{
   S.filter=c.dataset.f; document.querySelectorAll('#filters .chip').forEach(x=>x.classList.toggle('on',x===c)); render();
 });
@@ -763,12 +901,12 @@ const IC_TTL=3*3600*1000;
 function ytId(u){ const m=String(u||'').match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/); return m?m[1]:'' }
 function ikey(u){ return ytId(u)||u }
 function cachedInfo(u){ const c=IC[ikey(u)]; return c&&Date.now()-c.t<IC_TTL ? c.ev : null }
-function requestInfo(req,url){
+function requestInfo(req,url,fast){
   const k=ikey(url), c=cachedInfo(url);
   if(c){ setTimeout(()=>onEvent(Object.assign({},c,{req})),0); return }
   if(INF[k]){ INF[k].reqs.push(req); return }
   INF[k]={req,reqs:[req]};
-  try{ A.ytInfo(req,url) }catch(e){ delete INF[k] }
+  try{ if(fast&&A.ytInfoFast) A.ytInfoFast(req,url); else A.ytInfo(req,url) }catch(e){ delete INF[k] }
 }
 function cancelInfo(req,url){
   const k=ikey(url), f=INF[k];
@@ -860,7 +998,7 @@ function errorSheet(p,raw){
   const eu=$('#errUpd'); if(eu) eu.onclick=()=>{ closeSheet(); engine.status='updating'; renderEngine(); toast(t('engineUpdating')); try{ A.ytUpdate() }catch(e){} };
 }
 function infoFrom(ev,url){
-  return {chUrl:ev.chUrl||'',url:ev.url||url,title:ev.title||nameFromUrl(url),channel:ev.uploader||'',thumb:ev.thumb||'',duration:ev.duration||0,formats:ev.formats||[],client:ev.client||0,
+  return {fast:!!ev.fast,chUrl:ev.chUrl||'',url:ev.url||url,title:ev.title||nameFromUrl(url),channel:ev.uploader||'',thumb:ev.thumb||'',duration:ev.duration||0,formats:ev.formats||[],client:ev.client||0,
     streams:ev.streams||[],audio:ev.audio||'',audioUa:ev.audioUa||'',desc:ev.desc||'',views:ev.views||0,likes:ev.likes||0,date:ev.date||'',subs:ev.subs||0};
 }
 function onInfo(ev){
@@ -935,10 +1073,16 @@ function renderCats(){
   $('#cats').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{ curCat=b.dataset.cat; saved.cat=curCat; save(); feedMode='cat'; loadFeed(false) });
 }
 function skeleton(){ return Array.from({length:3},()=>`<div class="card"><div class="cthumb skel"></div><div class="skel" style="height:14px;margin-top:10px;width:85%"></div><div class="skel" style="height:12px;margin-top:8px;width:50%"></div></div>`).join('') }
+/* Miniaturas nítidas: 1280x720 si existe, si no 480x360 */
+function thumbHQ(u){ const id=ytId(u)||((u||'').match(/\/vi\/([\w-]{11})\//)||[])[1]; return id ? {src:'https://i.ytimg.com/vi/'+id+'/hq720.jpg', fb:'https://i.ytimg.com/vi/'+id+'/hqdefault.jpg'} : {src:u||'',fb:''} }
+function imgHQ(thumb,url,extra){
+  const t = (thumb && !/ytimg/.test(thumb)) ? {src:thumb,fb:''} : thumbHQ(thumb||url);
+  if(!t.src || !/^https?:|^data:/.test(t.src) || (!/ytimg|\.(jpe?g|png|webp)/i.test(t.src) && !thumb)) return '';
+  return `<img src="${esc(t.src)}" data-fb="${esc(t.fb)}" alt="" loading="lazy" referrerpolicy="no-referrer" ${extra||''} onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=''}else this.remove()">` }
 function cardsHTML(items){
   items.forEach(r=>RES[r.url]=r);
   return items.map(r=>`<div class="card" data-res="${esc(r.url)}" role="button" tabindex="0">
-    <div class="cthumb"><img src="${esc(r.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${r.duration?`<span class="dur">${fmtDur(Math.round(r.duration))}</span>`:''}</div>
+    <div class="cthumb">${imgHQ(r.thumb,r.url)}${r.duration?`<span class="dur">${fmtDur(Math.round(r.duration))}</span>`:''}</div>
     <div class="crow"><div class="meta"><div class="ctitle">${esc(r.title)}</div><div class="sub">${r.channel?`<span class="chlink" data-ch="${esc(r.chUrl||'')}" data-chn="${esc(r.channel)}">${esc(r.channel)}</span>`:''}${r.views?'  ·  '+fmtViews(r.views)+' '+t('views'):''}</div></div>
     <button class="dlb" aria-label="${t('download')}"><svg width="20" height="20"><use href="#i-dl"/></svg></button></div></div>`).join('');
 }
@@ -1168,7 +1312,7 @@ function syncBar(){
 let W=null;
 let ZL=15;
 const wv=()=>$('#wv'), wf=()=>$('#wf');
-function hiThumb(u){ return (u||'').replace(/\/(mq|sd)default\.jpg/,'/hqdefault.jpg') }
+function hiThumb(u){ return (u||'').replace(/\/(mq|sd|hq)default\.jpg/,'/hq720.jpg') }
 function fmtDate(d){ if(!/^\d{8}$/.test(d||'')) return ''; const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8)); return dt.toLocaleDateString(S.lang,{day:'numeric',month:'short',year:'numeric'}) }
 function linkify(txt){ return esc(txt).replace(/https?:\/\/[^\s<]+/g,u=>`<a href="${u}" data-ext="1">${u}</a>`) }
 function openWatch(r){
@@ -1176,7 +1320,7 @@ function openWatch(r){
   if(!HAS_YT){ if(r.url) window.open(r.url,'_blank','noopener'); return }
   closeWatch(true);
   const req='w'+Date.now(), id=ytId(r.url);
-  W={open:true,r,req,info:null,cur:-1,audio:false,bg:false,related:[],relReq:null,t0:Date.now(),mode:id?'embed':'stream',pos:0,playing:false,ready:false,rate:1};
+  W={open:true,r,req,info:null,cur:-1,audio:false,bg:false,related:[],relReq:null,t0:Date.now(),mode:(saved.watchEmbed&&id)?'embed':'stream',pos:0,playing:false,ready:false,rate:1};
   pending[req]={url:r.url,plat:'YouTube',watch:true};
   $('#watch').hidden=false; $('#watch').style.zIndex=++ZL;
   const v=wv(); v.removeAttribute('src'); v.load(); v.poster=hiThumb(r.thumb)||'';
@@ -1192,8 +1336,9 @@ function openWatch(r){
     wf().hidden=true; wf().src='about:blank'; v.hidden=false;
     showPreparing();
   }
+  if(W.mode==='stream'){ v.poster=hiThumb(r.thumb)||'' }
   renderWatchBody();
-  requestInfo(req,r.url);
+  requestInfo(req,r.url,true);
   clearInterval(openWatch._sync); openWatch._sync=setInterval(()=>{ if(W&&W.playing) syncNow() },2000);
   W.relReq='rel'+Date.now();
   const q=((r.title||'').split(/\s+/).slice(0,5).join(' '))||r.channel||'';
@@ -1283,7 +1428,7 @@ function renderWatchBody(){
 function relHTML(items){
   items.forEach(x=>RES[x.url]=x);
   return items.map(x=>`<div class="rel" data-res="${esc(x.url)}" role="button" tabindex="0">
-    <div class="rthumb"><img src="${esc(x.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${x.duration?`<span class="dur">${fmtDur(Math.round(x.duration))}</span>`:''}</div>
+    <div class="rthumb">${imgHQ(x.thumb,x.url)}${x.duration?`<span class="dur">${fmtDur(Math.round(x.duration))}</span>`:''}</div>
     <div class="meta"><div class="rtitle">${esc(x.title)}</div><div class="sub">${esc(x.channel||'')}${x.views?'<br>'+fmtViews(x.views)+' '+t('views'):''}</div></div></div>`).join('');
 }
 function onRelated(ev){
@@ -1330,6 +1475,12 @@ function setSource(time,autoplay){
   v.onended=()=>{ W.playing=false; if(!v.loop && saved.autoplayNext!==false && W.related[0]) openWatch(W.related[0]) };
 }
 function playFail(){
+  // Si el método rápido no sirvió para reproducir, se intenta el método completo una vez
+  if(W && W.info && W.info.fast && !W.fullTried){
+    W.fullTried=true; delete IC[ikey(W.r.url)];
+    const req='wf'+Date.now(); W.req=req; pending[req]={url:W.r.url,plat:'YouTube',watch:true};
+    showPreparing(); requestInfo(req,W.r.url,false); return;
+  }
   $('#wstate').className='wstate err';
   $('#wstate').innerHTML=`<div>${t('playErr')}<br><button class="lnk" id="wErrDl">${t('download')}</button><button class="lnk" id="wErrYt">${t('openYt')}</button></div>`;
   $('#wErrDl').onclick=()=>{ if(W.info) formatSheet(W.info); else analyze(W.r.url,'YouTube') };
@@ -1457,7 +1608,7 @@ function chRow(x){
     <div class="rthumb">${x.thumb?`<img src="${esc(x.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}<div class="plbadge"><svg width="20" height="20"><use href="#i-list"/></svg>${x.count||''}</div></div>
     <div class="meta"><div class="rtitle">${esc(x.title)}</div><div class="sub">${t('playlist')}</div></div></div>`;
   return `<div class="vrow${x.short?' short':''}" data-res="${esc(x.url)}" role="button" tabindex="0">
-    <div class="rthumb"><img src="${esc(x.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${x.duration?`<span class="dur">${fmtDur(Math.round(x.duration))}</span>`:''}</div>
+    <div class="rthumb">${imgHQ(x.thumb,x.url)}${x.duration?`<span class="dur">${fmtDur(Math.round(x.duration))}</span>`:''}</div>
     <div class="meta"><div class="rtitle">${esc(x.title)}</div><div class="sub">${x.views?fmtViews(x.views)+' '+t('views'):''}</div></div>
     <button class="dl2 dlb" aria-label="${t('download')}"><svg width="20" height="20"><use href="#i-dl"/></svg></button></div>`;
 }
@@ -1590,6 +1741,34 @@ function onUpdateInstall(ev){
   if(ev.state==='error'){ if(msg) msg.textContent=t('instErr'); if(go) go.disabled=false }
 }
 
+/* ====== Enviar comentarios ====== */
+let FB=[];
+function openFeedback(){
+  const el=$('#fb'); el.hidden=false; el.style.zIndex=++ZL;
+  renderFbMedia(); syncFb();
+}
+function closeFeedback(){ $('#fb').hidden=true }
+$('#fbBack').onclick=closeFeedback;
+function syncFb(){ const v=$('#fbText').value; $('#fbCount').textContent=v.length+'/1000'; $('#fbSend').disabled=!v.trim() }
+$('#fbText').addEventListener('input',syncFb);
+function renderFbMedia(){
+  $('#fbN').textContent=FB.length;
+  $('#fbMedia').innerHTML=FB.map(m=>`<div class="pic">${m.thumb?`<img src="${m.thumb}" alt="">`:''}${m.video?'<svg class="vid" width="18" height="18"><use href="#i-play"/></svg>':''}<button class="x" data-unpick="${m.id}" aria-label="Quitar"><svg width="14" height="14"><use href="#i-x"/></svg></button></div>`).join('')
+    + (FB.length<9?`<button class="add" id="fbAdd" aria-label="${t('fbMedia')}"><svg width="28" height="28"><use href="#i-image"/></svg></button>`:'');
+  const a=$('#fbAdd'); if(a) a.onclick=()=>{ if(A&&A.pickMedia) A.pickMedia(); else toast(t('webOnly')) };
+  $('#fbMedia').querySelectorAll('[data-unpick]').forEach(b=>b.onclick=()=>{ const id=b.dataset.unpick; FB=FB.filter(x=>x.id!==id); try{ A.unpick(id) }catch(e){} renderFbMedia() });
+}
+function onPicked(ev){ (ev.items||[]).forEach(m=>{ if(FB.length<9) FB.push(m) }); renderFbMedia() }
+$('#fbSend').onclick=()=>{
+  const txt=$('#fbText').value.trim(); if(!txt) return;
+  const contact=$('#fbContactIn').value.trim();
+  const body=txt+'\n\n'+(contact?t('fbContact')+': '+contact+'\n':'')+'—\nNexora Download Plus V'+myVersion()+' · '+((A&&A.abi&&A.abi())||'')+' · '+navigator.userAgent.replace(/.*Android ([\d.]+).*/,'Android $1');
+  if(A&&A.sendFeedback){ A.sendFeedback(CONFIG.feedbackEmail,'Comentarios · Nexora Download Plus',body,FB.map(x=>x.id).join(',')) }
+  else location.href='mailto:'+CONFIG.feedbackEmail+'?subject='+encodeURIComponent('Comentarios · Nexora Download Plus')+'&body='+encodeURIComponent(body);
+  toast(t('fbThanks'));
+  $('#fbText').value=''; $('#fbContactIn').value=''; FB=[]; renderFbMedia(); syncFb(); closeFeedback();
+};
+
 /* ====== Cuenta ====== */
 let account={logged:false};
 function renderVer(){ const el=$('#verName'); if(el) el.textContent='V'+myVersion() }
@@ -1611,7 +1790,7 @@ function startYt(info,fmt){
   const f=fmtDef(fmt)||fmtDef('v720');
   if(S.items.some(i=>i.url===info.url&&i.mode===fmt&&['running','pending'].includes(i.status))){ toast(t('dupe')); return }
   const it={key:'y'+Date.now()+Math.random().toString(36).slice(2,6),src:'yt',url:info.url,name:info.title||info.host||info.url,host:info.host||'',channel:info.channel,thumb:info.thumb,
-    kind:f[3],mode:fmt,status:'pending',pct:null,done:0,total:0,date:Date.now()};
+    kind:f[3],mode:fmt,status:'pending',pct:null,done:0,total:0,date:Date.now(),duration:info.duration||0,client:info.client||0};
   S.items.push(it); save(); render(); toast(t('started')); $('#url').value='';
   try{ A.ytDownload(it.key,info.url,fmt,info.client||0) }catch(e){ it.status='failed'; save(); render() }
 }
@@ -1624,6 +1803,8 @@ function onEvent(ev){
   if(ev.type==='perm'){ renderPerm(); if(ev.granted) scanLibrary(); return }
   if(ev.type==='deleted'){ return }
   if(ev.type==='list') return onList(ev);
+  if(ev.type==='picked') return onPicked(ev);
+  if(ev.type==='shareErr'){ shareText(t('shareMsg')); return }
   if(ev.type==='bg') return onBg(ev);
   if(ev.type==='pip'){ document.body.classList.toggle('pip',!!ev.on); return }
   if(ev.type==='pipClosed'){ document.body.classList.remove('pip'); pausePlayer(); return }
@@ -1643,7 +1824,7 @@ function onEvent(ev){
   if(ev.type==='done'){ it.status='done'; it.pct=100; it.path=ev.path||''; it.uri=ev.uri||''; it.total=ev.size||0; it.file=ev.file||'';
     if(it.file && (!it.name || /^https?:/.test(it.name) || it.name===it.host)){ const cr=parseCredit(it.file); it.name=cr.title; if(!it.channel) it.channel=cr.channel; if(!it.thumb&&cr.id) it.thumb='https://i.ytimg.com/vi/'+cr.id+'/mqdefault.jpg' } }
   if(ev.type==='error'){ it.status='failed'; it.error=ev.error||'' }
-  if(ev.type==='cancelled'){ it.status='cancelled' }
+  if(ev.type==='cancelled'){ it.status = it.pausing ? 'paused' : 'cancelled'; it.pausing=false }
   save(); render();
 }
 window.nxEvent = ev => { try{ onEvent(ev) }catch(e){ console.error(e) } };
@@ -1664,7 +1845,7 @@ function settingsSheet(){
     <button class="row" id="tgPf"><span class="grow">${t('prefetch')}<br><small style="color:var(--muted)">${t('prefetchS')}</small></span><span class="switch${saved.prefetch!==false?' on':''}"></span></button>
     <button class="row" id="tgLeave"><span class="grow">${t('leaveT')}</span><small style="color:var(--muted)">${t({pip:'leavePip',audio:'leaveAudio',pause:'leavePause'}[saved.leave||'pip'])}</small></button>
     <div class="grp">${t('playerT')}</div>
-    ${[[MY_PLAYER.pkg,MY_PLAYER.name+' ('+t('recommended')+')'],['org.videolan.vlc','VLC'],['com.mxtech.videoplayer.ad','MX Player'],['',t('askEach')]].map(([v,l])=>`<button class="opt${v===pk?' on':''}" data-pl="${v}"><span class="dot"></span><span class="grow">${esc(l)}</span></button>`).join('')}
+    <button class="opt on" data-pl="${MY_PLAYER.pkg}"><span class="dot"></span><span class="grow">${esc(MY_PLAYER.name)} (${t('recommended')})</span></button>
     <button class="btn ghost" onclick="closeSheet()">${t('close')}</button>`);
   $('#tgLeave').onclick=()=>leavePicker();
   $('#tgPf').onclick=()=>{ saved.prefetch = saved.prefetch===false; save(); $('#tgPf .switch').classList.toggle('on', saved.prefetch!==false) };
@@ -1716,7 +1897,7 @@ const MY_PLAYER = {
   pageUrl: 'https://github.com/EduardYT9088/Nexora-Pro/releases/latest'                          // página si falla la descarga
 };
 const PLAYERS={[MY_PLAYER.pkg]:MY_PLAYER.name,'org.videolan.vlc':'VLC','com.mxtech.videoplayer.ad':'MX Player'};
-function playerPkg(){ return saved.player===undefined ? MY_PLAYER.pkg : saved.player }
+function playerPkg(){ return MY_PLAYER.pkg }
 function openMedia(it){
   if(!A) { window.open(it.url,'_blank','noopener'); return }
   const media = it.kind==='video'||it.kind==='audio';
@@ -1849,15 +2030,15 @@ document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{
       $('#doClear').onclick=()=>{ S.items=S.items.filter(i=>['running','pending','paused'].includes(i.status)); save(); render(); closeSheet(); toast(t('cleared')) };
       break;
     case 'lang': pick(t('tLang'),Object.entries(LANGS),S.lang,v=>{ S.lang=v; save(); applyLang() }); break;
-    case 'theme': pick(t('tTheme'),[['dark',t('themeDark')],['light',t('themeLight')],['system',t('themeSys')]],S.theme,v=>{ S.theme=v; save(); applyTheme() }); break;
+    case 'theme': themeSheet(); break;
     case 'engine': engineSheet(); break;
     case 'account': accountSheet(); break;
     case 'cache': { if(!A||!A.clearCache){ toast(t('cacheDone')); break } const n=Number(A.clearCache()); if(n<0) toast(t('busy')); else toast(t('cacheDone')+(n>0?': '+fmtSize(n):'')); break }
     case 'settings': settingsSheet(); break;
     case 'update': toast(t('checking')); checkUpdate(true,true); break;
-    case 'feedback': location.href='mailto:tu-correo@ejemplo.com?subject='+encodeURIComponent('Nexora Download Plus'); break;
+    case 'feedback': openFeedback(); break;
     case 'folder': toast(t('folderMsg')); break;
-    case 'share': shareText(t('shareMsg')); break;
+    case 'share': if(A&&A.shareApk){ toast(t('apkPrep')); A.shareApk(t('shareMsg')) } else shareText(t('shareMsg')); break;
     case 'privacy': location.href=CONFIG.privacyUrl; break;
   }
 });
@@ -1869,6 +2050,8 @@ window.nexoraBack = ()=>{
   if(sheetOpen()){ closeSheet(); return true }
   const wz=(W&&W.open)?+$('#watch').style.zIndex||0:-1, cz=C?+$('#chan').style.zIndex||0:-1;
   if(cz>wz&&C){ closeChannel(); return true }
+  if(!$('#fb').hidden){ closeFeedback(); return true }
+  if(LS.sel){ exitSel(); return true }
   if(W&&W.open){ closeWatch(); return true }
   if(C){ closeChannel(); return true }
   if(S.view==='home'&&panelOpen()){ closePanel(); $('#url').blur(); return true }
@@ -1881,7 +2064,7 @@ window.nexoraResume = ()=>{ checkClip(); poll(); renderPerm(); if(S.view==='lib'
 /* ====== Inicio ====== */
 // Las descargas de redes que quedaron a medias al cerrar la app
 let stillRunning=[]; try{ if(A&&A.ytActive) stillRunning=JSON.parse(A.ytActive()) }catch(e){}
-S.items.forEach(i=>{ if(i.src==='yt'&&['running','pending'].includes(i.status)&&!stillRunning.includes(i.key)) i.status='interrupted' });
+S.items.forEach(i=>{ if(i.src==='yt'&&['running','pending'].includes(i.status)&&!stillRunning.includes(i.key)) i.status='paused' });
 save();
 applyLang();
 renderEngine();
