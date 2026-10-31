@@ -1,3 +1,6 @@
 ## Novedades
-- Nuevo logo de Nexora Download Plus
-- Los tamaños de descarga aparecen al instante
+- Los videos empiezan a reproducirse al instante
+- Ventana flotante para seguir viendo mientras usas otras apps
+- Escucha en segundo plano con controles en la notificación
+- Botón "Buscar actualización" en Herramientas
+- Nuevo logo
