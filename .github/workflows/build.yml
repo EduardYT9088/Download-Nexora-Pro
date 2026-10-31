@@ -189,7 +189,7 @@ jobs:
           EOF
 
           cat > $P/app/src/main/res/values/strings.xml <<'EOF'
-          <resources><string name="app_name">Nexora Plus</string></resources>
+          <resources><string name="app_name">Nexora Download Plus</string></resources>
           EOF
 
           cat > $P/app/src/main/res/values/colors.xml <<'EOF'
@@ -209,19 +209,51 @@ jobs:
           </resources>
           EOF
 
-          # Icono adaptativo (hexágono con flecha de descarga)
-          cat > $P/app/src/main/res/drawable/ic_fg.xml <<'EOF'
+          # Icono adaptativo: fondo degradado + "N" con flecha de descarga
+          cat > $P/app/src/main/res/drawable/ic_bg.xml <<'EOF'
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:aapt="http://schemas.android.com/aapt"
               android:width="108dp" android:height="108dp"
               android:viewportWidth="108" android:viewportHeight="108">
-              <path android:fillColor="#46E0C4"
-                  android:pathData="M54,24 L80,39 L80,69 L54,84 L28,69 L28,39 Z" />
-              <path android:fillColor="#8C7BFF" android:fillAlpha="0.85"
-                  android:pathData="M54,54 L80,39 L80,69 L54,84 Z" />
-              <path android:strokeColor="#0E1230" android:strokeWidth="5"
-                  android:strokeLineCap="round" android:strokeLineJoin="round"
-                  android:fillColor="#00000000"
-                  android:pathData="M54,38 L54,60 M44,51 L54,61 L64,51 M41,70 L67,70" />
+              <path android:pathData="M0,0h108v108h-108z">
+                  <aapt:attr name="android:fillColor">
+                      <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="108" android:endY="108">
+                          <item android:offset="0" android:color="#FF1B1F5E" />
+                          <item android:offset="0.55" android:color="#FF3B2FA8" />
+                          <item android:offset="1" android:color="#FF7A4DF2" />
+                      </gradient>
+                  </aapt:attr>
+              </path>
+              <path android:pathData="M0,0h108v108h-108z">
+                  <aapt:attr name="android:fillColor">
+                      <gradient android:type="radial" android:centerX="32" android:centerY="24" android:gradientRadius="80">
+                          <item android:offset="0" android:color="#5946E0C4" />
+                          <item android:offset="1" android:color="#0046E0C4" />
+                      </gradient>
+                  </aapt:attr>
+              </path>
+          </vector>
+          EOF
+
+          cat > $P/app/src/main/res/drawable/ic_fg.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:aapt="http://schemas.android.com/aapt"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <group android:pivotX="54" android:pivotY="57.5" android:scaleX="0.8" android:scaleY="0.8" android:translateY="-3.5">
+                  <path android:pathData="M30,72 V33 L67,68 M67,31 V68 L79,56"
+                      android:strokeWidth="9" android:strokeLineCap="round" android:strokeLineJoin="round"
+                      android:fillColor="#00000000">
+                      <aapt:attr name="android:strokeColor">
+                          <gradient android:type="linear" android:startX="0" android:startY="31" android:endX="0" android:endY="72">
+                              <item android:offset="0" android:color="#FFFFFFFF" />
+                              <item android:offset="1" android:color="#FF7FF3DD" />
+                          </gradient>
+                      </aapt:attr>
+                  </path>
+                  <path android:pathData="M31,84 H77" android:strokeColor="#FF46E0C4"
+                      android:strokeWidth="7" android:strokeLineCap="round" android:fillColor="#00000000" />
+              </group>
           </vector>
           EOF
 
@@ -229,17 +261,18 @@ jobs:
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="108dp" android:height="108dp"
               android:viewportWidth="108" android:viewportHeight="108">
-              <path android:strokeColor="#FFFFFF" android:strokeWidth="5"
-                  android:strokeLineCap="round" android:strokeLineJoin="round"
-                  android:fillColor="#00000000"
-                  android:pathData="M54,24 L80,39 L80,69 L54,84 L28,69 L28,39 Z M54,40 L54,60 M45,52 L54,61 L63,52" />
+              <group android:pivotX="54" android:pivotY="57.5" android:scaleX="0.8" android:scaleY="0.8" android:translateY="-3.5">
+                  <path android:pathData="M30,72 V33 L67,68 M67,31 V68 L79,56 M31,84 H77"
+                      android:strokeColor="#FFFFFFFF" android:strokeWidth="9"
+                      android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" />
+              </group>
           </vector>
           EOF
 
           cat > $P/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@color/ic_bg" />
+              <background android:drawable="@drawable/ic_bg" />
               <foreground android:drawable="@drawable/ic_fg" />
               <monochrome android:drawable="@drawable/ic_mono" />
           </adaptive-icon>
@@ -1810,10 +1843,42 @@ jobs:
           }
           EOF
 
+      # ---------- Icono de la app a partir de icon.png ----------
+      - name: Crear icono desde icon.png
+        run: |
+          if [ ! -f icon.png ]; then echo "Sin icon.png: se usa el icono dibujado."; exit 0; fi
+          pip install --quiet pillow
+          python3 - <<'PY'
+          from PIL import Image
+          import os
+          src = Image.open("icon.png").convert("RGBA")
+          res = "android/app/src/main/res"
+          # Capa frontal del icono adaptativo: el logo ocupa 70 de 108 dp (se ve completo en círculo o cuadrado)
+          for folder, px in {"mdpi":108, "hdpi":162, "xhdpi":216, "xxhdpi":324, "xxxhdpi":432}.items():
+              canvas = Image.new("RGBA", (px, px), (0, 0, 0, 0))
+              s = round(px * 70 / 108)
+              canvas.alpha_composite(src.resize((s, s), Image.LANCZOS), ((px - s) // 2, (px - s) // 2))
+              os.makedirs(f"{res}/mipmap-{folder}", exist_ok=True)
+              canvas.save(f"{res}/mipmap-{folder}/ic_launcher_fg.png")
+          PY
+          cat > android/app/src/main/res/values/icon_bg.xml <<'EOF'
+          <resources><color name="icon_bg">#0B0620</color></resources>
+          EOF
+          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/icon_bg" />
+              <foreground android:drawable="@mipmap/ic_launcher_fg" />
+              <monochrome android:drawable="@drawable/ic_mono" />
+          </adaptive-icon>
+          EOF
+          echo "Icono creado desde icon.png"
+
       - name: Copiar los HTML a la app
         run: |
           cp index.html android/app/src/main/assets/index.html
           if [ -f privacy-policy.html ]; then cp privacy-policy.html android/app/src/main/assets/; fi
+          if [ -f icon.png ]; then cp icon.png android/app/src/main/assets/; fi
 
       # ---------- Firma ----------
       # Para que las actualizaciones se instalen encima de la versión anterior (y para Play Store),
@@ -1874,14 +1939,14 @@ jobs:
         run: |
           mkdir -p out
           V=1.0.${{ github.run_number }}
-          cp android/app/build/outputs/apk/release/app-arm64-v8a-release.apk   "out/NexoraPlus-v$V-arm64.apk"
-          cp android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk "out/NexoraPlus-v$V-arm32.apk"
+          cp android/app/build/outputs/apk/release/app-arm64-v8a-release.apk   "out/NexoraDownloadPlus-v$V-arm64.apk"
+          cp android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk "out/NexoraDownloadPlus-v$V-arm32.apk"
           ls -la out
 
       - name: Subir APK (Artifacts)
         uses: actions/upload-artifact@v4
         with:
-          name: NexoraPlus-APK
+          name: NexoraDownloadPlus-APK
           path: out/*.apk
 
       # ---------- Nueva versión: la app la detecta y pide actualizar ----------
