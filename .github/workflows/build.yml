@@ -1,0 +1,1904 @@
+name: Build Nexora Download Plus APK
+
+# Se ejecuta al subir cambios a main o manualmente desde la pestaña "Actions".
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore: [ 'keystore/**' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: "Nexora Download Plus"
+  APP_ID: "com.nexora.download"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      # ---------- Proyecto Android (se genera aquí; tú solo subes los HTML) ----------
+      - name: Crear proyecto Android
+        run: |
+          set -e
+          P=android
+          PK=app/src/main/java/com/nexora/download
+          mkdir -p $P/$PK $P/app/src/main/assets $P/app/src/main/res/values \
+                   $P/app/src/main/res/drawable $P/app/src/main/res/mipmap-anydpi-v26
+
+          cat > $P/settings.gradle <<'EOF'
+          pluginManagement {
+              repositories { google(); mavenCentral(); gradlePluginPortal() }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories { google(); mavenCentral() }
+          }
+          rootProject.name = "NexoraDownload"
+          include ':app'
+          EOF
+
+          cat > $P/build.gradle <<'EOF'
+          plugins { id 'com.android.application' version '8.5.2' apply false }
+          EOF
+
+          cat > $P/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          EOF
+
+          cat > $P/app/build.gradle <<'EOF'
+          plugins { id 'com.android.application' }
+
+          android {
+              namespace 'com.nexora.download'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId "com.nexora.download"
+                  minSdk 26
+                  targetSdk 34
+                  versionCode Integer.parseInt(System.getenv("VERSION_CODE") ?: "1")
+                  versionName System.getenv("VERSION_NAME") ?: "1.0.0"
+              }
+
+              signingConfigs {
+                  release {
+                      storeFile file("nexora.jks")
+                      storePassword System.getenv("KS_PASS")
+                      keyAlias System.getenv("KS_ALIAS")
+                      keyPassword System.getenv("KEY_PASS")
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                      signingConfig signingConfigs.release
+                  }
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+
+              lint {
+                  checkReleaseBuilds false
+                  abortOnError false
+              }
+
+              // Un APK por tipo de procesador (el motor incluye Python y FFmpeg, que pesan)
+              splits {
+                  abi {
+                      enable true
+                      reset()
+                      include 'arm64-v8a', 'armeabi-v7a'
+                      universalApk false
+                  }
+              }
+
+              packaging {
+                  jniLibs { useLegacyPackaging true }
+              }
+          }
+
+          dependencies {
+              implementation 'io.github.junkfood02.youtubedl-android:library:0.18.1'
+              implementation 'io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1'
+              implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+          }
+          EOF
+
+          cat > $P/app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+              <uses-permission android:name="android.permission.WAKE_LOCK" />
+              <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+              <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+              <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
+              <!-- Para saber si el reproductor recomendado está instalado (Android 11+) -->
+              <queries>
+                  <package android:name="com.nexora.pro" />
+                  <package android:name="org.videolan.vlc" />
+                  <package android:name="com.mxtech.videoplayer.ad" />
+                  <intent>
+                      <action android:name="android.intent.action.VIEW" />
+                      <data android:scheme="market" />
+                  </intent>
+              </queries>
+
+              <application
+                  android:label="@string/app_name"
+                  android:icon="@mipmap/ic_launcher"
+                  android:roundIcon="@mipmap/ic_launcher"
+                  android:theme="@style/AppTheme"
+                  android:allowBackup="false"
+                  android:requestLegacyExternalStorage="true"
+                  android:supportsRtl="true">
+                  <activity
+                      android:name=".LoginActivity"
+                      android:exported="false"
+                      android:configChanges="orientation|screenSize|keyboardHidden" />
+                  <service
+                      android:name=".NexoraService"
+                      android:exported="false"
+                      android:foregroundServiceType="dataSync" />
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTask"
+                      android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                      <intent-filter>
+                          <action android:name="android.intent.action.SEND" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <data android:mimeType="text/plain" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat > $P/app/src/main/res/values/strings.xml <<'EOF'
+          <resources><string name="app_name">Nexora Plus</string></resources>
+          EOF
+
+          cat > $P/app/src/main/res/values/colors.xml <<'EOF'
+          <resources>
+              <color name="bg">#0E1230</color>
+              <color name="ic_bg">#2A2F7A</color>
+          </resources>
+          EOF
+
+          cat > $P/app/src/main/res/values/styles.xml <<'EOF'
+          <resources>
+              <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
+                  <item name="android:windowBackground">@color/bg</item>
+                  <item name="android:statusBarColor">@color/bg</item>
+                  <item name="android:navigationBarColor">@color/bg</item>
+              </style>
+          </resources>
+          EOF
+
+          # Icono adaptativo (hexágono con flecha de descarga)
+          cat > $P/app/src/main/res/drawable/ic_fg.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <path android:fillColor="#46E0C4"
+                  android:pathData="M54,24 L80,39 L80,69 L54,84 L28,69 L28,39 Z" />
+              <path android:fillColor="#8C7BFF" android:fillAlpha="0.85"
+                  android:pathData="M54,54 L80,39 L80,69 L54,84 Z" />
+              <path android:strokeColor="#0E1230" android:strokeWidth="5"
+                  android:strokeLineCap="round" android:strokeLineJoin="round"
+                  android:fillColor="#00000000"
+                  android:pathData="M54,38 L54,60 M44,51 L54,61 L64,51 M41,70 L67,70" />
+          </vector>
+          EOF
+
+          cat > $P/app/src/main/res/drawable/ic_mono.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <path android:strokeColor="#FFFFFF" android:strokeWidth="5"
+                  android:strokeLineCap="round" android:strokeLineJoin="round"
+                  android:fillColor="#00000000"
+                  android:pathData="M54,24 L80,39 L80,69 L54,84 L28,69 L28,39 Z M54,40 L54,60 M45,52 L54,61 L63,52" />
+          </vector>
+          EOF
+
+          cat > $P/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/ic_bg" />
+              <foreground android:drawable="@drawable/ic_fg" />
+              <monochrome android:drawable="@drawable/ic_mono" />
+          </adaptive-icon>
+          EOF
+
+      - name: Crear código Java (WebView + motor yt-dlp)
+        run: |
+          cat > android/app/src/main/java/com/nexora/download/MainActivity.java <<'EOF'
+          package com.nexora.download;
+
+          import android.Manifest;
+          import android.app.Activity;
+          import android.app.DownloadManager;
+          import android.content.ClipData;
+          import android.content.ClipboardManager;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.SharedPreferences;
+          import android.content.pm.PackageManager;
+          import android.database.Cursor;
+          import android.graphics.Color;
+          import android.media.MediaScannerConnection;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.os.Environment;
+          import android.view.View;
+          import android.view.Window;
+          import android.webkit.CookieManager;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.MimeTypeMap;
+          import android.webkit.URLUtil;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.webkit.WebChromeClient;
+          import android.widget.FrameLayout;
+          import android.content.pm.ActivityInfo;
+          import android.provider.Settings;
+          import android.provider.MediaStore;
+          import android.content.ContentUris;
+          import android.app.PendingIntent;
+          import android.widget.Toast;
+
+          import com.yausername.ffmpeg.FFmpeg;
+          import com.yausername.youtubedl_android.YoutubeDL;
+          import com.yausername.youtubedl_android.YoutubeDLRequest;
+          import com.yausername.youtubedl_android.YoutubeDLResponse;
+
+          import org.json.JSONArray;
+          import org.json.JSONObject;
+
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.io.InputStream;
+          import java.io.OutputStream;
+          import java.nio.charset.StandardCharsets;
+          import java.nio.file.Files;
+          import java.util.Arrays;
+          import java.util.List;
+          import java.util.Set;
+          import java.util.concurrent.ConcurrentHashMap;
+          import java.util.concurrent.ExecutorService;
+          import java.util.concurrent.Executors;
+          import java.util.concurrent.ScheduledExecutorService;
+          import java.util.concurrent.ScheduledFuture;
+          import java.util.concurrent.TimeUnit;
+          import java.net.HttpURLConnection;
+          import java.net.URL;
+          import java.net.URLEncoder;
+
+          import kotlin.Unit;
+
+          public class MainActivity extends Activity {
+              private WebView web;
+              private DownloadManager dm;
+              private volatile String pendingShared = null;
+              private volatile boolean pageReady = false;
+              private FrameLayout root;
+              private View fullView = null;
+              private WebChromeClient.CustomViewCallback fullCb = null;
+              private long pendingApk = -1;
+
+              // ---- Motor yt-dlp ----
+              private static final ExecutorService POOL = Executors.newFixedThreadPool(6);
+              private static final ScheduledExecutorService TIMER = Executors.newSingleThreadScheduledExecutor();
+              private static final Set<String> CANCELLED_INFO = ConcurrentHashMap.newKeySet();
+              private static final ConcurrentHashMap<String, String> INFO_PID = new ConcurrentHashMap<>();
+              private static final long INFO_TIMEOUT_S = 60;
+              private static volatile String engineStatus = "prep";   // prep | updating | ready | error
+              private static volatile String engineVersion = "";
+              private static volatile boolean engineStarted = false;
+              private static final Set<String> ACTIVE = ConcurrentHashMap.newKeySet();
+              private static final int REQ_COOKIES = 42;
+              private static final int REQ_MEDIA = 44;
+
+              /** Métodos de YouTube que se prueban en orden cuando uno falla. */
+              private static final String[] CLIENTS = {
+                  null,                                                                     // lo que yt-dlp considere mejor
+                  "youtube:player_client=default,tv_simply,android_vr,mweb,web_embedded"    // varios a la vez como respaldo
+              };
+              private static final ConcurrentHashMap<String, Long> lastEmit = new ConcurrentHashMap<>();
+              private static volatile MainActivity current = null;   // pantalla visible que recibe los eventos
+              private static final android.os.Handler MAIN = new android.os.Handler(android.os.Looper.getMainLooper());
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                  current = this;
+
+                  web = new WebView(this);
+                  web.setBackgroundColor(Color.parseColor("#0E1230"));
+                  root = new FrameLayout(this);
+                  root.addView(web, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                  setContentView(root);
+
+                  WebSettings s = web.getSettings();
+                  s.setJavaScriptEnabled(true);
+                  s.setDomStorageEnabled(true);
+                  s.setMediaPlaybackRequiresUserGesture(false);
+
+                  // Pantalla completa para el reproductor de video
+                  web.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      @SuppressWarnings("deprecation")
+                      public void onShowCustomView(View view, CustomViewCallback callback) {
+                          if (fullView != null) { callback.onCustomViewHidden(); return; }
+                          fullView = view; fullCb = callback;
+                          root.addView(view, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                          web.setVisibility(View.GONE);
+                          getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
+                              | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                          setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                      }
+                      @Override
+                      @SuppressWarnings("deprecation")
+                      public void onHideCustomView() {
+                          if (fullView == null) return;
+                          root.removeView(fullView);
+                          fullView = null;
+                          web.setVisibility(View.VISIBLE);
+                          getWindow().getDecorView().setSystemUiVisibility(0);
+                          setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                          if (fullCb != null) fullCb.onCustomViewHidden();
+                          fullCb = null;
+                      }
+                  });
+
+                  web.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
+                          Uri u = r.getUrl();
+                          if ("file".equals(u.getScheme())) return false;
+                          try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
+                          return true;
+                      }
+                      @Override
+                      public void onPageFinished(WebView v, String url) { pageReady = true; }
+                  });
+                  web.addJavascriptInterface(new Bridge(), "NexoraAndroid");
+                  web.loadUrl("file:///android_asset/index.html");
+
+                  handleIntent(getIntent());
+                  askPermissions();
+                  startEngine(false);
+              }
+
+              @Override
+              protected void onDestroy() {
+                  pageReady = false;
+                  if (current == this) current = null;
+                  super.onDestroy();
+              }
+
+              private void askPermissions() {
+                  if (Build.VERSION.SDK_INT >= 33 &&
+                      checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                      requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+                  } else if (Build.VERSION.SDK_INT <= 29 &&
+                      checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                      requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+                  }
+              }
+
+              @Override
+              protected void onNewIntent(Intent intent) {
+                  super.onNewIntent(intent);
+                  setIntent(intent);
+                  handleIntent(intent);
+              }
+
+              private void handleIntent(Intent intent) {
+                  if (intent == null || !Intent.ACTION_SEND.equals(intent.getAction())) return;
+                  String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+                  if (text == null || text.trim().isEmpty()) return;
+                  if (pageReady) {
+                      web.evaluateJavascript("window.onSharedLink && onSharedLink(" + JSONObject.quote(text) + ")", null);
+                  } else {
+                      pendingShared = text;
+                  }
+              }
+
+              @Override
+              protected void onResume() {
+                  super.onResume();
+                  if (web != null && pageReady) web.evaluateJavascript("window.nexoraResume && nexoraResume()", null);
+                  emitAccount(null);
+                  if (pendingApk >= 0 && canInstall()) { long id = pendingApk; pendingApk = -1; launchInstaller(id); }
+              }
+
+              // ================= instalar la app reproductora =================
+              private boolean canInstall() {
+                  return Build.VERSION.SDK_INT < 26 || getPackageManager().canRequestPackageInstalls();
+              }
+
+              private void emitInstall(String state, double pct) {
+                  try { emit(new JSONObject().put("type", "install").put("state", state).put("pct", pct)); } catch (Exception ignored) {}
+              }
+
+              private void launchInstaller(long id) {
+                  try {
+                      Uri u = dm.getUriForDownloadedFile(id);
+                      if (u == null) { emitInstall("error", 0); return; }
+                      Intent i = new Intent(Intent.ACTION_VIEW);
+                      i.setDataAndType(u, "application/vnd.android.package-archive");
+                      i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                      startActivity(i);
+                      emitInstall("ready", 100);
+                  } catch (Exception e) {
+                      emitInstall("error", 0);
+                  }
+              }
+
+              private void afterApkDownloaded(long id) {
+                  if (canInstall()) { launchInstaller(id); return; }
+                  pendingApk = id;
+                  emitInstall("permission", 100);
+                  try {
+                      startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
+                  } catch (Exception e) {
+                      emitInstall("error", 0);
+                  }
+              }
+
+              /** Al volver a la app (con foco) revisa si copiaste un enlace. */
+              @Override
+              public void onWindowFocusChanged(boolean hasFocus) {
+                  super.onWindowFocusChanged(hasFocus);
+                  if (hasFocus && web != null && pageReady) web.evaluateJavascript("window.nexoraResume && nexoraResume()", null);
+              }
+
+              @Override
+              @SuppressWarnings("deprecation")
+              public void onBackPressed() {
+                  if (fullView != null) {
+                      if (fullCb != null) fullCb.onCustomViewHidden();
+                      return;
+                  }
+                  if (web.canGoBack()) { web.goBack(); return; }
+                  web.evaluateJavascript("window.nexoraBack ? nexoraBack() : false", value -> {
+                      if (!"true".equals(value)) finish();
+                  });
+              }
+
+              // ================= utilidades =================
+              private static void emit(JSONObject o) {
+                  final String js = "window.nxEvent && nxEvent(" + o.toString() + ")";
+                  MAIN.post(() -> {
+                      MainActivity a = current;
+                      if (a != null && a.web != null && a.pageReady) a.web.evaluateJavascript(js, null);
+                  });
+              }
+
+              private static void emitEngine(boolean manual, String overrideStatus) {
+                  try {
+                      JSONObject o = new JSONObject();
+                      o.put("type", "engine");
+                      o.put("status", overrideStatus != null ? overrideStatus : engineStatus);
+                      o.put("version", engineVersion);
+                      o.put("manual", manual);
+                      emit(o);
+                  } catch (Exception ignored) {}
+              }
+
+              private static String versionOf(Context app) {
+                  String v = YoutubeDL.getInstance().version(app);
+                  if (v == null || v.isEmpty()) v = YoutubeDL.getInstance().versionName(app);
+                  return nz(v);
+              }
+
+              private static String nz(String s) { return s == null ? "" : s; }
+
+              private static String shortErr(Throwable e) {
+                  String m = e.getMessage();
+                  if (m == null || m.trim().isEmpty()) return e.getClass().getSimpleName();
+                  String best = null;
+                  for (String line : m.split("\n")) {
+                      if (line.contains("ERROR:")) best = line.substring(line.indexOf("ERROR:") + 6).trim();
+                  }
+                  if (best == null) {
+                      String[] lines = m.trim().split("\n");
+                      best = lines[lines.length - 1].trim();
+                  }
+                  return best.length() > 300 ? best.substring(0, 300) + "…" : best;
+              }
+
+              private static String cleanName(String n) {
+                  if (n == null) return "";
+                  return n.replaceAll("[\\\\/:*?\"<>|]+", "_").trim();
+              }
+
+              private static String statusName(int st) {
+                  switch (st) {
+                      case DownloadManager.STATUS_PENDING: return "pending";
+                      case DownloadManager.STATUS_RUNNING: return "running";
+                      case DownloadManager.STATUS_PAUSED: return "paused";
+                      case DownloadManager.STATUS_SUCCESSFUL: return "done";
+                      default: return "failed";
+                  }
+              }
+
+              private static String mimeOf(String path) {
+                  String ext = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(path)).toString());
+                  if (ext == null || ext.isEmpty()) {
+                      int i = path.lastIndexOf('.');
+                      ext = i >= 0 ? path.substring(i + 1) : "";
+                  }
+                  String m = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.toLowerCase());
+                  return m != null ? m : "*/*";
+              }
+
+              private static File outDir() {
+                  File d = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Nexora");
+                  if (!d.exists()) d.mkdirs();
+                  return d;
+              }
+
+              // ================= cuenta / cookies =================
+              static File cookiesFile(Context c) { return new File(c.getFilesDir(), "cookies.txt"); }
+
+              private void emitAccount(String msg) {
+                  try {
+                      JSONObject o = new JSONObject().put("type", "account").put("logged", cookiesFile(this).exists());
+                      if (msg != null) o.put("msg", msg);
+                      emit(o);
+                  } catch (Exception ignored) {}
+              }
+
+              @Override
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.onActivityResult(requestCode, resultCode, data);
+                  if (requestCode == 43) {
+                      try { emit(new JSONObject().put("type", "deleted").put("ok", resultCode == RESULT_OK)); } catch (Exception ignored) {}
+                      return;
+                  }
+                  if (requestCode != REQ_COOKIES || resultCode != RESULT_OK || data == null || data.getData() == null) return;
+                  File out = cookiesFile(this);
+                  try (InputStream in = getContentResolver().openInputStream(data.getData());
+                       OutputStream os = new FileOutputStream(out)) {
+                      byte[] buf = new byte[8192]; int n;
+                      while ((n = in.read(buf)) > 0) os.write(buf, 0, n);
+                  } catch (Exception e) {
+                      out.delete();
+                  }
+                  String txt = "";
+                  try { txt = new String(Files.readAllBytes(out.toPath()), StandardCharsets.UTF_8); } catch (Exception ignored) {}
+                  if (!txt.contains("youtube.com")) {
+                      out.delete();
+                      emitAccount("Ese archivo no tiene cookies de YouTube");
+                  } else {
+                      emitAccount("Sesión importada");
+                  }
+              }
+
+              private static boolean isYoutube(String url) {
+                  try {
+                      String h = Uri.parse(url).getHost();
+                      if (h == null) return false;
+                      h = h.toLowerCase();
+                      return h.endsWith("youtube.com") || h.equals("youtu.be") || h.endsWith("youtube-nocookie.com");
+                  } catch (Exception e) { return false; }
+              }
+
+              private static void applyCommon(Context app, YoutubeDLRequest r, int client) {
+                  String ea = "youtube:skip=dash,translated_subs";
+                  if (client > 0 && client < CLIENTS.length) ea = CLIENTS[client] + ";skip=dash,translated_subs";
+                  r.addOption("--extractor-args", ea);
+                  File ck = cookiesFile(app);
+                  if (ck.exists()) r.addOption("--cookies", ck.getAbsolutePath());
+                  r.addOption("--no-warnings");
+                  r.addOption("--socket-timeout", "20");
+                  r.addOption("--extractor-retries", "1");
+              }
+
+              private static JSONObject lastJson(String out) throws Exception {
+                  String[] lines = out.trim().split("\n");
+                  for (int i = lines.length - 1; i >= 0; i--) {
+                      String l = lines[i].trim();
+                      if (l.startsWith("{")) return new JSONObject(l);
+                  }
+                  throw new Exception("Respuesta vacía del motor");
+              }
+
+              private static JSONObject fetchInfo(Context app, String req, String url, int client) throws Exception {
+                  YoutubeDLRequest r = new YoutubeDLRequest(url);
+                  r.addOption("--no-playlist");
+                  r.addOption("--dump-json");
+                  r.addOption("--ignore-no-formats-error");
+                  applyCommon(app, r, client);
+                  String pid = req + "_" + client;
+                  INFO_PID.put(req, pid);
+                  // Si tarda demasiado se corta y se prueba el siguiente método
+                  ScheduledFuture<?> watchdog = TIMER.schedule(
+                      () -> { YoutubeDL.getInstance().destroyProcessById(pid); }, INFO_TIMEOUT_S, TimeUnit.SECONDS);
+                  try {
+                      YoutubeDLResponse res = YoutubeDL.getInstance().execute(r, pid);
+                      return lastJson(res.getOut());
+                  } catch (YoutubeDL.CanceledException e) {
+                      if (CANCELLED_INFO.contains(req)) throw e;
+                      throw new Exception("El análisis tardó demasiado");
+                  } finally {
+                      watchdog.cancel(false);
+                      INFO_PID.remove(req);
+                  }
+              }
+
+              private static void emitStage(String req, String stage) {
+                  try { emit(new JSONObject().put("type", "stage").put("req", req).put("stage", stage)); } catch (Exception ignored) {}
+              }
+
+              /** Resume los formatos para que la app calcule calidades y tamaños. */
+              private static JSONArray condense(JSONArray fs) throws Exception {
+                  JSONArray out = new JSONArray();
+                  if (fs == null) return out;
+                  for (int i = 0; i < fs.length(); i++) {
+                      JSONObject f = fs.optJSONObject(i);
+                      if (f == null) continue;
+                      String vc = f.optString("vcodec", "none"), ac = f.optString("acodec", "none");
+                      boolean v = !"none".equals(vc) && !vc.isEmpty(), a = !"none".equals(ac) && !ac.isEmpty();
+                      String proto = f.optString("protocol", "");
+                      if (!v && !a) continue;
+                      if (proto.startsWith("mhtml")) continue;
+                      long size = f.optLong("filesize", 0);
+                      if (size <= 0) size = f.optLong("filesize_approx", 0);
+                      out.put(new JSONObject()
+                          .put("h", f.optInt("height", 0))
+                          .put("v", v).put("a", a)
+                          .put("s", size)
+                          .put("e", f.optString("ext", ""))
+                          .put("c", vc.startsWith("avc1")));
+                  }
+                  return out;
+              }
+
+              /** Enlaces para ver el video dentro de la app: formatos con audio y video juntos, y el mejor solo audio. */
+              private static JSONObject streamsOf(JSONArray fs) throws Exception {
+                  JSONObject byH = new JSONObject();
+                  String audio = ""; double bestAbr = -1; boolean audioM4a = false;
+                  if (fs != null) for (int i = 0; i < fs.length(); i++) {
+                      JSONObject f = fs.optJSONObject(i);
+                      if (f == null) continue;
+                      String url = f.optString("url", "");
+                      if (url.isEmpty()) continue;
+                      String vc = f.optString("vcodec", "none"), ac = f.optString("acodec", "none");
+                      boolean v = !"none".equals(vc) && !vc.isEmpty(), a = !"none".equals(ac) && !ac.isEmpty();
+                      String proto = f.optString("protocol", "");
+                      boolean https = proto.equals("https") || proto.equals("http");
+                      boolean hls = proto.startsWith("m3u8");
+                      if (!https && !hls) continue;
+                      if (v && a) {
+                          int h = f.optInt("height", 0);
+                          if (h <= 0) continue;
+                          String key = String.valueOf(h);
+                          JSONObject prev = byH.optJSONObject(key);
+                          // preferir mp4 directo sobre HLS
+                          boolean better = prev == null || (prev.optBoolean("hls") && https)
+                              || (prev.optBoolean("hls") == hls && "mp4".equals(f.optString("ext")) && !"mp4".equals(prev.optString("e")));
+                          if (better) byH.put(key, new JSONObject().put("h", h).put("url", url).put("hls", hls).put("e", f.optString("ext", "")));
+                      } else if (a && !v && https) {
+                          boolean m4a = "m4a".equals(f.optString("ext", ""));
+                          double abr = f.optDouble("abr", 0);
+                          if ((m4a && !audioM4a) || (m4a == audioM4a && abr > bestAbr)) { audio = url; bestAbr = abr; audioM4a = m4a; }
+                      }
+                  }
+                  JSONArray streams = new JSONArray();
+                  java.util.Iterator<String> it = byH.keys();
+                  while (it.hasNext()) streams.put(byH.getJSONObject(it.next()));
+                  return new JSONObject().put("streams", streams).put("audio", audio);
+              }
+
+              private static String chUrlOf(JSONObject e) {
+                  String u = e.optString("channel_url", "");
+                  if (u.isEmpty()) u = e.optString("uploader_url", "");
+                  if (u.isEmpty() && !e.optString("channel_id", "").isEmpty()) u = "https://www.youtube.com/channel/" + e.optString("channel_id");
+                  return u;
+              }
+
+              private static String lastThumb(JSONObject e) {
+                  JSONArray th = e.optJSONArray("thumbnails");
+                  if (th == null || th.length() == 0) return e.optString("thumbnail", "");
+                  JSONObject t = th.optJSONObject(th.length() - 1);
+                  return t != null ? t.optString("url", "") : "";
+              }
+
+              private static boolean shouldStop(String err) {
+                  String e = err.toLowerCase();
+                  return e.contains("private video") || e.contains("video unavailable") || e.contains("has been removed")
+                      || e.contains("unsupported url") || e.contains("is not a valid url") || e.contains("members-only")
+                      || e.contains("sign in to confirm your age");
+              }
+
+              // ================= motor =================
+              private void startEngine(boolean forceUpdate) {
+                  if (engineStarted && !forceUpdate) { emitEngine(false, null); return; }
+                  engineStarted = true;
+                  final Context app = getApplicationContext();
+                  POOL.execute(() -> {
+                      try {
+                          engineStatus = "prep"; emitEngine(false, null);
+                          YoutubeDL.getInstance().init(app);
+                          FFmpeg.getInstance().init(app);
+                          engineVersion = versionOf(app);
+                          SharedPreferences sp = app.getSharedPreferences("nexora", 0);
+                          long last = sp.getLong("lastUpdate", 0);
+                          if (forceUpdate || System.currentTimeMillis() - last > 12L * 3600 * 1000) {
+                              String result = updateNow(app);
+                              emitEngine(forceUpdate, forceUpdate ? result : "ready");
+                          } else {
+                              engineStatus = "ready";
+                              emitEngine(false, null);
+                          }
+                      } catch (Throwable e) {
+                          engineStatus = "error";
+                          emitEngine(false, null);
+                      }
+                  });
+              }
+
+              /** Descarga la última versión de yt-dlp. Devuelve updated | current | error. */
+              private static synchronized String updateNow(Context app) {
+                  engineStatus = "updating"; emitEngine(false, null);
+                  String result = "current";
+                  try {
+                      YoutubeDL.UpdateStatus st = YoutubeDL.getInstance().updateYoutubeDL(app, YoutubeDL.UpdateChannel.STABLE.INSTANCE);
+                      if (st == YoutubeDL.UpdateStatus.DONE) result = "updated";
+                      app.getSharedPreferences("nexora", 0).edit().putLong("lastUpdate", System.currentTimeMillis()).apply();
+                  } catch (Exception e) {
+                      result = "error";
+                  }
+                  engineVersion = versionOf(app);
+                  engineStatus = "ready";
+                  emitEngine(false, null);
+                  return result;
+              }
+
+              /** Actualiza solo si no se intentó en la última hora (para reintentar tras un fallo). */
+              private static boolean autoUpdateAllowed(Context app) {
+                  if (!ACTIVE.isEmpty()) return false;
+                  SharedPreferences sp = app.getSharedPreferences("nexora", 0);
+                  long last = sp.getLong("lastAuto", 0);
+                  if (System.currentTimeMillis() - last < 3600_000L) return false;
+                  sp.edit().putLong("lastAuto", System.currentTimeMillis()).apply();
+                  return true;
+              }
+
+              private static void awaitEngine() throws Exception {
+                  long t0 = System.currentTimeMillis();
+                  while (!"ready".equals(engineStatus)) {
+                      if ("error".equals(engineStatus)) throw new Exception("No se pudo iniciar el motor de descarga");
+                      if (System.currentTimeMillis() - t0 > 180_000) throw new Exception("El motor tardó demasiado en iniciar");
+                      Thread.sleep(300);
+                  }
+              }
+
+              private static void serviceUpdate(Context app) {
+                  MAIN.post(() -> {
+                      Intent i = new Intent(app, NexoraService.class);
+                      try {
+                          if (ACTIVE.isEmpty()) {
+                              app.stopService(i);
+                          } else {
+                              i.putExtra("count", ACTIVE.size());
+                              if (Build.VERSION.SDK_INT >= 26) app.startForegroundService(i); else app.startService(i);
+                          }
+                      } catch (Exception ignored) {}
+                  });
+              }
+
+              private static void addFormat(YoutubeDLRequest r, String mode) {
+                  switch (mode) {
+                      case "mp3":
+                          r.addOption("-f", "ba/b");
+                          r.addOption("-x");
+                          r.addOption("--audio-format", "mp3");
+                          r.addOption("--audio-quality", "0");
+                          break;
+                      case "m4a":
+                          r.addOption("-f", "ba[ext=m4a]/ba/b");
+                          r.addOption("-x");
+                          r.addOption("--audio-format", "m4a");
+                          break;
+                      case "vbest":
+                          r.addOption("-f", "bv*[vcodec^=avc1]+ba[ext=m4a]/bv*+ba/b");
+                          r.addOption("--merge-output-format", "mp4");
+                          break;
+                      default: {
+                          String h = mode.startsWith("v") ? mode.substring(1) : "720";
+                          if (!h.matches("\\d{3,4}")) h = "720";
+                          r.addOption("-f",
+                              "bv*[height<=" + h + "][vcodec^=avc1]+ba[ext=m4a]/" +
+                              "bv*[height<=" + h + "][ext=mp4]+ba[ext=m4a]/" +
+                              "bv*[height<=" + h + "]+ba/" +
+                              "b[height<=" + h + "]/b");
+                          r.addOption("--merge-output-format", "mp4");
+                      }
+                  }
+              }
+
+              private static void runYtDownload(Context app, String key, String url, String mode, int client) {
+                  ACTIVE.add(key);
+                  serviceUpdate(app);
+                  long started = System.currentTimeMillis();
+                  File pathFile = new File(app.getCacheDir(), "path_" + key + ".txt");
+                  try {
+                      awaitEngine();
+                      File dir = outDir();
+                      int[] order;
+                      if (isYoutube(url)) {
+                          order = new int[CLIENTS.length];
+                          order[0] = client;
+                          for (int i = 0, k = 1; i < CLIENTS.length; i++) if (i != client) order[k++] = i;
+                      } else {
+                          order = new int[]{0};
+                      }
+                      Throwable lastErr = null;
+                      boolean ok = false;
+                      for (int c : order) {
+                        pathFile.delete();
+                        YoutubeDLRequest r = new YoutubeDLRequest(url);
+                      r.addOption("--no-playlist");
+                      r.addOption("--no-mtime");
+                      r.addOption("--embed-metadata");          // guarda título, canal y enlace dentro del archivo
+                      r.addOption("--windows-filenames");
+                      r.addOption("--trim-filenames", "150");
+                      r.addOption("--newline");
+                      r.addOption("-o", dir.getAbsolutePath() + "/%(title)s - %(uploader|Desconocido)s [%(id)s].%(ext)s");
+                      addFormat(r, mode);
+                      applyCommon(app, r, c);
+                      List<String> extra = Arrays.asList("--print-to-file", "after_move:filepath", pathFile.getAbsolutePath());
+                      r.addCommands(extra);
+
+                        try {
+                      YoutubeDL.getInstance().execute(r, key, (progress, eta, line) -> {
+                          long now = System.currentTimeMillis();
+                          Long prev = lastEmit.get(key);
+                          if (prev == null || now - prev > 500) {
+                              lastEmit.put(key, now);
+                              try {
+                                  JSONObject o = new JSONObject();
+                                  o.put("type", "progress").put("key", key).put("pct", progress).put("eta", eta);
+                                  emit(o);
+                              } catch (Exception ignored) {}
+                          }
+                          return Unit.INSTANCE;
+                      });
+                          ok = true;
+                          break;
+                        } catch (YoutubeDL.CanceledException ce) {
+                          throw ce;
+                        } catch (Throwable e) {
+                          lastErr = e;
+                          if (shouldStop(shortErr(e))) break;
+                        }
+                      }
+                      if (!ok) throw (lastErr != null ? lastErr : new Exception("No se pudo descargar"));
+
+                      String path = null;
+                      if (pathFile.exists()) {
+                          String txt = new String(Files.readAllBytes(pathFile.toPath()), StandardCharsets.UTF_8).trim();
+                          String[] lines = txt.split("\n");
+                          path = lines[lines.length - 1].trim();
+                      }
+                      if (path == null || path.isEmpty() || !new File(path).exists()) {
+                          File newest = null;
+                          File[] files = dir.listFiles();
+                          if (files != null) for (File f : files) {
+                              if (f.isFile() && f.lastModified() >= started - 5000 && !f.getName().endsWith(".part")
+                                  && (newest == null || f.lastModified() > newest.lastModified())) newest = f;
+                          }
+                          if (newest == null) throw new Exception("No se encontró el archivo descargado");
+                          path = newest.getAbsolutePath();
+                      }
+                      final String finalPath = path;
+                      final long size = new File(finalPath).length();
+                      MediaScannerConnection.scanFile(app, new String[]{finalPath},
+                          new String[]{mimeOf(finalPath)}, (p, uri) -> {
+                              try {
+                                  JSONObject o = new JSONObject();
+                                  o.put("type", "done").put("key", key).put("path", finalPath)
+                                   .put("uri", uri != null ? uri.toString() : "").put("size", size)
+                                   .put("file", new File(finalPath).getName());
+                                  emit(o);
+                              } catch (Exception ignored) {}
+                          });
+                  } catch (YoutubeDL.CanceledException e) {
+                      try { emit(new JSONObject().put("type", "cancelled").put("key", key)); } catch (Exception ignored) {}
+                  } catch (Throwable e) {
+                      try { emit(new JSONObject().put("type", "error").put("key", key).put("error", shortErr(e))); } catch (Exception ignored) {}
+                  } finally {
+                      pathFile.delete();
+                      lastEmit.remove(key);
+                      ACTIVE.remove(key);
+                      serviceUpdate(app);
+                  }
+              }
+
+              /** Funciones disponibles desde JavaScript como window.NexoraAndroid */
+              public class Bridge {
+                  // ---------- enlaces directos (gestor de descargas de Android) ----------
+                  @JavascriptInterface
+                  public String download(String url, String name, String mime) {
+                      JSONObject o = new JSONObject();
+                      try {
+                          Uri u = Uri.parse(url);
+                          String sc = u.getScheme();
+                          if (sc == null || !(sc.equals("http") || sc.equals("https")))
+                              throw new IllegalArgumentException("Enlace no válido");
+                          String file = cleanName(name);
+                          if (file.isEmpty()) file = URLUtil.guessFileName(url, null, mime);
+                          DownloadManager.Request r = new DownloadManager.Request(u);
+                          r.setTitle(file);
+                          r.setDescription("Nexora Download Plus");
+                          r.addRequestHeader("User-Agent", WebSettings.getDefaultUserAgent(MainActivity.this));
+                          r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                          r.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Nexora/" + file);
+                          long id = dm.enqueue(r);
+                          o.put("ok", true).put("id", id).put("file", file);
+                      } catch (Exception e) {
+                          try { o.put("ok", false).put("error", String.valueOf(e.getMessage())); } catch (Exception ignored) {}
+                      }
+                      return o.toString();
+                  }
+
+                  @JavascriptInterface
+                  public String status(String idsCsv) {
+                      JSONArray arr = new JSONArray();
+                      Cursor c = null;
+                      try {
+                          String[] parts = idsCsv.split(",");
+                          long[] ids = new long[parts.length];
+                          for (int i = 0; i < parts.length; i++) ids[i] = Long.parseLong(parts[i].trim());
+                          c = dm.query(new DownloadManager.Query().setFilterById(ids));
+                          while (c != null && c.moveToNext()) {
+                              JSONObject o = new JSONObject();
+                              o.put("id", c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_ID)));
+                              o.put("status", statusName(c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))));
+                              o.put("done", c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)));
+                              o.put("total", c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)));
+                              arr.put(o);
+                          }
+                      } catch (Exception ignored) {
+                      } finally {
+                          if (c != null) c.close();
+                      }
+                      return arr.toString();
+                  }
+
+                  @JavascriptInterface
+                  public boolean open(String id) {
+                      try {
+                          long l = Long.parseLong(id);
+                          Uri u = dm.getUriForDownloadedFile(l);
+                          if (u == null) return false;
+                          String mime = dm.getMimeTypeForDownloadedFile(l);
+                          return view(u, mime != null ? mime : "*/*");
+                      } catch (Exception e) {
+                          return false;
+                      }
+                  }
+
+                  @JavascriptInterface
+                  public int remove(String id) {
+                      try { return dm.remove(Long.parseLong(id)); } catch (Exception e) { return 0; }
+                  }
+
+                  // ---------- YouTube y redes (yt-dlp) ----------
+                  @JavascriptInterface
+                  public String ytEngine() {
+                      try {
+                          return new JSONObject().put("status", engineStatus).put("version", engineVersion).toString();
+                      } catch (Exception e) { return "{}"; }
+                  }
+
+                  @JavascriptInterface
+                  public void ytUpdate() {
+                      if (!ACTIVE.isEmpty()) { emitEngine(true, "busy"); return; }
+                      runOnUiThread(() -> startEngine(true));
+                  }
+
+                  @JavascriptInterface
+                  public String ytActive() {
+                      return new JSONArray(ACTIVE).toString();
+                  }
+
+                  @JavascriptInterface
+                  public void ytInfo(String req, String url) {
+                      final Context app = getApplicationContext();
+                      POOL.execute(() -> {
+                          JSONObject o = new JSONObject();
+                          try {
+                              o.put("type", "info").put("req", req);
+                              awaitEngine();
+                              int n = isYoutube(url) ? CLIENTS.length : 1;
+                              String lastErr = null;
+                              for (int round = 0; round < 2; round++) {
+                                  for (int c = 0; c < n; c++) {
+                                      try {
+                                          if (CANCELLED_INFO.contains(req)) return;
+                                          if (c > 0 || round > 0) emitStage(req, "retry");
+                                          JSONObject j = fetchInfo(app, req, url, c);
+                                          JSONArray fm = condense(j.optJSONArray("formats"));
+                                          if (fm.length() == 0 && j.optString("url", "").isEmpty()) {
+                                              lastErr = "Requested format is not available";
+                                              continue;
+                                          }
+                                          String up = j.optString("channel", "");
+                                          if (up.isEmpty()) up = j.optString("uploader", "");
+                                          if (up.isEmpty()) up = j.optString("uploader_id", "");
+                                          JSONObject media = streamsOf(j.optJSONArray("formats"));
+                                          String desc = j.optString("description", "");
+                                          if (desc.length() > 5000) desc = desc.substring(0, 5000) + "…";
+                                          o.put("streams", media.getJSONArray("streams"))
+                                           .put("audio", media.optString("audio", ""))
+                                           .put("desc", desc)
+                                           .put("views", j.optLong("view_count", 0))
+                                           .put("likes", j.optLong("like_count", 0))
+                                           .put("subs", j.optLong("channel_follower_count", 0))
+                                           .put("date", j.optString("upload_date", ""))
+                                           .put("chUrl", chUrlOf(j));
+                                          o.put("ok", true)
+                                           .put("client", c)
+                                           .put("title", j.optString("title", ""))
+                                           .put("uploader", up)
+                                           .put("thumb", j.optString("thumbnail", ""))
+                                           .put("duration", (int) Math.round(j.optDouble("duration", 0)))
+                                           .put("url", j.optString("webpage_url", url))
+                                           .put("formats", fm);
+                                          emit(o);
+                                          return;
+                                      } catch (YoutubeDL.CanceledException ce) {
+                                          CANCELLED_INFO.remove(req);
+                                          return;
+                                      } catch (Throwable e) {
+                                          lastErr = shortErr(e);
+                                          if (shouldStop(lastErr)) break;
+                                      }
+                                  }
+                                  if (lastErr != null && shouldStop(lastErr)) break;
+                                  // Si todo falló, actualizar el motor una vez y volver a intentar
+                                  if (round == 0 && !CANCELLED_INFO.contains(req) && autoUpdateAllowed(app)) { emitStage(req, "update"); updateNow(app); } else break;
+                              }
+                              if (CANCELLED_INFO.remove(req)) return;
+                              o.put("ok", false).put("error", lastErr != null ? lastErr : "Error desconocido");
+                          } catch (Throwable e) {
+                              try { o.put("ok", false).put("error", shortErr(e)); } catch (Exception ignored) {}
+                          }
+                          emit(o);
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void ytSearch(String req, String query, int count, int start) {
+                      final Context app = getApplicationContext();
+                      POOL.execute(() -> {
+                          JSONObject o = new JSONObject();
+                          try {
+                              o.put("type", "search").put("req", req);
+                              awaitEngine();
+                              int n = Math.max(5, Math.min(count, 30));
+                              int from = Math.max(1, start);
+                              int to = from + n - 1;
+                              YoutubeDLRequest r = new YoutubeDLRequest("ytsearch" + to + ":" + query);
+                              r.addOption("--flat-playlist");
+                              if (from > 1) r.addOption("--playlist-items", from + "-" + to);
+                              r.addOption("--dump-single-json");
+                              File ck = cookiesFile(app);
+                              if (ck.exists()) r.addOption("--cookies", ck.getAbsolutePath());
+                              r.addOption("--no-warnings");
+                              JSONObject j = lastJson(YoutubeDL.getInstance().execute(r).getOut());
+                              JSONArray ent = j.optJSONArray("entries");
+                              JSONArray items = new JSONArray();
+                              if (ent != null) for (int i = 0; i < ent.length(); i++) {
+                                  JSONObject e = ent.optJSONObject(i);
+                                  if (e == null) continue;
+                                  String id = e.optString("id", "");
+                                  if (id.isEmpty()) continue;
+                                  String ch = e.optString("channel", "");
+                                  if (ch.isEmpty()) ch = e.optString("uploader", "");
+                                  items.put(new JSONObject()
+                                      .put("url", "https://www.youtube.com/watch?v=" + id)
+                                      .put("title", e.optString("title", ""))
+                                      .put("channel", ch)
+                                      .put("duration", e.optDouble("duration", 0))
+                                      .put("views", e.optLong("view_count", 0))
+                                      .put("thumb", "https://i.ytimg.com/vi/" + id + "/mqdefault.jpg")
+                                      .put("chUrl", chUrlOf(e)));
+                              }
+                              o.put("ok", true).put("items", items);
+                          } catch (Throwable e) {
+                              try { o.put("ok", false).put("error", shortErr(e)); } catch (Exception ignored) {}
+                          }
+                          emit(o);
+                      });
+                  }
+
+                  /** Lista de un canal (videos, shorts, en vivo, playlists) o de una playlist. */
+                  @JavascriptInterface
+                  public void ytList(String req, String url, int start, int count) {
+                      final Context app = getApplicationContext();
+                      POOL.execute(() -> {
+                          JSONObject o = new JSONObject();
+                          try {
+                              o.put("type", "list").put("req", req);
+                              awaitEngine();
+                              int from = Math.max(1, start), to = from + Math.max(5, Math.min(count, 40)) - 1;
+                              JSONObject j = null;
+                              Throwable last = null;
+                              for (int attempt = 0; attempt < 2 && j == null; attempt++) {
+                                  YoutubeDLRequest r = new YoutubeDLRequest(url);
+                                  r.addOption("--flat-playlist");
+                                  r.addOption("--dump-single-json");
+                                  r.addOption("--playlist-items", from + "-" + to);
+                                  File ck = cookiesFile(app);
+                                  if (attempt == 0 && ck.exists()) r.addOption("--cookies", ck.getAbsolutePath());
+                                  if (attempt == 1) r.addOption("--extractor-args", "youtubetab:skip=authcheck");
+                                  r.addOption("--no-warnings");
+                                  r.addOption("--socket-timeout", "20");
+                                  r.addOption("--extractor-retries", "2");
+                                  try { j = lastJson(YoutubeDL.getInstance().execute(r).getOut()); }
+                                  catch (Throwable e) {
+                                      last = e;
+                                      String m = String.valueOf(e.getMessage()).toLowerCase();
+                                      if (m.contains("does not have a") || m.contains("no tiene")) break;
+                                  }
+                              }
+                              if (j == null) {
+                                  String m = last != null ? shortErr(last) : "";
+                                  o.put("ok", false).put("error", m).put("notab", m.toLowerCase().contains("does not have a"));
+                                  emit(o);
+                                  return;
+                              }
+                              String chName = j.optString("channel", j.optString("uploader", ""));
+                              JSONArray ent = j.optJSONArray("entries");
+                              JSONArray items = new JSONArray();
+                              if (ent != null) for (int i = 0; i < ent.length(); i++) {
+                                  JSONObject e = ent.optJSONObject(i);
+                                  if (e == null) continue;
+                                  String id = e.optString("id", "");
+                                  String eu = e.optString("url", "");
+                                  String ie = e.optString("ie_key", "");
+                                  boolean pl = "YoutubeTab".equals(ie) || eu.contains("list=") || id.startsWith("PL") || id.startsWith("OL");
+                                  JSONObject it = new JSONObject()
+                                      .put("title", e.optString("title", ""))
+                                      .put("duration", e.optDouble("duration", 0))
+                                      .put("views", e.optLong("view_count", 0))
+                                      .put("channel", e.optString("channel", chName))
+                                      .put("kind", pl ? "pl" : "video");
+                                  if (pl) {
+                                      it.put("url", eu.startsWith("http") ? eu : "https://www.youtube.com/playlist?list=" + id);
+                                      it.put("thumb", lastThumb(e));
+                                      it.put("count", e.optInt("playlist_count", 0));
+                                  } else {
+                                      if (id.isEmpty()) continue;
+                                      it.put("url", eu.contains("/shorts/") ? eu : "https://www.youtube.com/watch?v=" + id);
+                                      it.put("thumb", "https://i.ytimg.com/vi/" + id + "/mqdefault.jpg");
+                                      it.put("short", eu.contains("/shorts/"));
+                                  }
+                                  items.put(it);
+                              }
+                              String avatar = "", banner = "";
+                              JSONArray th = j.optJSONArray("thumbnails");
+                              if (th != null) for (int i = 0; i < th.length(); i++) {
+                                  JSONObject t = th.optJSONObject(i);
+                                  if (t == null) continue;
+                                  String tid = t.optString("id", "");
+                                  if (tid.equals("avatar_uncropped")) avatar = t.optString("url", "");
+                                  if (tid.equals("banner_uncropped")) banner = t.optString("url", "");
+                              }
+                              String desc = j.optString("description", "");
+                              if (desc.length() > 3000) desc = desc.substring(0, 3000) + "…";
+                              o.put("ok", true)
+                               .put("title", j.optString("title", chName))
+                               .put("channel", chName)
+                               .put("subs", j.optLong("channel_follower_count", 0))
+                               .put("desc", desc)
+                               .put("avatar", avatar)
+                               .put("banner", banner)
+                               .put("chUrl", chUrlOf(j))
+                               .put("items", items)
+                               .put("more", items.length() >= (to - from + 1));
+                          } catch (Throwable e) {
+                              try { o.put("ok", false).put("error", shortErr(e)); } catch (Exception ignored) {}
+                          }
+                          emit(o);
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void ytCancelInfo(String req) {
+                      CANCELLED_INFO.add(req);
+                      String pid = INFO_PID.get(req);
+                      if (pid != null) { try { YoutubeDL.getInstance().destroyProcessById(pid); } catch (Exception ignored) {} }
+                  }
+
+                  /** Sugerencias de búsqueda mientras escribes. */
+                  @JavascriptInterface
+                  public void suggest(String req, String q, String lang) {
+                      POOL.execute(() -> {
+                          HttpURLConnection con = null;
+                          try {
+                              String u = "https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&hl="
+                                  + URLEncoder.encode(lang == null ? "es" : lang, "UTF-8") + "&q=" + URLEncoder.encode(q, "UTF-8");
+                              con = (HttpURLConnection) new URL(u).openConnection();
+                              con.setConnectTimeout(5000);
+                              con.setReadTimeout(5000);
+                              byte[] body;
+                              try (InputStream in = con.getInputStream()) {
+                                  java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                                  byte[] buf = new byte[4096]; int n;
+                                  while ((n = in.read(buf)) > 0) bo.write(buf, 0, n);
+                                  body = bo.toByteArray();
+                              }
+                              String ct = con.getContentType();
+                              String cs = (ct != null && ct.toLowerCase().contains("utf-8")) ? "UTF-8" : "ISO-8859-1";
+                              JSONArray arr = new JSONArray(new String(body, cs));
+                              JSONArray items = arr.optJSONArray(1);
+                              emit(new JSONObject().put("type", "suggest").put("req", req).put("items", items != null ? items : new JSONArray()));
+                          } catch (Throwable ignored) {
+                          } finally {
+                              if (con != null) con.disconnect();
+                          }
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public String account() {
+                      try { return new JSONObject().put("logged", cookiesFile(MainActivity.this).exists()).toString(); }
+                      catch (Exception e) { return "{\"logged\":false}"; }
+                  }
+
+                  @JavascriptInterface
+                  public void login() {
+                      runOnUiThread(() -> startActivity(new Intent(MainActivity.this, LoginActivity.class)));
+                  }
+
+                  @JavascriptInterface
+                  public void importCookies() {
+                      runOnUiThread(() -> {
+                          Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                          i.addCategory(Intent.CATEGORY_OPENABLE);
+                          i.setType("*/*");
+                          try { startActivityForResult(i, REQ_COOKIES); } catch (Exception ignored) {}
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void logout() {
+                      cookiesFile(MainActivity.this).delete();
+                      runOnUiThread(() -> {
+                          CookieManager.getInstance().removeAllCookies(null);
+                          CookieManager.getInstance().flush();
+                          emitAccount(null);
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public long clearCache() {
+                      if (!ACTIVE.isEmpty()) return -1;
+                      return deleteTree(getCacheDir(), false);
+                  }
+
+                  @JavascriptInterface
+                  public void ytDownload(String key, String url, String mode, int client) {
+                      final Context app = getApplicationContext();
+                      POOL.execute(() -> runYtDownload(app, key, url, mode, client));
+                  }
+
+                  @JavascriptInterface
+                  public void ytCancel(String key) {
+                      try { YoutubeDL.getInstance().destroyProcessById(key); } catch (Exception ignored) {}
+                  }
+
+                  @JavascriptInterface
+                  public boolean openFile(String uri, String path) {
+                      try {
+                          Uri u = null;
+                          if (uri != null && !uri.isEmpty()) u = Uri.parse(uri);
+                          if (u == null) return false;
+                          return view(u, path != null && !path.isEmpty() ? mimeOf(path) : "*/*");
+                      } catch (Exception e) {
+                          return false;
+                      }
+                  }
+
+                  /** Abre con el reproductor elegido. Devuelve ok | missing | error. */
+                  @JavascriptInterface
+                  public String openMedia(String uri, String path, String dmId, String pkg) {
+                      try {
+                          Uri u = null;
+                          String mime = null;
+                          if (dmId != null && !dmId.isEmpty()) {
+                              long l = Long.parseLong(dmId);
+                              u = dm.getUriForDownloadedFile(l);
+                              mime = dm.getMimeTypeForDownloadedFile(l);
+                          } else if (uri != null && !uri.isEmpty()) {
+                              u = Uri.parse(uri);
+                              mime = (path != null && !path.isEmpty()) ? mimeOf(path) : null;
+                          }
+                          if (u == null) return "error";
+                          if (mime == null) mime = "*/*";
+                          if (pkg != null && !pkg.isEmpty()) {
+                              if (!isInstalled(pkg)) return "missing";
+                              Intent i = new Intent(Intent.ACTION_VIEW);
+                              i.setDataAndType(u, mime);
+                              i.setPackage(pkg);
+                              i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                              try { startActivity(i); return "ok"; } catch (Exception ignored) { /* sin filtro "Abrir con" */ }
+                              // La app no declara "Abrir con": se abre directamente su pantalla principal con el archivo
+                              Intent li = getPackageManager().getLaunchIntentForPackage(pkg);
+                              if (li != null) {
+                                  li.setAction(Intent.ACTION_VIEW);
+                                  li.setDataAndType(u, mime);
+                                  li.removeCategory(Intent.CATEGORY_LAUNCHER);
+                                  li.putExtra("nexora_title", path != null ? new File(path).getName() : "");
+                                  li.putExtra("nexora_path", path != null ? path : "");
+                                  li.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                  try { startActivity(li); return "ok"; } catch (Exception ignored) {}
+                              }
+                          }
+                          return view(u, mime) ? "ok" : "error";
+                      } catch (Exception e) {
+                          return "error";
+                      }
+                  }
+
+                  /** Abre la ficha de la app en la tienda para instalarla. */
+                  @JavascriptInterface
+                  public void installApp(String pkg) {
+                      runOnUiThread(() -> {
+                          try {
+                              startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkg))
+                                  .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                          } catch (Exception e) {
+                              try {
+                                  startActivity(new Intent(Intent.ACTION_VIEW,
+                                      Uri.parse("https://play.google.com/store/apps/details?id=" + pkg))
+                                      .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                              } catch (Exception ignored) {}
+                          }
+                      });
+                  }
+
+                  /** Descarga el APK de la app reproductora y abre el instalador. */
+                  @JavascriptInterface
+                  public void installApk(String url, String name) {
+                      try {
+                          File old = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "install.apk");
+                          if (old.exists()) old.delete();
+                          DownloadManager.Request r = new DownloadManager.Request(Uri.parse(url));
+                          r.setTitle(name);
+                          r.setDescription("Nexora Download Plus");
+                          r.setMimeType("application/vnd.android.package-archive");
+                          r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+                          r.setDestinationInExternalFilesDir(MainActivity.this, Environment.DIRECTORY_DOWNLOADS, "install.apk");
+                          final long id = dm.enqueue(r);
+                          POOL.execute(() -> {
+                              long t0 = System.currentTimeMillis();
+                              while (System.currentTimeMillis() - t0 < 15 * 60_000L) {
+                                  Cursor c = null;
+                                  try {
+                                      c = dm.query(new DownloadManager.Query().setFilterById(id));
+                                      if (c == null || !c.moveToFirst()) { emitInstall("error", 0); return; }
+                                      int st = c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+                                      long done = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                                      long total = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                                      if (st == DownloadManager.STATUS_SUCCESSFUL) {
+                                          runOnUiThread(() -> afterApkDownloaded(id));
+                                          return;
+                                      }
+                                      if (st == DownloadManager.STATUS_FAILED) { emitInstall("error", 0); return; }
+                                      emitInstall("progress", total > 0 ? done * 100.0 / total : 0);
+                                  } catch (Exception e) {
+                                      emitInstall("error", 0); return;
+                                  } finally {
+                                      if (c != null) c.close();
+                                  }
+                                  try { Thread.sleep(700); } catch (InterruptedException ie) { return; }
+                              }
+                              emitInstall("error", 0);
+                          });
+                      } catch (Exception e) {
+                          emitInstall("error", 0);
+                      }
+                  }
+
+                  @JavascriptInterface
+                  public boolean deleteFile(String uri, String path) {
+                      boolean ok = false;
+                      try { if (uri != null && !uri.isEmpty()) ok = getContentResolver().delete(Uri.parse(uri), null, null) > 0; } catch (Exception ignored) {}
+                      try { if (path != null && !path.isEmpty()) { File f = new File(path); if (f.exists()) ok = f.delete() || ok; } } catch (Exception ignored) {}
+                      // Archivos de una instalación anterior: Android pide confirmación para borrarlos
+                      if (!ok && Build.VERSION.SDK_INT >= 30 && uri != null && uri.startsWith("content://media")) {
+                          final Uri u = Uri.parse(uri);
+                          runOnUiThread(() -> {
+                              try {
+                                  PendingIntent pi = MediaStore.createDeleteRequest(getContentResolver(), java.util.Collections.singletonList(u));
+                                  startIntentSenderForResult(pi.getIntentSender(), 43, null, 0, 0, 0);
+                              } catch (Exception ignored) {}
+                          });
+                          return true;
+                      }
+                      return ok;
+                  }
+
+                  /** ¿Tiene permiso para ver fotos, videos y música? */
+                  @JavascriptInterface
+                  public boolean mediaPerm() { return hasMediaPerm(); }
+
+                  @JavascriptInterface
+                  public void requestMediaPerm() {
+                      runOnUiThread(() -> {
+                          if (Build.VERSION.SDK_INT >= 33) {
+                              requestPermissions(new String[]{Manifest.permission.READ_MEDIA_VIDEO,
+                                  Manifest.permission.READ_MEDIA_AUDIO, Manifest.permission.READ_MEDIA_IMAGES}, REQ_MEDIA);
+                          } else {
+                              requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQ_MEDIA);
+                          }
+                      });
+                  }
+
+                  /** Lista los archivos de Download/Nexora, incluso de instalaciones anteriores. */
+                  @JavascriptInterface
+                  public String scanLibrary() {
+                      JSONArray arr = new JSONArray();
+                      try {
+                          if (Build.VERSION.SDK_INT >= 29) {
+                              Uri files = MediaStore.Files.getContentUri("external");
+                              String[] proj = {MediaStore.MediaColumns._ID, MediaStore.MediaColumns.DISPLAY_NAME,
+                                  MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.MIME_TYPE,
+                                  MediaStore.MediaColumns.DATE_ADDED, MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.DATA};
+                              try (Cursor c = getContentResolver().query(files, proj,
+                                      MediaStore.MediaColumns.RELATIVE_PATH + " LIKE ?", new String[]{"Download/Nexora/%"},
+                                      MediaStore.MediaColumns.DATE_ADDED + " DESC")) {
+                                  while (c != null && c.moveToNext()) {
+                                      long id = c.getLong(0);
+                                      String name = c.getString(1);
+                                      String mime = c.getString(3);
+                                      if (name == null || name.endsWith(".part") || name.endsWith(".ytdl")) continue;
+                                      Uri base = files;
+                                      if (mime != null && mime.startsWith("video/")) base = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                                      else if (mime != null && mime.startsWith("audio/")) base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                                      else if (mime != null && mime.startsWith("image/")) base = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                                      arr.put(new JSONObject()
+                                          .put("name", name)
+                                          .put("size", c.getLong(2))
+                                          .put("mime", mime == null ? "" : mime)
+                                          .put("date", c.getLong(4) * 1000)
+                                          .put("uri", ContentUris.withAppendedId(base, id).toString())
+                                          .put("path", c.getString(6) == null ? "" : c.getString(6)));
+                                  }
+                              }
+                          } else {
+                              File[] fs = outDir().listFiles();
+                              if (fs != null) for (File f : fs) {
+                                  if (!f.isFile() || f.getName().endsWith(".part")) continue;
+                                  arr.put(new JSONObject().put("name", f.getName()).put("size", f.length())
+                                      .put("mime", mimeOf(f.getAbsolutePath())).put("date", f.lastModified())
+                                      .put("uri", Uri.fromFile(f).toString()).put("path", f.getAbsolutePath()));
+                              }
+                          }
+                      } catch (Exception ignored) {}
+                      return arr.toString();
+                  }
+
+                  /** Descarga un texto (para buscar actualizaciones). */
+                  @JavascriptInterface
+                  public void httpGet(String req, String url) {
+                      POOL.execute(() -> {
+                          HttpURLConnection con = null;
+                          JSONObject o = new JSONObject();
+                          try {
+                              o.put("type", "http").put("req", req);
+                              con = (HttpURLConnection) new URL(url).openConnection();
+                              con.setConnectTimeout(10000);
+                              con.setReadTimeout(10000);
+                              con.setRequestProperty("Accept", "application/vnd.github+json");
+                              con.setRequestProperty("User-Agent", "NexoraDownloadPlus");
+                              int code = con.getResponseCode();
+                              InputStream in = code < 400 ? con.getInputStream() : con.getErrorStream();
+                              java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                              if (in != null) { byte[] buf = new byte[8192]; int n; while ((n = in.read(buf)) > 0) bo.write(buf, 0, n); in.close(); }
+                              o.put("ok", code < 400).put("status", code).put("body", new String(bo.toByteArray(), StandardCharsets.UTF_8));
+                          } catch (Throwable e) {
+                              try { o.put("ok", false).put("error", String.valueOf(e.getMessage())); } catch (Exception ignored) {}
+                          } finally {
+                              if (con != null) con.disconnect();
+                          }
+                          emit(o);
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public String abi() { return Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : ""; }
+
+                  // ---------- varios ----------
+                  @JavascriptInterface
+                  public String clipboard() {
+                      try {
+                          ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                          ClipData d = cm.getPrimaryClip();
+                          if (d == null || d.getItemCount() == 0) return "";
+                          CharSequence t = d.getItemAt(0).coerceToText(MainActivity.this);
+                          return t == null ? "" : t.toString();
+                      } catch (Exception e) {
+                          return "";
+                      }
+                  }
+
+                  @JavascriptInterface
+                  public void share(String text) {
+                      Intent i = new Intent(Intent.ACTION_SEND);
+                      i.setType("text/plain");
+                      i.putExtra(Intent.EXTRA_TEXT, text);
+                      startActivity(Intent.createChooser(i, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                  }
+
+                  @JavascriptInterface
+                  public String takeShared() {
+                      String s = pendingShared;
+                      pendingShared = null;
+                      return s == null ? "" : s;
+                  }
+
+                  @JavascriptInterface
+                  public String version() {
+                      try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionName; }
+                      catch (Exception e) { return "1.0.0"; }
+                  }
+
+                  @JavascriptInterface
+                  @SuppressWarnings("deprecation")
+                  public void setBars(boolean light) {
+                      runOnUiThread(() -> {
+                          Window w = getWindow();
+                          int bg = Color.parseColor(light ? "#F2F3FB" : "#0E1230");
+                          w.setStatusBarColor(bg);
+                          w.setNavigationBarColor(bg);
+                          web.setBackgroundColor(bg);
+                          int f = 0;
+                          if (light) f = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                          w.getDecorView().setSystemUiVisibility(f);
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void toast(String msg) {
+                      runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
+                  }
+              }
+
+              private boolean hasMediaPerm() {
+                  if (Build.VERSION.SDK_INT >= 33)
+                      return checkSelfPermission(Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED
+                          && checkSelfPermission(Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED;
+                  return checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+              }
+
+              @Override
+              public void onRequestPermissionsResult(int code, String[] perms, int[] results) {
+                  super.onRequestPermissionsResult(code, perms, results);
+                  if (code == REQ_MEDIA) {
+                      try { emit(new JSONObject().put("type", "perm").put("granted", hasMediaPerm())); } catch (Exception ignored) {}
+                  }
+              }
+
+              private boolean isInstalled(String pkg) {
+                  try { getPackageManager().getPackageInfo(pkg, 0); return true; }
+                  catch (Exception e) { return false; }
+              }
+
+              private static long deleteTree(File f, boolean self) {
+                  long n = 0;
+                  File[] kids = f.listFiles();
+                  if (kids != null) for (File k : kids) n += deleteTree(k, true);
+                  if (self) { long len = f.isFile() ? f.length() : 0; if (f.delete()) n += len; }
+                  return n;
+              }
+
+              private boolean view(Uri u, String mime) {
+                  try {
+                      Intent i = new Intent(Intent.ACTION_VIEW);
+                      i.setDataAndType(u, mime);
+                      i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                      startActivity(Intent.createChooser(i, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                      return true;
+                  } catch (Exception e) {
+                      return false;
+                  }
+              }
+          }
+          EOF
+
+          cat > android/app/src/main/java/com/nexora/download/NexoraService.java <<'EOF'
+          package com.nexora.download;
+
+          import android.app.Notification;
+          import android.app.NotificationChannel;
+          import android.app.NotificationManager;
+          import android.app.PendingIntent;
+          import android.app.Service;
+          import android.content.Intent;
+          import android.content.pm.ServiceInfo;
+          import android.os.Build;
+          import android.os.IBinder;
+
+          /** Mantiene viva la app mientras hay descargas de redes en curso. */
+          public class NexoraService extends Service {
+              private static final String CH = "nexora_downloads";
+
+              @Override
+              public int onStartCommand(Intent intent, int flags, int startId) {
+                  int count = intent != null ? intent.getIntExtra("count", 1) : 1;
+                  NotificationManager nm = getSystemService(NotificationManager.class);
+                  if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CH) == null) {
+                      nm.createNotificationChannel(new NotificationChannel(CH, "Descargas", NotificationManager.IMPORTANCE_LOW));
+                  }
+                  PendingIntent open = PendingIntent.getActivity(this, 0,
+                      new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                      PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+                  Notification n = new Notification.Builder(this, CH)
+                      .setSmallIcon(R.drawable.ic_mono)
+                      .setContentTitle("Nexora Download Plus")
+                      .setContentText(count == 1 ? "Descargando 1 archivo…" : "Descargando " + count + " archivos…")
+                      .setProgress(0, 0, true)
+                      .setOngoing(true)
+                      .setContentIntent(open)
+                      .build();
+                  if (Build.VERSION.SDK_INT >= 29) {
+                      startForeground(1, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+                  } else {
+                      startForeground(1, n);
+                  }
+                  return START_NOT_STICKY;
+              }
+
+              @Override
+              public IBinder onBind(Intent intent) { return null; }
+          }
+          EOF
+
+          cat > android/app/src/main/java/com/nexora/download/LoginActivity.java <<'EOF'
+          package com.nexora.download;
+
+          import android.app.Activity;
+          import android.graphics.Color;
+          import android.os.Bundle;
+          import android.view.Gravity;
+          import android.view.ViewGroup;
+          import android.webkit.CookieManager;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.Button;
+          import android.widget.LinearLayout;
+          import android.widget.TextView;
+          import android.widget.Toast;
+
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.nio.charset.StandardCharsets;
+
+          /** Inicio de sesión en YouTube. Guarda la sesión en un archivo cookies.txt privado de la app. */
+          public class LoginActivity extends Activity {
+              private WebView web;
+
+              @Override
+              protected void onCreate(Bundle b) {
+                  super.onCreate(b);
+                  int bg = Color.parseColor("#171C45");
+                  float d = getResources().getDisplayMetrics().density;
+
+                  LinearLayout root = new LinearLayout(this);
+                  root.setOrientation(LinearLayout.VERTICAL);
+                  root.setBackgroundColor(Color.parseColor("#0E1230"));
+
+                  LinearLayout bar = new LinearLayout(this);
+                  bar.setOrientation(LinearLayout.HORIZONTAL);
+                  bar.setGravity(Gravity.CENTER_VERTICAL);
+                  bar.setBackgroundColor(bg);
+                  int p = (int) (12 * d);
+                  bar.setPadding(p, p, p, p);
+
+                  TextView tv = new TextView(this);
+                  tv.setText("Inicia sesión y luego toca Guardar.\nUsa una cuenta secundaria.");
+                  tv.setTextColor(Color.parseColor("#EEF0FF"));
+                  tv.setTextSize(13);
+                  bar.addView(tv, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+                  Button save = new Button(this);
+                  save.setText("Guardar");
+                  save.setAllCaps(false);
+                  save.setTextColor(Color.parseColor("#06261F"));
+                  save.setBackgroundColor(Color.parseColor("#46E0C4"));
+                  save.setOnClickListener(v -> saveSession());
+                  bar.addView(save);
+
+                  web = new WebView(this);
+                  WebSettings s = web.getSettings();
+                  s.setJavaScriptEnabled(true);
+                  s.setDomStorageEnabled(true);
+                  web.setWebViewClient(new WebViewClient());
+
+                  CookieManager cm = CookieManager.getInstance();
+                  cm.setAcceptCookie(true);
+                  cm.setAcceptThirdPartyCookies(web, true);
+
+                  root.addView(bar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                  root.addView(web, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+                  setContentView(root);
+
+                  web.loadUrl("https://accounts.google.com/ServiceLogin?service=youtube&continue=https%3A%2F%2Fm.youtube.com%2F");
+              }
+
+              private void saveSession() {
+                  CookieManager cm = CookieManager.getInstance();
+                  cm.flush();
+                  String c = cm.getCookie("https://www.youtube.com");
+                  if (c == null || !(c.contains("SAPISID") || c.contains("__Secure-3PSID") || c.contains("LOGIN_INFO"))) {
+                      Toast.makeText(this, "Primero termina de iniciar sesión en YouTube", Toast.LENGTH_LONG).show();
+                      return;
+                  }
+                  long exp = System.currentTimeMillis() / 1000 + 180L * 24 * 3600;
+                  StringBuilder sb = new StringBuilder("# Netscape HTTP Cookie File\n");
+                  for (String part : c.split(";")) {
+                      String kv = part.trim();
+                      int i = kv.indexOf('=');
+                      if (i <= 0) continue;
+                      sb.append(".youtube.com\tTRUE\t/\tTRUE\t").append(exp).append('\t')
+                        .append(kv.substring(0, i)).append('\t').append(kv.substring(i + 1)).append('\n');
+                  }
+                  File out = MainActivity.cookiesFile(this);
+                  try (FileOutputStream os = new FileOutputStream(out)) {
+                      os.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+                      Toast.makeText(this, "Sesión guardada", Toast.LENGTH_SHORT).show();
+                      finish();
+                  } catch (Exception e) {
+                      Toast.makeText(this, "No se pudo guardar la sesión", Toast.LENGTH_LONG).show();
+                  }
+              }
+
+              @Override
+              @SuppressWarnings("deprecation")
+              public void onBackPressed() {
+                  if (web.canGoBack()) web.goBack(); else super.onBackPressed();
+              }
+          }
+          EOF
+
+      - name: Copiar los HTML a la app
+        run: |
+          cp index.html android/app/src/main/assets/index.html
+          if [ -f privacy-policy.html ]; then cp privacy-policy.html android/app/src/main/assets/; fi
+
+      # ---------- Firma ----------
+      # Para que las actualizaciones se instalen encima de la versión anterior (y para Play Store),
+      # crea los secretos KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS y KEY_PASSWORD.
+      # Sin secretos se genera una llave temporal (funciona, pero cambia en cada compilación).
+      - name: Preparar llave de firma
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/nexora.jks
+            echo "KS_PASS=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
+            echo "KS_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
+            echo "KEY_PASS=$KEY_PASSWORD" >> $GITHUB_ENV
+            echo "Usando la llave de los secretos."
+          elif [ -n "$KEYSTORE_PASSWORD" ]; then
+            # Llave permanente: se crea una sola vez, protegida con tu contraseña secreta,
+            # y se guarda en el repositorio (carpeta keystore/) para usarla siempre.
+            if [ ! -f keystore/nexora.jks ]; then
+              mkdir -p keystore
+              keytool -genkeypair -v -keystore keystore/nexora.jks -storetype PKCS12 -alias nexora \
+                -keyalg RSA -keysize 2048 -validity 10000 \
+                -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" \
+                -dname "CN=Eduard Gamer, O=Nexora, C=US"
+              git config user.name "github-actions"
+              git config user.email "github-actions@users.noreply.github.com"
+              git add keystore/nexora.jks
+              git commit -m "Llave de firma permanente [skip ci]"
+              git push
+            fi
+            cp keystore/nexora.jks android/app/nexora.jks
+            echo "KS_PASS=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
+            echo "KS_ALIAS=nexora" >> $GITHUB_ENV
+            echo "KEY_PASS=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
+            echo "Usando la llave permanente."
+          else
+            keytool -genkeypair -v -keystore android/app/nexora.jks -alias nexora \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass nexora123 -keypass nexora123 \
+              -dname "CN=Eduard Gamer, O=Nexora, C=US"
+            echo "KS_PASS=nexora123" >> $GITHUB_ENV
+            echo "KS_ALIAS=nexora" >> $GITHUB_ENV
+            echo "KEY_PASS=nexora123" >> $GITHUB_ENV
+            echo "::warning::Llave temporal. Crea el secreto KEYSTORE_PASSWORD para una firma permanente (necesaria para las actualizaciones)."
+          fi
+
+      - name: Compilar APK
+        working-directory: android
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 1.0.${{ github.run_number }}
+        run: gradle --no-daemon assembleRelease
+
+      - name: Renombrar archivos
+        run: |
+          mkdir -p out
+          V=1.0.${{ github.run_number }}
+          cp android/app/build/outputs/apk/release/app-arm64-v8a-release.apk   "out/NexoraPlus-v$V-arm64.apk"
+          cp android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk "out/NexoraPlus-v$V-arm32.apk"
+          ls -la out
+
+      - name: Subir APK (Artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexoraPlus-APK
+          path: out/*.apk
+
+      # ---------- Nueva versión: la app la detecta y pide actualizar ----------
+      - name: Preparar novedades
+        env:
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -f novedades.md ]; then cp novedades.md out/notas.md
+          else printf '%s\n' "$MSG" > out/notas.md; fi
+          cat out/notas.md
+
+      - name: Publicar versión (Release)
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Nexora Download Plus V1.0.${{ github.run_number }}
+          body_path: out/notas.md
+          make_latest: true
+          files: out/*.apk
