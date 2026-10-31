@@ -123,6 +123,7 @@ jobs:
               implementation 'io.github.junkfood02.youtubedl-android:library:0.18.1'
               implementation 'io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1'
               implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+              implementation 'androidx.core:core:1.12.0'
           }
           EOF
 
@@ -165,6 +166,15 @@ jobs:
                       android:name=".LoginActivity"
                       android:exported="false"
                       android:configChanges="orientation|screenSize|keyboardHidden" />
+                  <provider
+                      android:name="androidx.core.content.FileProvider"
+                      android:authorities="com.nexora.download.files"
+                      android:exported="false"
+                      android:grantUriPermissions="true">
+                      <meta-data
+                          android:name="android.support.FILE_PROVIDER_PATHS"
+                          android:resource="@xml/file_paths" />
+                  </provider>
                   <service
                       android:name=".AudioService"
                       android:exported="false"
@@ -193,6 +203,11 @@ jobs:
                   </activity>
               </application>
           </manifest>
+          EOF
+
+          mkdir -p $P/app/src/main/res/xml
+          cat > $P/app/src/main/res/xml/file_paths.xml <<'EOF'
+          <paths><cache-path name="share" path="share/" /></paths>
           EOF
 
           cat > $P/app/src/main/res/values/strings.xml <<'EOF'
@@ -383,8 +398,14 @@ jobs:
               private static final Set<String> ACTIVE = ConcurrentHashMap.newKeySet();
               private static final int REQ_COOKIES = 42;
               private static final int REQ_MEDIA = 44;
+              private static final int REQ_PICK = 45;
+              private static final java.util.Map<String, Uri> PICKED = new ConcurrentHashMap<>();
 
               /** Métodos de YouTube que se prueban en orden cuando uno falla. */
+              /** Método rápido para ver videos: cliente sin reproductor JavaScript. */
+              private static final int FAST = 99;
+              private static final String FAST_ARGS = "youtube:player_client=android_vr;player_skip=webpage,configs";
+
               private static final String[] CLIENTS = {
                   null,                                                                     // lo que yt-dlp considere mejor
                   "youtube:player_client=default,tv_simply,android_vr,mweb,web_embedded"    // varios a la vez como respaldo
@@ -717,6 +738,10 @@ jobs:
               @Override
               protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                   super.onActivityResult(requestCode, resultCode, data);
+                  if (requestCode == REQ_PICK) {
+                      if (resultCode == RESULT_OK && data != null) onPicked(data);
+                      return;
+                  }
                   if (requestCode == 43) {
                       try { emit(new JSONObject().put("type", "deleted").put("ok", resultCode == RESULT_OK)); } catch (Exception ignored) {}
                       return;
@@ -752,6 +777,7 @@ jobs:
               private static void applyCommon(Context app, YoutubeDLRequest r, int client) {
                   String ea = "youtube:skip=dash,translated_subs";
                   if (client > 0 && client < CLIENTS.length) ea = CLIENTS[client] + ";skip=dash,translated_subs";
+                  if (client == FAST) ea = FAST_ARGS + ";skip=dash,translated_subs";
                   r.addOption("--extractor-args", ea);
                   File ck = cookiesFile(app);
                   if (ck.exists()) r.addOption("--cookies", ck.getAbsolutePath());
@@ -779,7 +805,7 @@ jobs:
                   INFO_PID.put(req, pid);
                   // Si tarda demasiado se corta y se prueba el siguiente método
                   ScheduledFuture<?> watchdog = TIMER.schedule(
-                      () -> { YoutubeDL.getInstance().destroyProcessById(pid); }, INFO_TIMEOUT_S, TimeUnit.SECONDS);
+                      () -> { YoutubeDL.getInstance().destroyProcessById(pid); }, client == FAST ? 25 : INFO_TIMEOUT_S, TimeUnit.SECONDS);
                   try {
                       YoutubeDLResponse res = YoutubeDL.getInstance().execute(r, pid);
                       return lastJson(res.getOut());
@@ -790,6 +816,31 @@ jobs:
                       watchdog.cancel(false);
                       INFO_PID.remove(req);
                   }
+              }
+
+              private static void fillInfo(JSONObject o, JSONObject j, String url, JSONObject media, JSONArray fm, int c) throws Exception {
+                  String up = j.optString("channel", "");
+                  if (up.isEmpty()) up = j.optString("uploader", "");
+                  if (up.isEmpty()) up = j.optString("uploader_id", "");
+                  String desc = j.optString("description", "");
+                  if (desc.length() > 5000) desc = desc.substring(0, 5000) + "…";
+                  o.put("streams", media.getJSONArray("streams"))
+                   .put("audio", media.optString("audio", ""))
+                   .put("audioUa", media.optString("audioUa", ""))
+                   .put("desc", desc)
+                   .put("views", j.optLong("view_count", 0))
+                   .put("likes", j.optLong("like_count", 0))
+                   .put("subs", j.optLong("channel_follower_count", 0))
+                   .put("date", j.optString("upload_date", ""))
+                   .put("chUrl", chUrlOf(j));
+                  o.put("ok", true)
+                   .put("client", c)
+                   .put("title", j.optString("title", ""))
+                   .put("uploader", up)
+                   .put("thumb", j.optString("thumbnail", ""))
+                   .put("duration", (int) Math.round(j.optDouble("duration", 0)))
+                   .put("url", j.optString("webpage_url", url))
+                   .put("formats", fm);
               }
 
               private static void emitStage(String req, String stage) {
@@ -1175,7 +1226,13 @@ jobs:
                   }
 
                   @JavascriptInterface
-                  public void ytInfo(String req, String url) {
+                  public void ytInfo(String req, String url) { infoJob(req, url, false); }
+
+                  /** Igual que ytInfo pero primero prueba un método rápido (sin descargar el reproductor de YouTube). */
+                  @JavascriptInterface
+                  public void ytInfoFast(String req, String url) { infoJob(req, url, true); }
+
+                  private void infoJob(String req, String url, boolean fast) {
                       final Context app = getApplicationContext();
                       POOL.execute(() -> {
                           JSONObject o = new JSONObject();
@@ -1184,6 +1241,21 @@ jobs:
                               awaitEngine();
                               int n = isYoutube(url) ? CLIENTS.length : 1;
                               String lastErr = null;
+                              if (fast && isYoutube(url)) {
+                                  try {
+                                      JSONObject j = fetchInfo(app, req, url, FAST);
+                                      JSONObject media = streamsOf(j.optJSONArray("formats"));
+                                      if (media.getJSONArray("streams").length() > 0) {
+                                          JSONArray fm = condense(j.optJSONArray("formats"));
+                                          fillInfo(o, j, url, media, fm, 0);
+                                          o.put("fast", true);
+                                          emit(o);
+                                          return;
+                                      }
+                                  } catch (YoutubeDL.CanceledException ce) {
+                                      if (CANCELLED_INFO.remove(req)) return;
+                                  } catch (Throwable ignored) { /* sigue con el método normal */ }
+                              }
                               for (int round = 0; round < 2; round++) {
                                   for (int c = 0; c < n; c++) {
                                       try {
@@ -1195,29 +1267,7 @@ jobs:
                                               lastErr = "Requested format is not available";
                                               continue;
                                           }
-                                          String up = j.optString("channel", "");
-                                          if (up.isEmpty()) up = j.optString("uploader", "");
-                                          if (up.isEmpty()) up = j.optString("uploader_id", "");
-                                          JSONObject media = streamsOf(j.optJSONArray("formats"));
-                                          String desc = j.optString("description", "");
-                                          if (desc.length() > 5000) desc = desc.substring(0, 5000) + "…";
-                                          o.put("streams", media.getJSONArray("streams"))
-                                           .put("audio", media.optString("audio", ""))
-                                           .put("audioUa", media.optString("audioUa", ""))
-                                           .put("desc", desc)
-                                           .put("views", j.optLong("view_count", 0))
-                                           .put("likes", j.optLong("like_count", 0))
-                                           .put("subs", j.optLong("channel_follower_count", 0))
-                                           .put("date", j.optString("upload_date", ""))
-                                           .put("chUrl", chUrlOf(j));
-                                          o.put("ok", true)
-                                           .put("client", c)
-                                           .put("title", j.optString("title", ""))
-                                           .put("uploader", up)
-                                           .put("thumb", j.optString("thumbnail", ""))
-                                           .put("duration", (int) Math.round(j.optDouble("duration", 0)))
-                                           .put("url", j.optString("webpage_url", url))
-                                           .put("formats", fm);
+                                          fillInfo(o, j, url, streamsOf(j.optJSONArray("formats")), fm, c);
                                           emit(o);
                                           return;
                                       } catch (YoutubeDL.CanceledException ce) {
@@ -1702,6 +1752,76 @@ jobs:
                       return pos;
                   }
 
+                  /** Elegir fotos o videos para adjuntar a los comentarios. */
+                  @JavascriptInterface
+                  public void pickMedia() {
+                      runOnUiThread(() -> {
+                          Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                          i.setType("*/*");
+                          i.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
+                          i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                          i.addCategory(Intent.CATEGORY_OPENABLE);
+                          try { startActivityForResult(Intent.createChooser(i, null), REQ_PICK); } catch (Exception ignored) {}
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void unpick(String id) { PICKED.remove(id); }
+
+                  /** Abre el correo con el comentario y las fotos/videos adjuntos. */
+                  @JavascriptInterface
+                  public void sendFeedback(String email, String subject, String body, String idsCsv) {
+                      runOnUiThread(() -> {
+                          java.util.ArrayList<Uri> uris = new java.util.ArrayList<>();
+                          if (idsCsv != null) for (String id : idsCsv.split(",")) { Uri u = PICKED.get(id.trim()); if (u != null) uris.add(u); }
+                          Intent i = new Intent(uris.size() > 1 ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SEND);
+                          i.setType(uris.isEmpty() ? "message/rfc822" : "*/*");
+                          i.putExtra(Intent.EXTRA_EMAIL, new String[]{email});
+                          i.putExtra(Intent.EXTRA_SUBJECT, subject);
+                          i.putExtra(Intent.EXTRA_TEXT, body);
+                          if (uris.size() > 1) i.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                          else if (uris.size() == 1) i.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                          if (!uris.isEmpty()) {
+                              ClipData cd = ClipData.newRawUri("", uris.get(0));
+                              for (int k = 1; k < uris.size(); k++) cd.addItem(new ClipData.Item(uris.get(k)));
+                              i.setClipData(cd);
+                              i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                          }
+                          i.setSelector(new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")));
+                          try { startActivity(i); }
+                          catch (Exception e) {
+                              i.setSelector(null);
+                              try { startActivity(Intent.createChooser(i, null)); } catch (Exception ignored) {}
+                          }
+                      });
+                  }
+
+                  /** Comparte el APK instalado de Nexora. */
+                  @JavascriptInterface
+                  public void shareApk(String text) {
+                      POOL.execute(() -> {
+                          try {
+                              File src = new File(getApplicationInfo().sourceDir);
+                              File dir = new File(getCacheDir(), "share");
+                              dir.mkdirs();
+                              File out = new File(dir, "NexoraDownloadPlus.apk");
+                              if (!out.exists() || out.length() != src.length()) Files.copy(src.toPath(), out.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                              Uri u = androidx.core.content.FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".files", out);
+                              runOnUiThread(() -> {
+                                  Intent i = new Intent(Intent.ACTION_SEND);
+                                  i.setType("application/vnd.android.package-archive");
+                                  i.putExtra(Intent.EXTRA_STREAM, u);
+                                  i.putExtra(Intent.EXTRA_TEXT, text);
+                                  i.setClipData(ClipData.newRawUri("", u));
+                                  i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                  startActivity(Intent.createChooser(i, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                              });
+                          } catch (Exception e) {
+                              try { emit(new JSONObject().put("type", "shareErr")); } catch (Exception ignored) {}
+                          }
+                      });
+                  }
+
                   @JavascriptInterface
                   public String abi() { return Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : ""; }
 
@@ -1756,9 +1876,57 @@ jobs:
                   }
 
                   @JavascriptInterface
+                  @SuppressWarnings("deprecation")
+                  public void setBarColor(String hex, boolean light) {
+                      runOnUiThread(() -> {
+                          try {
+                              Window w = getWindow();
+                              int bg = Color.parseColor(hex);
+                              w.setStatusBarColor(bg);
+                              w.setNavigationBarColor(bg);
+                              web.setBackgroundColor(bg);
+                              w.getDecorView().setSystemUiVisibility(light ? (View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR) : 0);
+                          } catch (Exception ignored) {}
+                      });
+                  }
+
+                  @JavascriptInterface
                   public void toast(String msg) {
                       runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
                   }
+              }
+
+              private void onPicked(Intent data) {
+                  java.util.List<Uri> uris = new java.util.ArrayList<>();
+                  if (data.getClipData() != null) for (int i = 0; i < data.getClipData().getItemCount(); i++) uris.add(data.getClipData().getItemAt(i).getUri());
+                  else if (data.getData() != null) uris.add(data.getData());
+                  POOL.execute(() -> {
+                      JSONArray arr = new JSONArray();
+                      for (Uri u : uris) {
+                          try {
+                              String id = "f" + System.nanoTime();
+                              PICKED.put(id, u);
+                              String thumb = "";
+                              try {
+                                  android.graphics.Bitmap bm = null;
+                                  if (Build.VERSION.SDK_INT >= 29) bm = getContentResolver().loadThumbnail(u, new android.util.Size(200, 200), null);
+                                  else {
+                                      android.graphics.BitmapFactory.Options op = new android.graphics.BitmapFactory.Options();
+                                      op.inSampleSize = 8;
+                                      try (InputStream in = getContentResolver().openInputStream(u)) { bm = android.graphics.BitmapFactory.decodeStream(in, null, op); }
+                                  }
+                                  if (bm != null) {
+                                      java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                                      bm.compress(android.graphics.Bitmap.CompressFormat.JPEG, 75, bo);
+                                      thumb = "data:image/jpeg;base64," + android.util.Base64.encodeToString(bo.toByteArray(), android.util.Base64.NO_WRAP);
+                                  }
+                              } catch (Exception ignored) {}
+                              String type = getContentResolver().getType(u);
+                              arr.put(new JSONObject().put("id", id).put("thumb", thumb).put("video", type != null && type.startsWith("video/")));
+                          } catch (Exception ignored) {}
+                      }
+                      try { emit(new JSONObject().put("type", "picked").put("items", arr)); } catch (Exception ignored) {}
+                  });
               }
 
               private boolean hasMediaPerm() {
