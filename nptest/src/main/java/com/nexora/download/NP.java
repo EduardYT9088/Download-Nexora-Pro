@@ -10,7 +10,10 @@ import org.schabi.newpipe.extractor.NewPipe;
 import org.schabi.newpipe.extractor.Page;
 import org.schabi.newpipe.extractor.ServiceList;
 import org.schabi.newpipe.extractor.StreamingService;
+import org.schabi.newpipe.extractor.channel.ChannelInfo;
 import org.schabi.newpipe.extractor.channel.ChannelInfoItem;
+import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo;
+import org.schabi.newpipe.extractor.linkhandler.ListLinkHandler;
 import org.schabi.newpipe.extractor.comments.CommentsInfo;
 import org.schabi.newpipe.extractor.comments.CommentsInfoItem;
 import org.schabi.newpipe.extractor.downloader.Downloader;
@@ -479,5 +482,82 @@ public final class NP {
         JSONObject meta = (JSONObject) st[2];
         return new JSONObject(meta.toString()).put("ok", true).put("np", true).put("items", out)
             .put("more", st[1] != null || list.size() > to);
+    }
+
+    // ================= canales (pestañas Videos, Shorts, En vivo, Playlists) =================
+    private static final Map<String, ChannelInfo> CINFO = new ConcurrentHashMap<>();
+    private static final Map<String, Object[]> CSTATE = new ConcurrentHashMap<>();   // base#tab -> {List<JSONObject>, Page, ListLinkHandler}
+    private static final Pattern CH_TAB = Pattern.compile("^(.*?)/(videos|shorts|streams|playlists|featured)$");
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject channel(String url, int start, int count) throws Exception {
+        String base = url.replaceAll("/+$", ""), tab = "videos";
+        Matcher m = CH_TAB.matcher(base);
+        if (m.find()) {
+            base = m.group(1);
+            String t = m.group(2);
+            tab = t.equals("streams") ? "livestreams" : t.equals("featured") ? "videos" : t;
+        }
+        ChannelInfo ci = CINFO.get(base);
+        if (ci == null || start <= 1) {
+            ci = ChannelInfo.getInfo(YT, base);
+            if (CINFO.size() > 20) CINFO.clear();
+            CINFO.put(base, ci);
+        }
+        ListLinkHandler lh = null;
+        for (ListLinkHandler h : ci.getTabs()) {
+            if (h.getContentFilters() != null && h.getContentFilters().contains(tab)) { lh = h; break; }
+        }
+        if (lh == null) {
+            return new JSONObject().put("ok", false).put("notab", true).put("error", "This channel does not have a " + tab + " tab");
+        }
+        String key = base + "#" + tab;
+        Object[] st = CSTATE.get(key);
+        boolean shorts = tab.equals("shorts");
+        if (st == null || start <= 1) {
+            ChannelTabInfo ti = ChannelTabInfo.getInfo(YT, lh);
+            List<JSONObject> list = new ArrayList<>();
+            addItems(list, ti.getRelatedItems(), shorts);
+            st = new Object[]{list, ti.hasNextPage() ? ti.getNextPage() : null, lh};
+            if (CSTATE.size() > 30) CSTATE.clear();
+            CSTATE.put(key, st);
+        }
+        List<JSONObject> list = (List<JSONObject>) st[0];
+        int from = Math.max(0, start - 1), to = from + Math.max(1, count);
+        int guard = 0;
+        synchronized (st) {
+            while (list.size() < to && st[1] != null && guard++ < 5) {
+                ListExtractor.InfoItemsPage<InfoItem> p = ChannelTabInfo.getMoreItems(YT, (ListLinkHandler) st[2], (Page) st[1]);
+                int before = list.size();
+                addItems(list, p.getItems(), shorts);
+                st[1] = p.hasNextPage() && list.size() > before ? p.getNextPage() : null;
+            }
+        }
+        JSONArray out = new JSONArray();
+        for (int i = from; i < Math.min(to, list.size()); i++) out.put(list.get(i));
+        String name = nz(ci.getName());
+        String desc = nz(ci.getDescription());
+        if (desc.length() > 3000) desc = desc.substring(0, 3000) + "…";
+        return new JSONObject().put("ok", true).put("np", true)
+            .put("title", name).put("channel", name)
+            .put("subs", Math.max(0, ci.getSubscriberCount()))
+            .put("desc", desc)
+            .put("avatar", bestImage(ci.getAvatars(), 240))
+            .put("banner", bestImage(ci.getBanners(), 2000))
+            .put("chUrl", nz(ci.getUrl()).isEmpty() ? base : ci.getUrl())
+            .put("items", out)
+            .put("more", st[1] != null || list.size() > to);
+    }
+
+    private static void addItems(List<JSONObject> list, List<? extends InfoItem> items, boolean shorts) {
+        if (items == null) return;
+        for (InfoItem it : items) {
+            try {
+                JSONObject o = item(it);
+                if (o == null || "ch".equals(o.optString("kind"))) continue;
+                if (shorts && "video".equals(o.optString("kind"))) o.put("short", true);
+                list.add(o);
+            } catch (Throwable ignored) {}
+        }
     }
 }
