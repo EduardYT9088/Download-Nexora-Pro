@@ -565,11 +565,10 @@ jobs:
                   super.onUserLeaveHint();
                   JSONObject n = now;
                   if (!n.optBoolean("playing")) return;
-                  String mode = n.optString("leave", "audio");
-                  if ("pip".equals(mode) && Build.VERSION.SDK_INT >= 26) { enterPip(); return; }
-                  if ("audio".equals(mode) && !n.optString("audio").isEmpty()) {
+                  // Al salir de la app: solo la música en segundo plano (nunca ventana flotante)
+                  if (!n.optString("audio").isEmpty()) {
                       startBg(n.optString("audio"), n.optString("ua"), n.optString("title"), n.optString("artist"), n.optLong("pos"));
-                      try { emit(new JSONObject().put("type", "bg").put("state", "started")); } catch (Exception ignored) {}
+                      try { emit(new JSONObject().put("type", "bg").put("state", "started").put("auto", true)); } catch (Exception ignored) {}
                       return;
                   }
                   try { emit(new JSONObject().put("type", "leave")); } catch (Exception ignored) {}
