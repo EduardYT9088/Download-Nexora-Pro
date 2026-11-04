@@ -1,0 +1,8 @@
+plugins { id 'application' }
+repositories { mavenCentral(); maven { url 'https://jitpack.io' } }
+dependencies {
+    implementation 'com.github.TeamNewPipe:NewPipeExtractor:e8f89145a830b4d6cae32412007f24ea8b36c73a'
+    implementation 'org.json:json:20240303'
+}
+java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+application { mainClass = 'com.nexora.download.Main' }
