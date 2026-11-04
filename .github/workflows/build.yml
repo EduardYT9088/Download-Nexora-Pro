@@ -594,7 +594,7 @@ jobs:
               private void startBg(String url, String ua, String title, String artist, long pos) {
                   Intent i = new Intent(this, AudioService.class).setAction(AudioService.ACT_PLAY)
                       .putExtra("url", url).putExtra("ua", ua).putExtra("title", title)
-                      .putExtra("artist", artist).putExtra("pos", pos);
+                      .putExtra("artist", artist).putExtra("pos", pos).putExtra("thumb", now.optString("thumb"));
                   try { if (Build.VERSION.SDK_INT >= 26) startForegroundService(i); else startService(i); }
                   catch (Exception e) { try { emit(new JSONObject().put("type", "bg").put("state", "error")); } catch (Exception ignored) {} }
               }
@@ -1933,6 +1933,12 @@ jobs:
                       runOnUiThread(() -> startBg(url, ua, title, artist, pos));
                   }
 
+                  /** Prepara el audio del video que estás viendo (vacío = soltar). */
+                  @JavascriptInterface
+                  public void bgPreload(String url, String ua) {
+                      runOnUiThread(() -> AudioService.preload(MainActivity.this, url, ua));
+                  }
+
                   /** Detiene el audio en segundo plano y devuelve dónde iba (ms). */
                   @JavascriptInterface
                   public long bgStop() {
@@ -2891,6 +2897,7 @@ jobs:
           import android.app.NotificationManager;
           import android.app.PendingIntent;
           import android.app.Service;
+          import android.content.Context;
           import android.content.Intent;
           import android.content.pm.ServiceInfo;
           import android.graphics.drawable.Icon;
@@ -2922,6 +2929,51 @@ jobs:
               private String title = "", artist = "";
               private long startPos = 0;
               private boolean prepared = false;
+              private android.graphics.Bitmap art = null;
+              private String artUrl = "";
+
+              // ---- Audio precargado mientras ves el video: al salir de la app suena al instante ----
+              private static MediaPlayer pre;
+              private static String preUrl = "";
+              private static volatile boolean preReady = false;
+
+              static synchronized void preload(Context c, String url, String ua) {
+                  if (url != null && url.equals(preUrl) && pre != null) return;
+                  if (pre != null) { try { pre.release(); } catch (Exception ignored) {} pre = null; }
+                  preUrl = ""; preReady = false;
+                  if (url == null || url.isEmpty()) return;
+                  try {
+                      MediaPlayer p = new MediaPlayer();
+                      p.setAudioAttributes(new AudioAttributes.Builder()
+                          .setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build());
+                      p.setWakeMode(c.getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+                      Map<String, String> headers = new HashMap<>();
+                      if (ua != null && !ua.isEmpty()) headers.put("User-Agent", ua);
+                      p.setDataSource(c.getApplicationContext(), Uri.parse(url), headers);
+                      p.setOnPreparedListener(x -> {
+                          synchronized (AudioService.class) { if (x == pre) preReady = true; }
+                          AudioService s = inst;
+                          if (s != null && s.mp == x && !s.prepared) s.onPrepared(x);
+                      });
+                      p.setOnErrorListener((x, w, e) -> {
+                          synchronized (AudioService.class) { if (x == pre) { pre = null; preUrl = ""; preReady = false; } }
+                          AudioService s = inst;
+                          if (s != null && s.mp == x) return s.onError(x, w, e);
+                          try { x.release(); } catch (Exception ignored) {}
+                          return true;
+                      });
+                      p.prepareAsync();
+                      pre = p; preUrl = url;
+                  } catch (Exception e) { pre = null; preUrl = ""; }
+              }
+
+              /** Toma el audio precargado si es el mismo enlace. */
+              private static synchronized MediaPlayer takePre(String url, boolean[] ready) {
+                  if (pre == null || url == null || !url.equals(preUrl)) return null;
+                  MediaPlayer p = pre; ready[0] = preReady;
+                  pre = null; preUrl = ""; preReady = false;
+                  return p;
+              }
 
               static long position() {
                   AudioService s = inst;
@@ -2937,6 +2989,8 @@ jobs:
                       title = intent.getStringExtra("title");
                       artist = intent.getStringExtra("artist");
                       startPos = intent.getLongExtra("pos", 0);
+                      String th = intent.getStringExtra("thumb");
+                      if (th != null && !th.isEmpty() && !th.equals(artUrl)) { artUrl = th; art = null; loadArt(th); }
                       showNotification(true);
                       play(intent.getStringExtra("url"), intent.getStringExtra("ua"));
                   } else if (ACT_TOGGLE.equals(act)) {
@@ -2952,6 +3006,15 @@ jobs:
               private void play(String url, String ua) {
                   releasePlayer();
                   prepared = false;
+                  boolean[] ready = {false};
+                  MediaPlayer p = takePre(url, ready);
+                  if (p != null) {
+                      // Ya estaba listo: solo salta al segundo donde ibas y suena
+                      mp = p;
+                      mp.setOnCompletionListener(this);
+                      if (ready[0]) onPrepared(mp);
+                      return;
+                  }
                   try {
                       mp = new MediaPlayer();
                       mp.setAudioAttributes(new AudioAttributes.Builder()
@@ -2973,7 +3036,9 @@ jobs:
               @Override
               public void onPrepared(MediaPlayer p) {
                   prepared = true;
-                  if (startPos > 0) try { p.seekTo((int) startPos); } catch (Exception ignored) {}
+                  if (startPos > 0) try {
+                      if (Build.VERSION.SDK_INT >= 26) p.seekTo(startPos, MediaPlayer.SEEK_CLOSEST); else p.seekTo((int) startPos);
+                  } catch (Exception ignored) {}
                   p.start();
                   updateSession(true);
                   showNotification(true);
@@ -3022,9 +3087,12 @@ jobs:
 
               private void updateSession(boolean playing) {
                   ensureSession();
-                  ms.setMetadata(new MediaMetadata.Builder()
+                  MediaMetadata.Builder mb = new MediaMetadata.Builder()
                       .putString(MediaMetadata.METADATA_KEY_TITLE, title)
-                      .putString(MediaMetadata.METADATA_KEY_ARTIST, artist).build());
+                      .putString(MediaMetadata.METADATA_KEY_ARTIST, artist);
+                  try { if (mp != null && prepared) mb.putLong(MediaMetadata.METADATA_KEY_DURATION, mp.getDuration()); } catch (Exception ignored) {}
+                  if (art != null) mb.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+                  ms.setMetadata(mb.build());
                   long pos = 0;
                   try { if (mp != null && prepared) pos = mp.getCurrentPosition(); } catch (Exception ignored) {}
                   ms.setPlaybackState(new PlaybackState.Builder()
@@ -3051,6 +3119,7 @@ jobs:
                       .setContentTitle(title == null || title.isEmpty() ? "Nexora Download Plus" : title)
                       .setContentText(artist == null ? "" : artist)
                       .setContentIntent(open)
+                      .setLargeIcon(art)
                       .setOngoing(playing)
                       .setVisibility(Notification.VISIBILITY_PUBLIC)
                       .addAction(new Notification.Action.Builder(
@@ -3062,6 +3131,30 @@ jobs:
                       .build();
                   if (Build.VERSION.SDK_INT >= 29) startForeground(2, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
                   else startForeground(2, n);
+              }
+
+              /** Descarga la miniatura del video para la notificación (recortada en cuadrado). */
+              private void loadArt(String url) {
+                  new Thread(() -> {
+                      try {
+                          java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+                          c.setConnectTimeout(8000); c.setReadTimeout(8000);
+                          android.graphics.Bitmap b;
+                          try (java.io.InputStream in = c.getInputStream()) { b = android.graphics.BitmapFactory.decodeStream(in); }
+                          if (b == null) return;
+                          int side = Math.min(b.getWidth(), b.getHeight());
+                          android.graphics.Bitmap sq = android.graphics.Bitmap.createBitmap(b, (b.getWidth() - side) / 2, (b.getHeight() - side) / 2, side, side);
+                          if (side > 512) sq = android.graphics.Bitmap.createScaledBitmap(sq, 512, 512, true);
+                          final android.graphics.Bitmap fin = sq;
+                          new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                              if (!url.equals(artUrl) || inst != AudioService.this) return;
+                              art = fin;
+                              boolean playing = mp != null && prepared && mp.isPlaying();
+                              updateSession(playing || !prepared);
+                              showNotification(playing || !prepared);
+                          });
+                      } catch (Exception ignored) {}
+                  }).start();
               }
 
               private static void emit(String state) {
