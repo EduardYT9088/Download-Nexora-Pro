@@ -1,5 +1,8 @@
 ## Novedades
-- Corregido: el audio ya no se escucha doble en segundo plano
-- Mini reproductor: desliza el video hacia abajo y sigue viéndolo mientras buscas
-- Calidad como YouTube: Automática, Más alta, Ahorro de datos y Avanzada
-- 16 colores y 8 fondos nuevos en Tema
+- Mucho más rápido: los videos, la búsqueda y la ventana de descarga cargan en 1-2 segundos (antes 20 s o más)
+- Reproductor nuevo: el video empieza al instante y cambia de calidad solo, de 144p hasta 4K
+- Ahora salen las playlists, los Mix y los canales con su imagen en los resultados
+- Acerca de: toca el título para ver la descripción completa, Me gusta, vistas y fecha
+- Comentarios del video con su propia pantalla
+- Ajustes del reproductor: calidad, subtítulos, velocidad, reproducción automática y repetir
+- Herramientas con diseño nuevo y botón rápido para cambiar colores y tema
