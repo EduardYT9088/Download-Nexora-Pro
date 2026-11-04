@@ -1,6 +1,5 @@
 ## Novedades
-- Arreglado: al bajar una canción ya sale una sola vez en Mis descargas (antes salían varias copias)
-- Arreglado: ya no queda la imagen de la portada suelta en tu galería; la portada va dentro de la canción, como en SnapTube
-- Las copias repetidas que ya tenías se limpian solas
-- Personaliza con diseño nuevo: vista previa en vivo de tus colores
-- El fondo ahora está dentro de Tema
+- Carpetas ordenadas: Download/Nexora/Música, Videos, Imágenes y Documentos
+- Lo que ya tenías suelto en Download/Nexora se ordena solo, y se borran los restos de descargas viejas
+- Al salir de la app el video ya no se pone en ventana flotante: sigue sonando solo el audio en segundo plano (puedes cambiarlo en Configuración)
+- Herramientas con diseño nuevo: anillo con lo que ocupa tu música y tus videos, y carpetas con su contador

@@ -547,6 +547,35 @@ img.wav{object-fit:cover}
 .sopt b{display:block;font-size:14.5px;font-weight:600}
 .sopt small{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sopt .chev{color:var(--muted);flex:none;opacity:.6}
+/* ===== Herramientas: biblioteca, carpetas y app (mismo estilo que Personaliza) ===== */
+.libcard{align-items:center;margin-top:14px}
+.ring{position:relative;width:118px;height:118px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ring .rc>b{font-size:17px;letter-spacing:-.01em}
+.ring .rc>span{font-size:11px;color:var(--muted);line-height:1.2;max-width:80px}
+.ring .rc>span b{color:var(--text)}
+.legend{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.legend .lg{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--bg)}
+.legend .lg i{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.legend .lg span{flex:1;min-width:0;font-size:13.5px;font-weight:600}
+.legend .lg small{font-size:12px;color:var(--muted);white-space:nowrap}
+.tree{width:118px;flex:none;border-radius:16px;background:var(--bg);border:2px solid var(--surface-2);padding:10px 9px;display:flex;flex-direction:column;gap:7px;text-align:left}
+.tree b{display:flex;align-items:center;gap:6px;font-size:13px}
+.tree b svg{color:var(--accent)}
+.tree span{display:flex;align-items:center;gap:6px;font-size:11.5px;padding-left:8px;border-left:2px solid var(--surface-2);margin-left:6px}
+.tree span i{width:7px;height:7px;border-radius:2px;background:var(--c);flex:none}
+.tree span em{font-style:normal;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree span small{color:var(--muted);font-size:11px}
+.appbadge{width:118px;flex:none;border-radius:16px;background:var(--bg);border:2px solid var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px 6px}
+.appbadge .mark{width:52px;height:52px}
+.appbadge b{font-size:13px}
+.appbadge .pill2{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--surface-2);color:var(--text)}
+.appbadge .pill2 svg{color:var(--accent)}
+.studio+.studio{margin-top:10px}
+.minis{display:flex;gap:8px;margin-top:10px}
+.minis button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:999px;background:var(--surface);font-size:13.5px;font-weight:600;color:var(--muted)}
+.minis svg{color:var(--accent)}
 /* ===== Selector de color propio ===== */
 .ptiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .ptile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px 10px;border-radius:var(--r-md);background:var(--surface);min-width:0}
@@ -732,15 +761,9 @@ img.wav{object-fit:cover}
         <h1 data-t="toolsTitle">Herramientas</h1>
       </div>
       <div class="qpop" id="qPop" hidden></div>
-      <div class="hero">
-        <div class="hrow">
-          <svg class="mark"><use href="#logo"/></svg>
-          <div class="grow"><b>Nexora Download Plus</b><span id="heroVer">V…</span><br><span class="pill2"><svg width="13" height="13"><use href="#i-bolt"/></svg><span data-t="fastOn">Motor rápido activo</span></span></div>
-        </div>
-        <div class="hstats">
-          <div><b id="stCount">0</b><span data-t="stFiles">archivos descargados</span></div>
-          <div><b id="stSize">0 MB</b><span data-t="stSize">en total</span></div>
-        </div>
+      <div class="studio libcard">
+        <div class="ring" aria-hidden="true"><svg viewBox="0 0 42 42" id="libRing"></svg><div class="rc"><b id="stSize">0 MB</b><span><b id="stCount">0</b> <span data-t="stFiles">archivos</span></span></div></div>
+        <div class="legend" id="libLegend"></div>
       </div>
 
       <h2 class="tg" data-t="tgLook">Personaliza</h2>
@@ -757,31 +780,41 @@ img.wav{object-fit:cover}
           <button class="sopt" data-tool="mode"><span class="sic" style="--c:#8B5CF6"><svg width="20" height="20"><use href="#i-moon"/></svg></span><span class="grow"><b data-t="tTheme">Tema</b><small id="themeName">Oscuro</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
           <button class="sopt" data-tool="color"><span class="sic acc"><svg width="20" height="20"><use href="#i-palette"/></svg></span><span class="grow"><b data-t="themeColor">Color</b><small id="colorName">Aurora</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
           <button class="sopt" data-tool="lang"><span class="sic" style="--c:#F59E0B"><svg width="20" height="20"><use href="#i-globe"/></svg></span><span class="grow"><b data-t="tLang">Idioma</b><small id="langName">Español</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
+          <button class="sopt" data-tool="settings"><span class="sic" style="--c:#EC4899"><svg width="20" height="20"><use href="#i-tools"/></svg></span><span class="grow"><b data-t="tSettings">Configuración</b><small data-t="tSettingsS">Portapapeles y reproductor</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
         </div>
       </div>
-      <div class="tlist" style="margin-top:10px">
-        <button class="trow" data-tool="settings"><i class="ic" style="--c:#F472B6"><svg width="20" height="20"><use href="#i-tools"/></svg></i><span class="grow"><b data-t="tSettings">Configuración</b><small data-t="tSettingsS">Portapapeles y reproductor</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-      </div>
-
       <h2 class="tg" data-t="tgDl">Descargas</h2>
-      <div class="tlist">
-        <button class="trow" data-tool="folder"><i class="ic" style="--c:#FBBF24"><svg width="20" height="20"><use href="#i-folder"/></svg></i><span class="grow"><b data-t="tFolder">Carpeta</b><small>Download/Nexora</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-        <button class="trow" data-tool="engine"><i class="ic" style="--c:#34D399"><svg width="20" height="20"><use href="#i-dl"/></svg></i><span class="grow"><b data-t="tEngine">Motor</b><small id="engineName">…</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-        <button class="trow" data-tool="cache"><i class="ic" style="--c:#22D3EE"><svg width="20" height="20"><use href="#i-broom"/></svg></i><span class="grow"><b data-t="tCache">Liberar espacio</b><small data-t="tCacheS">Borra archivos temporales</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-        <button class="trow" data-tool="clear"><i class="ic" style="--c:#FB7185"><svg width="20" height="20"><use href="#i-trash"/></svg></i><span class="grow"><b data-t="tClear">Limpiar historial</b><small data-t="tClearS">Los archivos se conservan</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-      </div>
-
-      <h2 class="tg" data-t="tgAcc">Cuenta</h2>
-      <div class="tlist">
-        <button class="trow" data-tool="account"><i class="ic" style="--c:#EF4444"><svg width="20" height="20"><use href="#i-yt"/></svg></i><span class="grow"><b data-t="tAccount">Cuenta de YouTube</b><small id="accName">…</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
+      <div class="studio">
+        <button class="tree" data-tool="folder" aria-label="Download/Nexora">
+          <b><svg width="15" height="15"><use href="#i-folder"/></svg>Nexora</b>
+          <span><i style="--c:var(--accent)"></i><em data-t="fMusic">Música</em><small id="cntMusic">0</small></span>
+          <span><i style="--c:var(--accent-2)"></i><em data-t="fVideos">Videos</em><small id="cntVideo">0</small></span>
+          <span><i style="--c:#F59E0B"></i><em data-t="fImages">Imágenes</em><small id="cntImage">0</small></span>
+          <span><i style="--c:var(--muted)"></i><em data-t="fDocs">Documentos</em><small id="cntOther">0</small></span>
+        </button>
+        <div class="sopts">
+          <button class="sopt" data-tool="engine"><span class="sic" style="--c:#34D399"><svg width="20" height="20"><use href="#i-dl"/></svg></span><span class="grow"><b data-t="tEngine">Motor</b><small id="engineName">…</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
+          <button class="sopt" data-tool="cache"><span class="sic" style="--c:#22D3EE"><svg width="20" height="20"><use href="#i-broom"/></svg></span><span class="grow"><b data-t="tCache">Liberar espacio</b><small data-t="tCacheS">Borra archivos temporales</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
+          <button class="sopt" data-tool="clear"><span class="sic" style="--c:#FB7185"><svg width="20" height="20"><use href="#i-trash"/></svg></span><span class="grow"><b data-t="tClear">Limpiar historial</b><small data-t="tClearS">Los archivos se conservan</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
+        </div>
       </div>
 
       <h2 class="tg">Nexora</h2>
-      <div class="tlist">
-        <button class="trow" data-tool="update"><i class="ic" style="--c:#46E0C4"><svg width="20" height="20"><use href="#i-reload"/></svg></i><span class="grow"><b data-t="tUpdate">Buscar actualización</b><small id="verName">V…</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-        <button class="trow" data-tool="share"><i class="ic" style="--c:#8C7BFF"><svg width="20" height="20"><use href="#i-share"/></svg></i><span class="grow"><b data-t="tShare">Compartir Nexora</b><small data-t="tShareS">Envíala a un amigo</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-        <button class="trow" data-tool="feedback"><i class="ic" style="--c:#FDBA74"><svg width="20" height="20"><use href="#i-comment"/></svg></i><span class="grow"><b data-t="tFeedback">Comentarios</b><small data-t="tFeedbackS">Reporta un problema</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-        <button class="trow" data-tool="privacy"><i class="ic" style="--c:#94A3B8"><svg width="20" height="20"><use href="#i-shield"/></svg></i><span class="grow"><b data-t="tPrivacy">Privacidad</b><small data-t="tPrivacyS">Cómo tratamos tus datos</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
+      <div class="studio">
+        <div class="appbadge" aria-hidden="true">
+          <svg class="mark"><use href="#logo"/></svg>
+          <b id="heroVer">V…</b>
+          <span class="pill2"><svg width="12" height="12"><use href="#i-bolt"/></svg><span data-t="fastShort">Rápido</span></span>
+        </div>
+        <div class="sopts">
+          <button class="sopt" data-tool="update"><span class="sic" style="--c:#46E0C4"><svg width="20" height="20"><use href="#i-reload"/></svg></span><span class="grow"><b data-t="tUpdate">Buscar actualización</b><small id="verName">V…</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
+          <button class="sopt" data-tool="account"><span class="sic" style="--c:#EF4444"><svg width="20" height="20"><use href="#i-yt"/></svg></span><span class="grow"><b data-t="tAccount">Cuenta de YouTube</b><small id="accName">…</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
+          <button class="sopt" data-tool="share"><span class="sic" style="--c:#8C7BFF"><svg width="20" height="20"><use href="#i-share"/></svg></span><span class="grow"><b data-t="tShare">Compartir Nexora</b><small data-t="tShareS">Envíala a un amigo</small></span><svg class="chev" width="16" height="16"><use href="#i-chev"/></svg></button>
+        </div>
+      </div>
+      <div class="minis">
+        <button data-tool="feedback"><svg width="16" height="16"><use href="#i-comment"/></svg><span data-t="tFeedback">Comentarios</span></button>
+        <button data-tool="privacy"><svg width="16" height="16"><use href="#i-shield"/></svg><span data-t="tPrivacy">Privacidad</span></button>
       </div>
       <p class="foot"><span id="copy"></span><br><a href="privacy-policy.html" data-t="policy">Política de privacidad</a></p>
     </section>
@@ -887,7 +920,8 @@ const I18N = {
     vVideo:'Vídeo',vAudio:'Áudio',vImage:'Imagem',vDoc:'Documento',vApk:'Aplicativo',vFile:'Arquivo',dupe:'Você já está baixando este link',platTitle:'Link do {n}',platBody:'O Nexora não baixa conteúdo do {n}, para respeitar os direitos dos criadores e as regras da plataforma. Para assistir offline, use a opção de download do app oficial.',platOpen:'Abrir no {n}',ok:'Entendi',ytHint:'Cole um link do YouTube, TikTok, Instagram, Facebook e mais, ou um link direto de arquivo.',analyzing:'Lendo o link…',enginePrepMsg:'Preparando o motor de download. Na primeira vez demora um pouco.',chooseFmt:'Formato',fV1080:'Vídeo 1080p',fV720:'Vídeo 720p',fV480:'Vídeo 480p',fMp3:'Áudio MP3',fM4a:'Áudio M4A',fV1080s:'Melhor qualidade',fV720s:'Equilibrado',fV480s:'Economiza espaço',fMp3s:'Toca em tudo',fM4as:'Qualidade original',channel:'Canal',credit:'O título e o canal são salvos como crédito ao criador.',notice:'Baixe só conteúdo seu ou com permissão do criador.',noticeTitle:'Antes de começar',noticeBody:'O Nexora Download Plus pode salvar vídeos e músicas do YouTube e outras redes. Respeite os criadores: baixe só conteúdo seu, com licença livre ou com permissão. Cada download guarda o título e o canal como crédito.',accept:'Aceito',infoErr:'Não foi possível ler este link',tryDirect:'Tentar download direto',tEngine:'Motor',engineReady:'Pronto',enginePrep:'Preparando…',engineUpdating:'Atualizando…',engineErr:'Com erro',engineUpd:'Atualizar motor',engineDesc:'O motor (yt-dlp) se atualiza sozinho todo dia. Atualize manualmente se uma rede parar de funcionar.',updated:'Motor atualizado',upToDate:'O motor já está atualizado',updErr:'Não foi possível atualizar. Verifique a conexão.',busy:'Espere os downloads terminarem',cancelDl:'Cancelar download',sCancelled:'Cancelado',sInterrupted:'Interrompido',seeOriginal:'Ver original',webOnly:'Downloads de redes só funcionam no app instalado',close:'Fechar',homeTitle:'Pesquise ou cole um link',urlPh:'Pesquisar ou colar link',search:'Pesquisar',siteHint:'Abra um vídeo, toque em Compartilhar e escolha Nexora Download Plus.',results:'Resultados',clearRes:'Limpar',searching:'Pesquisando…',noRes:'Nenhum resultado para essa pesquisa.',views:'visualizações',grpMusic:'Música',grpVideo:'Vídeo',fVbest:'Vídeo',fVbests:'Melhor disponível',errBot:'O YouTube pediu para confirmar que você não é um robô.',errBotFix:'Troque de rede (Wi-Fi ou dados) ou entre em Ferramentas → Conta do YouTube.',errFmt:'O YouTube não entregou formatos para este vídeo.',errFmtFix:'O Nexora já tentou vários métodos. Atualize o motor e tente de novo em alguns minutos.',errGen:'Verifique o link ou a conexão e tente de novo.',goLogin:'Entrar',tAccount:'Conta do YouTube',accOn:'Conectado',accOff:'Sem login',accTitle:'Conta do YouTube',accDesc:'Entrar ajuda quando o YouTube pede para confirmar que você não é um robô. A sessão fica só no seu celular.',accWarn:'O YouTube pode limitar ou suspender contas que baixam vídeos. Use uma conta secundária, não a principal nem a do seu canal.',login:'Entrar',importCk:'Importar cookies.txt',logout:'Sair',loggedOut:'Sessão encerrada',tCache:'Liberar espaço',tCacheS:'Apaga arquivos temporários',cacheDone:'Espaço liberado',tFeedback:'Comentários',tFeedbackS:'Relatar um problema',fV360:'Vídeo 360p',fV360s:'Ocupa pouco',popular:'Pesquisas populares',seeSites:'Sites',recentSearches:'Pesquisas recentes',clearHist:'Limpar',cMusic:'Música',cGames:'Games',cFunny:'Engraçados',cTut:'Tutoriais',cNews:'Notícias',cSports:'Esportes',cKids:'Infantil',qMusic:'música nova',qGames:'games gameplay',qFunny:'vídeos engraçados',qTut:'tutoriais',qNews:'notícias hoje',qSports:'esportes melhores momentos',qKids:'vídeos infantis',pops:'funk|vídeos engraçados|Minecraft|Free Fire|filmes completos|status para WhatsApp|sertanejo|Anitta',resultsFor:'Resultados de',stageRetry:'Tentando outro método…',stageUpdate:'Atualizando o motor…',feedErr:'Não foi possível carregar os vídeos.',retryBtn:'Tentar de novo',openYt:'Ver no YouTube',clipPasted:'Link colado da área de transferência',moreFmts:'Mais formatos',fV144s:'Qualidade mínima',fV240s:'Baixa qualidade',fV1440s:'Tela grande',fV2160s:'Qualidade máxima',tSettings:'Configurações',tSettingsS:'Área de transferência e player',autoClip:'Detectar links copiados',autoClipS:'Ao abrir o app, oferece baixar o link que você copiou',playerT:'Player de vídeos e músicas',recommended:'recomendado',askEach:'Escolher sempre',recTitle:'Reproduza com {n}',recBody:'Para assistir seus vídeos e ouvir suas músicas com a melhor qualidade, o Nexora recomenda o {n}. É grátis.',install:'Instalar {n}',openOther:'Abrir com outro app',cForYou:'Para você',qForYou:'',qMods:'novo|popular|em alta|2026|melhores|viral|ao vivo|completo',watchLoading:'Preparando vídeo…',playErr:'Não foi possível reproduzir aqui.',audioOnly:'Só áudio',options:'Opções',quality:'Qualidade',speed:'Velocidade',repeat:'Repetir vídeo',autoplay:'Reprodução automática',related:'Mais vídeos',subs:'inscritos',showMore:'Mostrar mais',showLess:'Mostrar menos',installing:'Instalando {n}',instStart:'Preparando o download…',instDl:'Baixando…',instPerm:'Permita que o Nexora instale apps e volte aqui.',instReady:'Pronto, confirme a instalação',instErr:'Falha no download, abrindo a página…',instWeb:'Baixar pela página web',recBody:'Para ver seus vídeos e ouvir suas músicas, o Nexora recomenda o {n}.',tHome:'Início',tVideos:'Vídeos',tShorts:'Shorts',tLive:'Ao vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',sizing:'Calculando tamanhos… já pode baixar',sizingEst:'Tamanhos aproximados · já pode baixar',bgListen:'Ouvir em segundo plano',bgOn:'Tocando em segundo plano. Controle pela notificação.',bgWait:'Preparando o áudio… começa em alguns segundos',bgErr:'Não foi possível tocar o áudio',pipBtn:'Janela flutuante',pipNo:'Seu celular não permite janela flutuante',leaveT:'Ao sair do app com um vídeo',leavePip:'Janela flutuante',leaveAudio:'Continuar ouvindo',leavePause:'Pausar',qualityAuto:'Automática',qualityEmbed:'Mude pela engrenagem do player',tUpdate:'Buscar atualização',checking:'Buscando atualização…',upToDateV:'Você já tem a versão mais recente (V{n})',updCheckErr:'Não foi possível verificar. Verifique a conexão.',apkPrep:'Preparando o APK para compartilhar…',themeMode:'Modo',themeColor:'Cor',themeAmoled:'Preto AMOLED',acc_aurora:'Aurora',acc_neon:'Neon',acc_ocean:'Oceano',acc_fire:'Fogo',acc_rose:'Rosa',acc_emerald:'Esmeralda',acc_gold:'Ouro',acc_ruby:'Rubi',fbTitle:'Enviar comentários',fbDetails:'Detalhes',fbPh:'Conte um pouco mais sobre suas dúvidas ou sugestões.',fbContact:'Contato',fbContactPh:'WhatsApp, número ou e-mail',fbMedia:'Fotos e vídeos',fbSend:'Enviar',fbThanks:'Obrigado! Envie o e-mail para terminar.',secDl:'Baixando',secDone:'Baixado',pauseAll:'Pausar tudo',resumeAll:'Continuar tudo',pause:'Pausar',resume:'Continuar',sPausedU:'Pausado',selAll:'Selecionar tudo',nSel:'{n} itens',del2:'Excluir',delQ:'Excluir {n} itens?',delFiles:'Excluir também os arquivos do celular',deletedN:'{n} itens excluídos',libSearchPh:'Pesquisar nos downloads',qCurrent:'Qualidade do vídeo atual',qAuto:'Automática (recomendada)',qAutoD:'Ajusta para a melhor experiência',qHigh:'Qualidade de imagem mais alta',qHighD:'Usa mais dados',qSaver:'Economia de dados',qSaverD:'Qualidade de imagem mais baixa',qAdv:'Avançada',qAdvD:'Selecione uma resolução específica',themeBg:'Fundo',bg_navy:'Nexora',bg_midnight:'Meia-noite',bg_purple:'Galáxia',bg_forest:'Floresta',bg_deep:'Abismo',bg_wine:'Vinho',bg_coffee:'Café',bg_graphite:'Grafite',acc_lime:'Lima',acc_sky:'Céu',acc_violet:'Violeta',acc_coral:'Coral',acc_mint:'Menta',acc_candy:'Doce',acc_sunset:'Pôr do sol',acc_mono:'Branco',basedOn:'Com base no que você assiste:',noTab:'Este canal não tem {n}',permT:'Ver todos os seus downloads',permD:'Permita o acesso a vídeos e músicas para ver o que você baixou antes, mesmo após reinstalar.',permBtn:'Permitir',updTitle:'Atualização obrigatória',updTitleOpt:'Nova versão disponível',updCur:'Sua versão:',updNew:'Novidades desta versão',updNow:'Atualizar agora',updLater:'Mais tarde',updConfirm:'Confirme a instalação na janela do Android',prefetch:'Pré-carregar vídeos',prefetchS:'Analisa em segundo plano os vídeos que você vê para o download abrir na hora'}
 };
 /* Textos nuevos (motor rápido, comentarios, Acerca de, calidad, herramientas) */
-Object.assign(I18N.es,{accentT:'Color de acento',pickOwn:'Elegir tu propio color',pickOwnBg:'Elegir tu propio fondo',pickTitle:'Elige tu color',pickPrev:'Así se verá el color',pickMain:'Principal',pickSec:'Secundario',reset:'Restablecer',done:'Listo',saved:'Guardado',ownColor:'Propio',bgDarkOnly:'El fondo se cambia en modo Oscuro',
+Object.assign(I18N.es,{fMusic:'Música',fVideos:'Videos',fImages:'Imágenes',fDocs:'Documentos',fastShort:'Rápido',stFiles:'archivos',organized:'Tus descargas quedaron ordenadas en carpetas',
+  folderMsg:'Tus archivos se guardan en Download/Nexora, ordenados en Música, Videos, Imágenes y Documentos',accentT:'Color de acento',pickOwn:'Elegir tu propio color',pickOwnBg:'Elegir tu propio fondo',pickTitle:'Elige tu color',pickPrev:'Así se verá el color',pickMain:'Principal',pickSec:'Secundario',reset:'Restablecer',done:'Listo',saved:'Guardado',ownColor:'Propio',bgDarkOnly:'El fondo se cambia en modo Oscuro',
   acc_cherry:'Cereza',acc_lavender:'Lavanda',acc_teal:'Turquesa',acc_amber:'Ámbar',acc_indigo:'Índigo',acc_magenta:'Magenta',acc_blood:'Sangre',acc_ice:'Hielo',bg_slate:'Pizarra',bg_plum:'Ciruela',bg_abyss:'Abismo',bg_moss:'Musgo',
   comments:'Comentarios',comDisabled:'Los comentarios están desactivados',comErr:'No se pudieron cargar los comentarios',comEmpty:'Aún no hay comentarios',
   replies:'{n} respuestas',reply1:'1 respuesta',pinned:'Fijado',heart:'Le encanta al creador',likes:'Me gusta',viewsL:'Vistas',dateL:'Fecha',seeChannel:'Ver canal',
@@ -896,7 +930,8 @@ Object.assign(I18N.es,{accentT:'Color de acento',pickOwn:'Elegir tu propio color
   subsErr:'No se pudieron cargar los subtítulos',on:'Activado',off:'Desactivado',qVeryHigh:'Muy alto',qHighL:'Alto',qMid:'Medio',qLowL:'Ahorro de datos',qAutoL:'Auto',
   liveB:'EN VIVO',quickTheme:'Colores y tema',moreTheme:'Más opciones de tema',tgLook:'Personaliza',tgDl:'Descargas',tgAcc:'Cuenta',fastOn:'Motor rápido activo',
   tCacheS:'Borra archivos temporales',tSettingsS:'Portapapeles y reproductor',tFeedbackS:'Reporta un problema'});
-Object.assign(I18N.en,{accentT:'Accent color',pickOwn:'Pick your own color',pickOwnBg:'Pick your own background',pickTitle:'Pick your color',pickPrev:'This is how it will look',pickMain:'Primary',pickSec:'Secondary',reset:'Reset',done:'Done',saved:'Saved',ownColor:'Custom',bgDarkOnly:'Background changes in Dark mode',
+Object.assign(I18N.en,{fMusic:'Music',fVideos:'Videos',fImages:'Images',fDocs:'Documents',fastShort:'Fast',stFiles:'files',organized:'Your downloads are now sorted into folders',
+  folderMsg:'Your files are saved in Download/Nexora, sorted into Music, Videos, Images and Documents',accentT:'Accent color',pickOwn:'Pick your own color',pickOwnBg:'Pick your own background',pickTitle:'Pick your color',pickPrev:'This is how it will look',pickMain:'Primary',pickSec:'Secondary',reset:'Reset',done:'Done',saved:'Saved',ownColor:'Custom',bgDarkOnly:'Background changes in Dark mode',
   acc_cherry:'Cherry',acc_lavender:'Lavender',acc_teal:'Teal',acc_amber:'Amber',acc_indigo:'Indigo',acc_magenta:'Magenta',acc_blood:'Blood',acc_ice:'Ice',bg_slate:'Slate',bg_plum:'Plum',bg_abyss:'Abyss',bg_moss:'Moss',
   comments:'Comments',comDisabled:'Comments are turned off',comErr:'Couldn’t load comments',comEmpty:'No comments yet',
   replies:'{n} replies',reply1:'1 reply',pinned:'Pinned',heart:'Loved by the creator',likes:'Likes',viewsL:'Views',dateL:'Date',seeChannel:'View channel',
@@ -904,7 +939,8 @@ Object.assign(I18N.en,{accentT:'Accent color',pickOwn:'Pick your own color',pick
   videosN:'{n} videos',videosW:'videos',upNext:'Up next in this list',subsT:'Subtitles',subsOff:'Off',subsAuto:'auto-generated',subsNone:'This video has no subtitles',
   subsErr:'Couldn’t load subtitles',on:'On',off:'Off',qVeryHigh:'Very high',qHighL:'High',qMid:'Medium',qLowL:'Data saver',qAutoL:'Auto',
   liveB:'LIVE',quickTheme:'Colors & theme',moreTheme:'More theme options',tgLook:'Personalize',tgDl:'Downloads',tgAcc:'Account',fastOn:'Fast engine on'});
-Object.assign(I18N.pt,{accentT:'Cor de destaque',pickOwn:'Escolher sua própria cor',pickOwnBg:'Escolher seu próprio fundo',pickTitle:'Escolha sua cor',pickPrev:'Assim ficará a cor',pickMain:'Principal',pickSec:'Secundária',reset:'Restaurar',done:'Pronto',saved:'Salvo',ownColor:'Própria',bgDarkOnly:'O fundo muda no modo Escuro',
+Object.assign(I18N.pt,{fMusic:'Música',fVideos:'Vídeos',fImages:'Imagens',fDocs:'Documentos',fastShort:'Rápido',stFiles:'arquivos',organized:'Seus downloads foram organizados em pastas',
+  folderMsg:'Seus arquivos ficam em Download/Nexora, separados em Música, Vídeos, Imagens e Documentos',accentT:'Cor de destaque',pickOwn:'Escolher sua própria cor',pickOwnBg:'Escolher seu próprio fundo',pickTitle:'Escolha sua cor',pickPrev:'Assim ficará a cor',pickMain:'Principal',pickSec:'Secundária',reset:'Restaurar',done:'Pronto',saved:'Salvo',ownColor:'Própria',bgDarkOnly:'O fundo muda no modo Escuro',
   acc_cherry:'Cereja',acc_lavender:'Lavanda',acc_teal:'Turquesa',acc_amber:'Âmbar',acc_indigo:'Índigo',acc_magenta:'Magenta',acc_blood:'Sangue',acc_ice:'Gelo',bg_slate:'Ardósia',bg_plum:'Ameixa',bg_abyss:'Abismo',bg_moss:'Musgo',
   comments:'Comentários',comDisabled:'Os comentários estão desativados',comErr:'Não foi possível carregar os comentários',comEmpty:'Ainda não há comentários',
   replies:'{n} respostas',reply1:'1 resposta',pinned:'Fixado',heart:'O criador adorou',likes:'Curtidas',viewsL:'Visualizações',dateL:'Data',seeChannel:'Ver canal',
@@ -1163,8 +1199,23 @@ function render(){
   const done=S.items.filter(i=>i.status==='done');
   $('#stCount').textContent=done.length;
   $('#stSize').textContent=fmtSize(done.reduce((s,i)=>s+(i.total||0),0))||'0 MB';
+  renderLibCard(done);
   const act=S.items.filter(i=>['running','pending','paused'].includes(i.status)).length;
   const bd=$('#badge'); bd.textContent=act; bd.classList.toggle('on',act>0);
+}
+/* Herramientas: anillo con lo que ocupa cada tipo y contador de cada carpeta */
+function renderLibCard(done){
+  const g={audio:{n:0,s:0},video:{n:0,s:0},image:{n:0,s:0},other:{n:0,s:0}};
+  done.forEach(i=>{ const k=g[i.kind]?i.kind:'other'; g[k].n++; g[k].s+=i.total||0 });
+  const tot=Object.values(g).reduce((a,x)=>a+x.s,0);
+  const parts=[['audio','var(--accent)','fMusic'],['video','var(--accent-2)','fVideos'],['image','#F59E0B','fImages'],['other','var(--muted)','fDocs']];
+  let off=0; const C=2*Math.PI*16;
+  const ring=$('#libRing');
+  if(ring) ring.innerHTML=`<circle cx="21" cy="21" r="16" fill="none" stroke="var(--surface-2)" stroke-width="5"/>`+(tot?parts.map(([k,c])=>{ const f=g[k].s/tot; if(!f) return ''; const el=`<circle cx="21" cy="21" r="16" fill="none" stroke="${c}" stroke-width="5" stroke-dasharray="${Math.max(0,f*C-0.6)} ${C}" stroke-dashoffset="${-off*C}" stroke-linecap="round"/>`; off+=f; return el }).join(''):'');
+  const lg=$('#libLegend');
+  if(lg) lg.innerHTML=parts.slice(0,3).map(([k,c,l])=>`<div class="lg" style="--c:${c}"><i></i><span>${t(l)}</span><small>${g[k].n}${g[k].s?' · '+fmtSize(g[k].s):''}</small></div>`).join('');
+  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v };
+  set('#cntMusic',g.audio.n); set('#cntVideo',g.video.n); set('#cntImage',g.image.n); set('#cntOther',g.other.n);
 }
 /* Selección múltiple, búsqueda, pausa */
 const LS={sel:false,picked:new Set(),q:'',visible:[]};
@@ -1864,7 +1915,7 @@ function resumePlayer(pos){
 function syncNow(){
   if(!A||!A.setNow) return;
   const i=(W&&W.info)||{}, r=(W&&W.r)||{};
-  try{ A.setNow(JSON.stringify({playing:!!(W&&W.open&&W.playing&&!W.bg), leave:saved.leave||'pip', audio:i.audio||'', ua:i.audioUa||'',
+  try{ A.setNow(JSON.stringify({playing:!!(W&&W.open&&W.playing&&!W.bg), leave:saved.leave||'audio', audio:i.audio||'', ua:i.audioUa||'',
     title:i.title||r.title||'', artist:i.channel||r.channel||'', pos:Math.round(curPos()*1000)})) }catch(e){}
 }
 function fmtAgo(d){
@@ -2238,7 +2289,7 @@ function watchMenu(){
     ${mrow('mS','i-speed',t('speed'),fmtRate(W.rate))}
     ${mrow('mA','i-auto',t('autoplay'),saved.autoplayNext!==false?t('on'):t('off'))}
     ${mrow('mR','i-repeat',t('repeat'),saved.repeat?t('on'):t('off'))}
-    ${mrow('mL','i-exit',t('leaveT'),t({pip:'leavePip',audio:'leaveAudio',pause:'leavePause'}[saved.leave||'pip']))}
+    ${mrow('mL','i-exit',t('leaveT'),t({pip:'leavePip',audio:'leaveAudio',pause:'leavePause'}[saved.leave||'audio']))}
     ${mrow('mY','i-yt',t('openYt'),'')}`);
   $('#mQ').onclick=()=>{
     if(W.mode==='embed'){ toast(t('qualityEmbed')); return }
@@ -2313,7 +2364,7 @@ function applySubs(){
   if(x) setSubs(x);
 }
 function leavePicker(){
-  pick(t('leaveT'), [['pip',t('leavePip')],['audio',t('leaveAudio')],['pause',t('leavePause')]], saved.leave||'pip', v=>{ saved.leave=v; save(); syncNow() });
+  pick(t('leaveT'), [['pip',t('leavePip')],['audio',t('leaveAudio')],['pause',t('leavePause')]], saved.leave||'audio', v=>{ saved.leave=v; save(); syncNow() });
 }
 $('#wBack').onclick=()=>miniWatch();
 /* Minimizar / expandir el reproductor */
@@ -2478,6 +2529,9 @@ function scanLibrary(){
   // repetidos entre sí (mismo archivo dos veces)
   const seenF=new Set(); S.items=S.items.filter(i=>{ if(i.src!=='local') return true; const k=i.path||i.file; if(seenF.has(k)) return false; seenF.add(k); return true });
   changed+=before-S.items.length;
+  // enlaces nuevos de archivos que cambiaron de carpeta
+  const byP={}; list.forEach(f=>byP[f.path]=f);
+  S.items.forEach(i=>{ const f=i.path&&byP[i.path]; if(f&&f.uri&&i.uri!==f.uri){ i.uri=f.uri; changed++ } });
   // 2) Agrega lo que hay en la carpeta y aún no está en la lista
   const byPath=new Set(S.items.map(i=>i.path).filter(Boolean)), byFile=new Set(S.items.map(i=>i.file||'').filter(Boolean));
   list.forEach(f=>{
@@ -2492,6 +2546,13 @@ function scanLibrary(){
   });
   if(changed){ save(); render() }
 }
+function onOrganized(ev){
+  const mv=ev.moved||[];
+  mv.forEach(m=>{ S.items.forEach(i=>{ if(i.path===m.from || (!i.path && i.file===m.name)){ i.path=m.to; i.uri='' } }) });
+  if(mv.length){ save(); render(); if(!saved.orgToast){ saved.orgToast=1; save(); toast(t('organized')) } }
+  setTimeout(scanLibrary,2500);
+}
+function organizeFolder(){ if(A&&A.organize) try{ A.organize() }catch(e){} }
 function renderPerm(){
   const box=$('#permBox'); if(!box) return;
   box.hidden = !A || !A.mediaPerm || A.mediaPerm();
@@ -2605,7 +2666,7 @@ $('#fbSend').onclick=()=>{
 
 /* ====== Cuenta ====== */
 let account={logged:false};
-function renderVer(){ const el=$('#verName'); if(el) el.textContent='V'+myVersion(); const h=$('#heroVer'); if(h) h.textContent=t('version')+' '+myVersion()+(HAS_NP?'':'') }
+function renderVer(){ const el=$('#verName'); if(el) el.textContent='V'+myVersion(); const h=$('#heroVer'); if(h) h.textContent='V'+myVersion() }
 function renderAccount(){
   renderVer(); const el=$('#accName'); if(el) el.textContent = !HAS_YT?'—':(account.logged?t('accOn'):t('accOff')) }
 function accountSheet(){
@@ -2638,6 +2699,7 @@ function onEvent(ev){
   if(ev.type==='deleted'){ return }
   if(ev.type==='list') return onList(ev);
   if(ev.type==='comments') return onComments(ev);
+  if(ev.type==='organized') return onOrganized(ev);
   if(ev.type==='picked') return onPicked(ev);
   if(ev.type==='shareErr'){ shareText(t('shareMsg')); return }
   if(ev.type==='bg') return onBg(ev);
@@ -2678,7 +2740,7 @@ function settingsSheet(){
   sheet(`<h3>${t('tSettings')}</h3>
     <button class="row" id="tgClip"><span class="grow">${t('autoClip')}<br><small style="color:var(--muted)">${t('autoClipS')}</small></span><span class="switch${saved.autoClip!==false?' on':''}"></span></button>
     <button class="row" id="tgPf"><span class="grow">${t('prefetch')}<br><small style="color:var(--muted)">${t('prefetchS')}</small></span><span class="switch${saved.prefetch!==false?' on':''}"></span></button>
-    <button class="row" id="tgLeave"><span class="grow">${t('leaveT')}</span><small style="color:var(--muted)">${t({pip:'leavePip',audio:'leaveAudio',pause:'leavePause'}[saved.leave||'pip'])}</small></button>
+    <button class="row" id="tgLeave"><span class="grow">${t('leaveT')}</span><small style="color:var(--muted)">${t({pip:'leavePip',audio:'leaveAudio',pause:'leavePause'}[saved.leave||'audio'])}</small></button>
     <div class="grp">${t('playerT')}</div>
     <button class="opt on" data-pl="${MY_PLAYER.pkg}"><span class="dot"></span><span class="grow">${esc(MY_PLAYER.name)} (${t('recommended')})</span></button>
     <button class="btn ghost" onclick="closeSheet()">${t('close')}</button>`);
@@ -2923,6 +2985,8 @@ window.nexoraResume = ()=>{ checkClip(); poll(); renderPerm(); if(S.view==='lib'
 
 /* ====== Inicio ====== */
 // Las descargas de redes que quedaron a medias al cerrar la app
+// Antes se ponía la ventana flotante al salir; ahora por defecto sigue solo el audio
+if(saved.leaveV!==2){ if(!saved.leave||saved.leave==='pip') saved.leave='audio'; saved.leaveV=2 }
 let stillRunning=[]; try{ if(A&&A.ytActive) stillRunning=JSON.parse(A.ytActive()) }catch(e){}
 S.items.forEach(i=>{ if(i.src==='yt'&&['running','pending'].includes(i.status)&&!stillRunning.includes(i.key)) i.status='paused' });
 save();
@@ -2932,7 +2996,7 @@ if(HAS_YT){ try{ const e=JSON.parse(A.ytEngine()); onEvent(Object.assign({type:'
 if(HAS_YT&&A.account){ try{ account.logged=JSON.parse(A.account()).logged }catch(e){} }
 renderAccount();
 setTimeout(firstRunNotice,300);
-setTimeout(()=>{ scanLibrary(); checkUpdate(true) },1200);
+setTimeout(()=>{ organizeFolder(); scanLibrary(); checkUpdate(true) },1200);
 syncBar();
 if(A&&A.takeShared){ const s=A.takeShared(); if(s) setTimeout(()=>onSharedLink(s),250) }
 setTimeout(checkClip,600);

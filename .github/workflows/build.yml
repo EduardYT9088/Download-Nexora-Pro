@@ -565,7 +565,7 @@ jobs:
                   super.onUserLeaveHint();
                   JSONObject n = now;
                   if (!n.optBoolean("playing")) return;
-                  String mode = n.optString("leave", "pip");
+                  String mode = n.optString("leave", "audio");
                   if ("pip".equals(mode) && Build.VERSION.SDK_INT >= 26) { enterPip(); return; }
                   if ("audio".equals(mode) && !n.optString("audio").isEmpty()) {
                       startBg(n.optString("audio"), n.optString("ua"), n.optString("title"), n.optString("artist"), n.optLong("pos"));
@@ -743,6 +743,57 @@ jobs:
                   File d = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Nexora");
                   if (!d.exists()) d.mkdirs();
                   return d;
+              }
+
+              /** Carpetas ordenadas: Nexora/Música, Nexora/Videos, Nexora/Imágenes, Nexora/Documentos */
+              static final String SUB_MUSIC = "Música", SUB_VIDEO = "Videos", SUB_IMAGE = "Imágenes", SUB_DOCS = "Documentos";
+              private static File outDir(String sub) {
+                  File d = new File(outDir(), sub);
+                  if (!d.exists()) d.mkdirs();
+                  return d;
+              }
+              static String subFor(String name, String mime) {
+                  String n = name == null ? "" : name.toLowerCase(), m = mime == null ? "" : mime.toLowerCase();
+                  if (m.startsWith("audio/") || n.matches(".*\\.(mp3|m4a|aac|opus|ogg|oga|wav|flac|wma|amr)$")) return SUB_MUSIC;
+                  if (m.startsWith("video/") || n.matches(".*\\.(mp4|webm|mkv|3gp|mov|avi|m4v|ts)$")) return SUB_VIDEO;
+                  if (m.startsWith("image/") || n.matches(".*\\.(jpg|jpeg|png|webp|gif|bmp|heic)$")) return SUB_IMAGE;
+                  if (n.matches(".*\\.(pdf|docx?|xlsx?|pptx?|txt|epub|zip|rar|7z|apk)$")) return SUB_DOCS;
+                  return null;   // otros archivos (por ejemplo copias .json de otras apps) se quedan donde están
+              }
+
+              /**
+               * Ordena una sola vez lo que ya estaba suelto en Download/Nexora y borra restos de descargas viejas
+               * (miniaturas y partes que dejaba yt-dlp). Devuelve [{from,to}] para actualizar la lista de la app.
+               */
+              static JSONArray organizeFolder(Context app) {
+                  JSONArray moved = new JSONArray();
+                  File root = outDir();
+                  File[] fs = root.listFiles();
+                  if (fs == null) return moved;
+                  long now = System.currentTimeMillis();
+                  java.util.List<String> scan = new java.util.ArrayList<>();
+                  for (File f : fs) {
+                      try {
+                          if (!f.isFile()) continue;
+                          String n = f.getName();
+                          if (n.startsWith(".")) continue;                              // papelera del sistema (.trashed-...)
+                          if (now - f.lastModified() < 10 * 60 * 1000) continue;       // algo que se está escribiendo ahora
+                          if (isWorkFile(n) || n.endsWith(".part")) {                   // restos de yt-dlp
+                              if (f.delete()) scan.add(f.getAbsolutePath());
+                              continue;
+                          }
+                          String sub = subFor(n, null);
+                          if (sub == null) continue;
+                          File dest = new File(outDir(sub), n);
+                          if (dest.exists()) continue;
+                          if (f.renameTo(dest)) {
+                              moved.put(new JSONObject().put("from", f.getAbsolutePath()).put("to", dest.getAbsolutePath()).put("name", n));
+                              scan.add(f.getAbsolutePath()); scan.add(dest.getAbsolutePath());
+                          }
+                      } catch (Exception ignored) {}
+                  }
+                  if (!scan.isEmpty()) MediaScannerConnection.scanFile(app, scan.toArray(new String[0]), null, null);
+                  return moved;
               }
 
               // ================= cuenta / cookies =================
@@ -1076,7 +1127,7 @@ jobs:
                   File pathFile = new File(app.getCacheDir(), "path_" + key + ".txt");
                   try {
                       awaitEngine();
-                      File dir = outDir();
+                      File dir = outDir("mp3".equals(mode) || "m4a".equals(mode) ? SUB_MUSIC : SUB_VIDEO);
                       int[] order;
                       if (isYoutube(url)) {
                           order = new int[CLIENTS.length];
@@ -1199,7 +1250,10 @@ jobs:
                           r.setDescription("Nexora Download Plus");
                           r.addRequestHeader("User-Agent", WebSettings.getDefaultUserAgent(MainActivity.this));
                           r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                          r.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Nexora/" + file);
+                          String sub = subFor(file, mime);
+                          if (sub == null) sub = SUB_DOCS;
+                          outDir(sub);
+                          r.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Nexora/" + sub + "/" + file);
                           long id = dm.enqueue(r);
                           o.put("ok", true).put("id", id).put("file", file);
                       } catch (Exception e) {
@@ -1526,6 +1580,16 @@ jobs:
                       });
                   }
 
+                  /** Ordena Download/Nexora en subcarpetas (una vez) y avisa qué se movió. */
+                  @JavascriptInterface
+                  public void organize() {
+                      final Context app = getApplicationContext();
+                      POOL.execute(() -> {
+                          JSONArray moved = organizeFolder(app);
+                          try { emit(new JSONObject().put("type", "organized").put("moved", moved)); } catch (Exception ignored) {}
+                      });
+                  }
+
                   /** Comentarios del video (token vacío = primera página). */
                   @JavascriptInterface
                   public void npComments(String req, String url, String token) {
@@ -1814,7 +1878,13 @@ jobs:
                                   }
                               }
                           } else {
-                              File[] fs = outDir().listFiles();
+                              java.util.List<File> all = new java.util.ArrayList<>();
+                              File[] top = outDir().listFiles();
+                              if (top != null) for (File t : top) {
+                                  if (t.isDirectory()) { File[] in = t.listFiles(); if (in != null) all.addAll(Arrays.asList(in)); }
+                                  else all.add(t);
+                              }
+                              File[] fs = all.toArray(new File[0]);
                               if (fs != null) for (File f : fs) {
                                   if (!f.isFile() || f.getName().endsWith(".part") || isWorkFile(f.getName())) continue;
                                   arr.put(new JSONObject().put("name", f.getName()).put("size", f.length())
