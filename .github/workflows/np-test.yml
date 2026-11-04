@@ -11,6 +11,14 @@ jobs:
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.9' }
-      - name: Run
+      - name: Java
         working-directory: nptest
         run: gradle --no-daemon -q run
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: HLS in Chrome
+        working-directory: hlstest
+        run: |
+          npm install --no-audit --no-fund >/dev/null
+          npm view hls.js versions --json | tail -15
+          node test.js
