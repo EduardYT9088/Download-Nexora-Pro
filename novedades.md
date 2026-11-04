@@ -1,6 +1,6 @@
 ## Novedades
-- Las canciones descargadas (MP3 y M4A) ahora traen su portada: se ve en cualquier reproductor de música
-- Tema nuevo: 24 colores de acento y 12 fondos
-- Elige tu propio color: Principal y Secundario, cuadro de color, barra de tono y código (#9B30FF)
-- Elige tu propio fondo de pantalla en modo Oscuro
-- Personaliza con 4 accesos: Tema, Color, Fondo e Idioma
+- Arreglado: al bajar una canción ya sale una sola vez en Mis descargas (antes salían varias copias)
+- Arreglado: ya no queda la imagen de la portada suelta en tu galería; la portada va dentro de la canción, como en SnapTube
+- Las copias repetidas que ya tenías se limpian solas
+- Personaliza con diseño nuevo: vista previa en vivo de tus colores
+- El fondo ahora está dentro de Tema
