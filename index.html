@@ -519,6 +519,42 @@ img.wav{object-fit:cover}
 .trow .grow b{display:block;font-size:15px;font-weight:600}
 .trow .grow small{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trow .chev{color:var(--muted);flex:none;opacity:.7}
+
+/* ===== Personaliza (cuadros) y selector de color propio ===== */
+.ptiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ptile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px 10px;border-radius:var(--r-md);background:var(--surface);min-width:0}
+.ptile:active{background:var(--surface-2)}
+.ptile .pic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff;background:var(--c);
+  background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 55%,#000));box-shadow:0 6px 16px color-mix(in srgb,var(--c) 35%,transparent)}
+#colorTile{background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+.ptile b{font-size:13px;font-weight:600}
+.ptile small{font-size:11px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-4px}
+.cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:6px 2px 4px}
+.cgrid button{aspect-ratio:1;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 0 0 2px var(--surface);position:relative;border:1px solid rgba(255,255,255,.14)}
+.cgrid button.on{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text)}
+.cgrid button.on::after{content:"";position:absolute;inset:0;margin:auto;width:28%;height:28%;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.ownrow{display:flex;align-items:center;gap:12px;width:100%;padding:14px 4px;margin-top:6px;border-top:1px solid var(--line);font-weight:600;color:var(--accent);text-align:left}
+.ownrow .grow{flex:1}
+.ownrow .ownsw{width:26px;height:26px;border-radius:8px;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);flex:none}
+.cpPrev{border-radius:var(--r-md);padding:16px;color:#fff;margin-bottom:12px;box-shadow:var(--shadow)}
+.cpPrev b{display:block;font-size:17px}
+.cpPrev span{font-size:12.5px;opacity:.85}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:12px}
+.seg2 button{padding:9px;border-radius:9px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg2 button.on{background:var(--accent);color:var(--accent-ink)}
+.cpSV{position:relative;height:170px;border-radius:14px;touch-action:none;cursor:crosshair;
+  background-image:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent)}
+.cpSV i,.cpHue i{position:absolute;width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5);transform:translate(-50%,-50%);pointer-events:none}
+.cpHue{position:relative;height:14px;border-radius:7px;margin:20px 6px 6px;touch-action:none;
+  background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+.cpHue i{top:50%}
+.cpRow{display:flex;gap:10px;align-items:center;margin-top:16px}
+.cpRow .cpSw{width:44px;height:44px;border-radius:12px;flex:none;border:1px solid var(--line)}
+.cpRow .input{flex:1;font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em}
+.cpPre{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-top:14px}
+.cpPre button{aspect-ratio:1;border-radius:50%;background:var(--a);border:1px solid rgba(255,255,255,.15)}
+.cpBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.cpBtns .btn{margin-top:12px}
 </style>
 </head>
 <body>
@@ -681,9 +717,13 @@ img.wav{object-fit:cover}
       </div>
 
       <h2 class="tg" data-t="tgLook">Personaliza</h2>
-      <div class="tlist">
-        <button class="trow" data-tool="theme"><i class="ic" style="--c:#A78BFA"><svg width="20" height="20"><use href="#i-palette"/></svg></i><span class="grow"><b data-t="tTheme">Tema</b><small id="themeName">Oscuro</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
-        <button class="trow" data-tool="lang"><i class="ic" style="--c:#38BDF8"><svg width="20" height="20"><use href="#i-globe"/></svg></i><span class="grow"><b data-t="tLang">Idioma</b><small id="langName">Español</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
+      <div class="ptiles">
+        <button class="ptile" data-tool="mode"><i class="pic" style="--c:#8B5CF6"><svg width="22" height="22"><use href="#i-moon"/></svg></i><b data-t="tTheme">Tema</b><small id="themeName">Oscuro</small></button>
+        <button class="ptile" data-tool="color"><i class="pic" id="colorTile" style="--c:var(--accent)"><svg width="22" height="22"><use href="#i-palette"/></svg></i><b data-t="themeColor">Color</b><small id="colorName">Aurora</small></button>
+        <button class="ptile" data-tool="bg"><i class="pic" style="--c:#14B8A6"><svg width="22" height="22"><use href="#i-image"/></svg></i><b data-t="themeBg">Fondo</b><small id="bgName">Azul</small></button>
+        <button class="ptile" data-tool="lang"><i class="pic" style="--c:#F59E0B"><svg width="22" height="22"><use href="#i-globe"/></svg></i><b data-t="tLang">Idioma</b><small id="langName">Español</small></button>
+      </div>
+      <div class="tlist" style="margin-top:10px">
         <button class="trow" data-tool="settings"><i class="ic" style="--c:#F472B6"><svg width="20" height="20"><use href="#i-tools"/></svg></i><span class="grow"><b data-t="tSettings">Configuración</b><small data-t="tSettingsS">Portapapeles y reproductor</small></span><svg class="chev" width="18" height="18"><use href="#i-chev"/></svg></button>
       </div>
 
@@ -811,20 +851,26 @@ const I18N = {
     vVideo:'Vídeo',vAudio:'Áudio',vImage:'Imagem',vDoc:'Documento',vApk:'Aplicativo',vFile:'Arquivo',dupe:'Você já está baixando este link',platTitle:'Link do {n}',platBody:'O Nexora não baixa conteúdo do {n}, para respeitar os direitos dos criadores e as regras da plataforma. Para assistir offline, use a opção de download do app oficial.',platOpen:'Abrir no {n}',ok:'Entendi',ytHint:'Cole um link do YouTube, TikTok, Instagram, Facebook e mais, ou um link direto de arquivo.',analyzing:'Lendo o link…',enginePrepMsg:'Preparando o motor de download. Na primeira vez demora um pouco.',chooseFmt:'Formato',fV1080:'Vídeo 1080p',fV720:'Vídeo 720p',fV480:'Vídeo 480p',fMp3:'Áudio MP3',fM4a:'Áudio M4A',fV1080s:'Melhor qualidade',fV720s:'Equilibrado',fV480s:'Economiza espaço',fMp3s:'Toca em tudo',fM4as:'Qualidade original',channel:'Canal',credit:'O título e o canal são salvos como crédito ao criador.',notice:'Baixe só conteúdo seu ou com permissão do criador.',noticeTitle:'Antes de começar',noticeBody:'O Nexora Download Plus pode salvar vídeos e músicas do YouTube e outras redes. Respeite os criadores: baixe só conteúdo seu, com licença livre ou com permissão. Cada download guarda o título e o canal como crédito.',accept:'Aceito',infoErr:'Não foi possível ler este link',tryDirect:'Tentar download direto',tEngine:'Motor',engineReady:'Pronto',enginePrep:'Preparando…',engineUpdating:'Atualizando…',engineErr:'Com erro',engineUpd:'Atualizar motor',engineDesc:'O motor (yt-dlp) se atualiza sozinho todo dia. Atualize manualmente se uma rede parar de funcionar.',updated:'Motor atualizado',upToDate:'O motor já está atualizado',updErr:'Não foi possível atualizar. Verifique a conexão.',busy:'Espere os downloads terminarem',cancelDl:'Cancelar download',sCancelled:'Cancelado',sInterrupted:'Interrompido',seeOriginal:'Ver original',webOnly:'Downloads de redes só funcionam no app instalado',close:'Fechar',homeTitle:'Pesquise ou cole um link',urlPh:'Pesquisar ou colar link',search:'Pesquisar',siteHint:'Abra um vídeo, toque em Compartilhar e escolha Nexora Download Plus.',results:'Resultados',clearRes:'Limpar',searching:'Pesquisando…',noRes:'Nenhum resultado para essa pesquisa.',views:'visualizações',grpMusic:'Música',grpVideo:'Vídeo',fVbest:'Vídeo',fVbests:'Melhor disponível',errBot:'O YouTube pediu para confirmar que você não é um robô.',errBotFix:'Troque de rede (Wi-Fi ou dados) ou entre em Ferramentas → Conta do YouTube.',errFmt:'O YouTube não entregou formatos para este vídeo.',errFmtFix:'O Nexora já tentou vários métodos. Atualize o motor e tente de novo em alguns minutos.',errGen:'Verifique o link ou a conexão e tente de novo.',goLogin:'Entrar',tAccount:'Conta do YouTube',accOn:'Conectado',accOff:'Sem login',accTitle:'Conta do YouTube',accDesc:'Entrar ajuda quando o YouTube pede para confirmar que você não é um robô. A sessão fica só no seu celular.',accWarn:'O YouTube pode limitar ou suspender contas que baixam vídeos. Use uma conta secundária, não a principal nem a do seu canal.',login:'Entrar',importCk:'Importar cookies.txt',logout:'Sair',loggedOut:'Sessão encerrada',tCache:'Liberar espaço',tCacheS:'Apaga arquivos temporários',cacheDone:'Espaço liberado',tFeedback:'Comentários',tFeedbackS:'Relatar um problema',fV360:'Vídeo 360p',fV360s:'Ocupa pouco',popular:'Pesquisas populares',seeSites:'Sites',recentSearches:'Pesquisas recentes',clearHist:'Limpar',cMusic:'Música',cGames:'Games',cFunny:'Engraçados',cTut:'Tutoriais',cNews:'Notícias',cSports:'Esportes',cKids:'Infantil',qMusic:'música nova',qGames:'games gameplay',qFunny:'vídeos engraçados',qTut:'tutoriais',qNews:'notícias hoje',qSports:'esportes melhores momentos',qKids:'vídeos infantis',pops:'funk|vídeos engraçados|Minecraft|Free Fire|filmes completos|status para WhatsApp|sertanejo|Anitta',resultsFor:'Resultados de',stageRetry:'Tentando outro método…',stageUpdate:'Atualizando o motor…',feedErr:'Não foi possível carregar os vídeos.',retryBtn:'Tentar de novo',openYt:'Ver no YouTube',clipPasted:'Link colado da área de transferência',moreFmts:'Mais formatos',fV144s:'Qualidade mínima',fV240s:'Baixa qualidade',fV1440s:'Tela grande',fV2160s:'Qualidade máxima',tSettings:'Configurações',tSettingsS:'Área de transferência e player',autoClip:'Detectar links copiados',autoClipS:'Ao abrir o app, oferece baixar o link que você copiou',playerT:'Player de vídeos e músicas',recommended:'recomendado',askEach:'Escolher sempre',recTitle:'Reproduza com {n}',recBody:'Para assistir seus vídeos e ouvir suas músicas com a melhor qualidade, o Nexora recomenda o {n}. É grátis.',install:'Instalar {n}',openOther:'Abrir com outro app',cForYou:'Para você',qForYou:'',qMods:'novo|popular|em alta|2026|melhores|viral|ao vivo|completo',watchLoading:'Preparando vídeo…',playErr:'Não foi possível reproduzir aqui.',audioOnly:'Só áudio',options:'Opções',quality:'Qualidade',speed:'Velocidade',repeat:'Repetir vídeo',autoplay:'Reprodução automática',related:'Mais vídeos',subs:'inscritos',showMore:'Mostrar mais',showLess:'Mostrar menos',installing:'Instalando {n}',instStart:'Preparando o download…',instDl:'Baixando…',instPerm:'Permita que o Nexora instale apps e volte aqui.',instReady:'Pronto, confirme a instalação',instErr:'Falha no download, abrindo a página…',instWeb:'Baixar pela página web',recBody:'Para ver seus vídeos e ouvir suas músicas, o Nexora recomenda o {n}.',tHome:'Início',tVideos:'Vídeos',tShorts:'Shorts',tLive:'Ao vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',sizing:'Calculando tamanhos… já pode baixar',sizingEst:'Tamanhos aproximados · já pode baixar',bgListen:'Ouvir em segundo plano',bgOn:'Tocando em segundo plano. Controle pela notificação.',bgWait:'Preparando o áudio… começa em alguns segundos',bgErr:'Não foi possível tocar o áudio',pipBtn:'Janela flutuante',pipNo:'Seu celular não permite janela flutuante',leaveT:'Ao sair do app com um vídeo',leavePip:'Janela flutuante',leaveAudio:'Continuar ouvindo',leavePause:'Pausar',qualityAuto:'Automática',qualityEmbed:'Mude pela engrenagem do player',tUpdate:'Buscar atualização',checking:'Buscando atualização…',upToDateV:'Você já tem a versão mais recente (V{n})',updCheckErr:'Não foi possível verificar. Verifique a conexão.',apkPrep:'Preparando o APK para compartilhar…',themeMode:'Modo',themeColor:'Cor',themeAmoled:'Preto AMOLED',acc_aurora:'Aurora',acc_neon:'Neon',acc_ocean:'Oceano',acc_fire:'Fogo',acc_rose:'Rosa',acc_emerald:'Esmeralda',acc_gold:'Ouro',acc_ruby:'Rubi',fbTitle:'Enviar comentários',fbDetails:'Detalhes',fbPh:'Conte um pouco mais sobre suas dúvidas ou sugestões.',fbContact:'Contato',fbContactPh:'WhatsApp, número ou e-mail',fbMedia:'Fotos e vídeos',fbSend:'Enviar',fbThanks:'Obrigado! Envie o e-mail para terminar.',secDl:'Baixando',secDone:'Baixado',pauseAll:'Pausar tudo',resumeAll:'Continuar tudo',pause:'Pausar',resume:'Continuar',sPausedU:'Pausado',selAll:'Selecionar tudo',nSel:'{n} itens',del2:'Excluir',delQ:'Excluir {n} itens?',delFiles:'Excluir também os arquivos do celular',deletedN:'{n} itens excluídos',libSearchPh:'Pesquisar nos downloads',qCurrent:'Qualidade do vídeo atual',qAuto:'Automática (recomendada)',qAutoD:'Ajusta para a melhor experiência',qHigh:'Qualidade de imagem mais alta',qHighD:'Usa mais dados',qSaver:'Economia de dados',qSaverD:'Qualidade de imagem mais baixa',qAdv:'Avançada',qAdvD:'Selecione uma resolução específica',themeBg:'Fundo',bg_navy:'Nexora',bg_midnight:'Meia-noite',bg_purple:'Galáxia',bg_forest:'Floresta',bg_deep:'Abismo',bg_wine:'Vinho',bg_coffee:'Café',bg_graphite:'Grafite',acc_lime:'Lima',acc_sky:'Céu',acc_violet:'Violeta',acc_coral:'Coral',acc_mint:'Menta',acc_candy:'Doce',acc_sunset:'Pôr do sol',acc_mono:'Branco',basedOn:'Com base no que você assiste:',noTab:'Este canal não tem {n}',permT:'Ver todos os seus downloads',permD:'Permita o acesso a vídeos e músicas para ver o que você baixou antes, mesmo após reinstalar.',permBtn:'Permitir',updTitle:'Atualização obrigatória',updTitleOpt:'Nova versão disponível',updCur:'Sua versão:',updNew:'Novidades desta versão',updNow:'Atualizar agora',updLater:'Mais tarde',updConfirm:'Confirme a instalação na janela do Android',prefetch:'Pré-carregar vídeos',prefetchS:'Analisa em segundo plano os vídeos que você vê para o download abrir na hora'}
 };
 /* Textos nuevos (motor rápido, comentarios, Acerca de, calidad, herramientas) */
-Object.assign(I18N.es,{comments:'Comentarios',comDisabled:'Los comentarios están desactivados',comErr:'No se pudieron cargar los comentarios',comEmpty:'Aún no hay comentarios',
+Object.assign(I18N.es,{accentT:'Color de acento',pickOwn:'Elegir tu propio color',pickOwnBg:'Elegir tu propio fondo',pickTitle:'Elige tu color',pickPrev:'Así se verá el color',pickMain:'Principal',pickSec:'Secundario',reset:'Restablecer',done:'Listo',saved:'Guardado',ownColor:'Propio',bgDarkOnly:'El fondo se cambia en modo Oscuro',
+  acc_cherry:'Cereza',acc_lavender:'Lavanda',acc_teal:'Turquesa',acc_amber:'Ámbar',acc_indigo:'Índigo',acc_magenta:'Magenta',acc_blood:'Sangre',acc_ice:'Hielo',bg_slate:'Pizarra',bg_plum:'Ciruela',bg_abyss:'Abismo',bg_moss:'Musgo',
+  comments:'Comentarios',comDisabled:'Los comentarios están desactivados',comErr:'No se pudieron cargar los comentarios',comEmpty:'Aún no hay comentarios',
   replies:'{n} respuestas',reply1:'1 respuesta',pinned:'Fijado',heart:'Le encanta al creador',likes:'Me gusta',viewsL:'Vistas',dateL:'Fecha',seeChannel:'Ver canal',
   copyLink:'Copiar enlace',copied:'Enlace copiado',moreDots:'...más',mixL:'Mix',mixDesc:'Mixes son listas de reproducción que YouTube crea para ti',playAll:'Reproducir todo',
   videosN:'{n} videos',videosW:'videos',upNext:'Siguiente en la lista',subsT:'Subtítulos',subsOff:'Desactivados',subsAuto:'automáticos',subsNone:'Este video no tiene subtítulos',
   subsErr:'No se pudieron cargar los subtítulos',on:'Activado',off:'Desactivado',qVeryHigh:'Muy alto',qHighL:'Alto',qMid:'Medio',qLowL:'Ahorro de datos',qAutoL:'Auto',
   liveB:'EN VIVO',quickTheme:'Colores y tema',moreTheme:'Más opciones de tema',tgLook:'Personaliza',tgDl:'Descargas',tgAcc:'Cuenta',fastOn:'Motor rápido activo',
   tCacheS:'Borra archivos temporales',tSettingsS:'Portapapeles y reproductor',tFeedbackS:'Reporta un problema'});
-Object.assign(I18N.en,{comments:'Comments',comDisabled:'Comments are turned off',comErr:'Couldn’t load comments',comEmpty:'No comments yet',
+Object.assign(I18N.en,{accentT:'Accent color',pickOwn:'Pick your own color',pickOwnBg:'Pick your own background',pickTitle:'Pick your color',pickPrev:'This is how it will look',pickMain:'Primary',pickSec:'Secondary',reset:'Reset',done:'Done',saved:'Saved',ownColor:'Custom',bgDarkOnly:'Background changes in Dark mode',
+  acc_cherry:'Cherry',acc_lavender:'Lavender',acc_teal:'Teal',acc_amber:'Amber',acc_indigo:'Indigo',acc_magenta:'Magenta',acc_blood:'Blood',acc_ice:'Ice',bg_slate:'Slate',bg_plum:'Plum',bg_abyss:'Abyss',bg_moss:'Moss',
+  comments:'Comments',comDisabled:'Comments are turned off',comErr:'Couldn’t load comments',comEmpty:'No comments yet',
   replies:'{n} replies',reply1:'1 reply',pinned:'Pinned',heart:'Loved by the creator',likes:'Likes',viewsL:'Views',dateL:'Date',seeChannel:'View channel',
   copyLink:'Copy link',copied:'Link copied',moreDots:'...more',mixL:'Mix',mixDesc:'Mixes are playlists YouTube makes for you',playAll:'Play all',
   videosN:'{n} videos',videosW:'videos',upNext:'Up next in this list',subsT:'Subtitles',subsOff:'Off',subsAuto:'auto-generated',subsNone:'This video has no subtitles',
   subsErr:'Couldn’t load subtitles',on:'On',off:'Off',qVeryHigh:'Very high',qHighL:'High',qMid:'Medium',qLowL:'Data saver',qAutoL:'Auto',
   liveB:'LIVE',quickTheme:'Colors & theme',moreTheme:'More theme options',tgLook:'Personalize',tgDl:'Downloads',tgAcc:'Account',fastOn:'Fast engine on'});
-Object.assign(I18N.pt,{comments:'Comentários',comDisabled:'Os comentários estão desativados',comErr:'Não foi possível carregar os comentários',comEmpty:'Ainda não há comentários',
+Object.assign(I18N.pt,{accentT:'Cor de destaque',pickOwn:'Escolher sua própria cor',pickOwnBg:'Escolher seu próprio fundo',pickTitle:'Escolha sua cor',pickPrev:'Assim ficará a cor',pickMain:'Principal',pickSec:'Secundária',reset:'Restaurar',done:'Pronto',saved:'Salvo',ownColor:'Própria',bgDarkOnly:'O fundo muda no modo Escuro',
+  acc_cherry:'Cereja',acc_lavender:'Lavanda',acc_teal:'Turquesa',acc_amber:'Âmbar',acc_indigo:'Índigo',acc_magenta:'Magenta',acc_blood:'Sangue',acc_ice:'Gelo',bg_slate:'Ardósia',bg_plum:'Ameixa',bg_abyss:'Abismo',bg_moss:'Musgo',
+  comments:'Comentários',comDisabled:'Os comentários estão desativados',comErr:'Não foi possível carregar os comentários',comEmpty:'Ainda não há comentários',
   replies:'{n} respostas',reply1:'1 resposta',pinned:'Fixado',heart:'O criador adorou',likes:'Curtidas',viewsL:'Visualizações',dateL:'Data',seeChannel:'Ver canal',
   copyLink:'Copiar link',copied:'Link copiado',moreDots:'...mais',mixL:'Mix',mixDesc:'Mixes são playlists que o YouTube cria para você',playAll:'Reproduzir tudo',
   videosN:'{n} vídeos',videosW:'vídeos',upNext:'A seguir nesta lista',subsT:'Legendas',subsOff:'Desativadas',subsAuto:'automáticas',subsNone:'Este vídeo não tem legendas',
@@ -876,33 +922,127 @@ function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add(
 
 /* ====== Tema e idioma ====== */
 const ACCENTS=[['aurora','#46E0C4','#8C7BFF'],['neon','#22D3EE','#D946EF'],['ocean','#38BDF8','#6366F1'],['fire','#FB923C','#EF4444'],['rose','#F472B6','#A855F7'],['emerald','#34D399','#14B8A6'],['gold','#FBBF24','#F97316'],['ruby','#F43F5E','#FB7185'],
-  ['lime','#A3E635','#22C55E'],['sky','#7DD3FC','#38BDF8'],['violet','#A78BFA','#7C3AED'],['coral','#FF8A65','#FF5E7E'],['mint','#6EE7B7','#5EEAD4'],['candy','#F9A8D4','#93C5FD'],['sunset','#FDBA74','#F472B6'],['mono','#E5E7EB','#9CA3AF']];
-const BGS=[['navy','#0E1230','#171C45','#21275E'],['midnight','#0B0B1A','#15152B','#20203D'],['purple','#150A26','#21113A','#2E1A50'],['forest','#07160F','#0F2419','#183526'],['deep','#04151F','#0A2230','#123344'],['wine','#1A0810','#2A1019','#3A1824'],['coffee','#17110C','#241B14','#33271D'],['graphite','#121417','#1C1F24','#272B32']];
+  ['lime','#A3E635','#22C55E'],['sky','#7DD3FC','#38BDF8'],['violet','#A78BFA','#7C3AED'],['coral','#FF8A65','#FF5E7E'],['mint','#6EE7B7','#5EEAD4'],['candy','#F9A8D4','#93C5FD'],['sunset','#FDBA74','#F472B6'],['mono','#E5E7EB','#9CA3AF'],
+  ['cherry','#FF4D6D','#C9184A'],['lavender','#C4B5FD','#8B5CF6'],['teal','#2DD4BF','#0EA5E9'],['amber','#F59E0B','#D97706'],['indigo','#818CF8','#4F46E5'],['magenta','#E879F9','#C026D3'],['blood','#EF4444','#7F1D1D'],['ice','#A5F3FC','#C7D2FE']];
+const BGS=[['navy','#0E1230','#171C45','#21275E'],['midnight','#0B0B1A','#15152B','#20203D'],['purple','#150A26','#21113A','#2E1A50'],['forest','#07160F','#0F2419','#183526'],['deep','#04151F','#0A2230','#123344'],['wine','#1A0810','#2A1019','#3A1824'],['coffee','#17110C','#241B14','#33271D'],['graphite','#121417','#1C1F24','#272B32'],
+  ['slate','#0F172A','#1E293B','#334155'],['plum','#1C0A1C','#2B132B','#3C1D3C'],['abyss','#020617','#0B1226','#16203A'],['moss','#0D140C','#172117','#223022']];
+/* ---- utilidades de color ---- */
+function hexOk(h){ return /^#[0-9a-f]{6}$/i.test(h||'') }
+function hex2rgb(h){ const n=parseInt(h.slice(1),16); return [n>>16&255,n>>8&255,n&255] }
+function rgb2hex(r,g,b){ return '#'+[r,g,b].map(x=>Math.round(Math.max(0,Math.min(255,x))).toString(16).padStart(2,'0')).join('').toUpperCase() }
+function mixHex(a,b,p){ const x=hex2rgb(a), y=hex2rgb(b); return rgb2hex(x[0]+(y[0]-x[0])*p, x[1]+(y[1]-x[1])*p, x[2]+(y[2]-x[2])*p) }
+function lum(h){ const c=hex2rgb(h).map(v=>{ v/=255; return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4) }); return .2126*c[0]+.7152*c[1]+.0722*c[2] }
+function hsv2hex(h,s,v){ const f=n=>{ const k=(n+h/60)%6; return v-v*s*Math.max(0,Math.min(k,4-k,1)) }; return rgb2hex(f(5)*255,f(3)*255,f(1)*255) }
+function hex2hsv(hex){ const [r,g,b]=hex2rgb(hex).map(x=>x/255), M=Math.max(r,g,b), m=Math.min(r,g,b), d=M-m; let h=0;
+  if(d){ h = M===r?((g-b)/d)%6 : M===g?(b-r)/d+2 : (r-g)/d+4; h*=60; if(h<0) h+=360 } return [h, M?d/M:0, M] }
+/* colores que se usan ahora (de la lista o propios) */
+function accentPair(){
+  if(saved.accent==='custom' && hexOk(saved.accA) && hexOk(saved.accB)) return [saved.accA, saved.accB];
+  const a=ACCENTS.find(x=>x[0]===(saved.accent||'aurora'))||ACCENTS[0]; return [a[1],a[2]];
+}
+function bgTriple(){
+  if(saved.bgTheme==='custom' && hexOk(saved.bgC)){ const c=saved.bgC; return [c, mixHex(c,'#FFFFFF',.07), mixHex(c,'#FFFFFF',.14)] }
+  const b=BGS.find(x=>x[0]===(saved.bgTheme||'navy'))||BGS[0]; return [b[1],b[2],b[3]];
+}
+function accName(){ return saved.accent==='custom' ? t('ownColor') : t('acc_'+(saved.accent||'aurora')) }
+function bgName(){ return saved.bgTheme==='custom' ? t('ownColor') : t('bg_'+(saved.bgTheme||'navy')) }
 function applyTheme(){
+  const root=document.documentElement, st=root.style;
   const light = S.theme==='light' || (S.theme==='system' && matchMedia('(prefers-color-scheme: light)').matches);
   const mode = light?'light':(S.theme==='amoled'?'amoled':'dark');
-  document.documentElement.dataset.theme = mode;
-  document.documentElement.dataset.accent = saved.accent||'aurora';
-  const bgt=BGS.find(x=>x[0]===(saved.bgTheme||'navy'))||BGS[0];
-  document.documentElement.dataset.bg = saved.bgTheme||'navy';
-  const bg = light?'#F2F3FB':mode==='amoled'?'#000000':bgt[1];
+  root.dataset.theme = mode;
+  root.dataset.accent = saved.accent||'aurora';
+  root.dataset.bg = saved.bgTheme||'navy';
+  // Color: en modo claro el Aurora original usa su versión más oscura (se lee mejor)
+  if(light && (saved.accent||'aurora')==='aurora'){ ['--accent','--accent-2','--accent-ink'].forEach(p=>st.removeProperty(p)) }
+  else { const [a,b]=accentPair(); st.setProperty('--accent',a); st.setProperty('--accent-2',b); st.setProperty('--accent-ink', lum(a)>.42?'#0B0B12':'#FFFFFF') }
+  // Fondo (solo en modo oscuro)
+  let bg;
+  if(mode==='dark'){ const [b1,b2,b3]=bgTriple(); st.setProperty('--bg',b1); st.setProperty('--surface',b2); st.setProperty('--surface-2',b3); bg=b1 }
+  else { ['--bg','--surface','--surface-2'].forEach(p=>st.removeProperty(p)); bg = light?'#F2F3FB':'#000000' }
   document.querySelector('meta[name=theme-color]').content = bg;
   if(A&&A.setBarColor) try{ A.setBarColor(bg,light) }catch(e){} else if(A&&A.setBars) try{ A.setBars(light) }catch(e){}
   const qb=$('#qThemeBtn'); if(qb) qb.setAttribute('aria-label',t('quickTheme'));
-  const el=$('#themeName'); if(el) el.textContent = t({dark:'themeDark',light:'themeLight',system:'themeSys',amoled:'themeAmoled'}[S.theme]||'themeDark')+' · '+t('acc_'+(saved.accent||'aurora'));
+  const el=$('#themeName'); if(el) el.textContent = t({dark:'themeDark',light:'themeLight',system:'themeSys',amoled:'themeAmoled'}[S.theme]||'themeDark');
+  const cn=$('#colorName'); if(cn) cn.textContent=accName();
+  const bn=$('#bgName'); if(bn) bn.textContent = mode==='dark'?bgName():'—';
+}
+function modeRows(){ return [['dark','themeDark'],['light','themeLight'],['amoled','themeAmoled'],['system','themeSys']].map(([v,l])=>`<button class="opt${S.theme===v?' on':''}" data-tm="${v}"><span class="dot"></span><span class="grow">${t(l)}</span></button>`).join('') }
+function accGrid(){ return `<div class="cgrid">${ACCENTS.map(([id,a,b])=>`<button class="${(saved.accent||'aurora')===id?'on':''}" data-acc="${id}" style="--a:${a};--b:${b}" aria-label="${t('acc_'+id)}"></button>`).join('')}</div>
+  <button class="ownrow" id="ownAcc"><span class="ownsw"></span><span class="grow">${t('pickOwn')}</span>${saved.accent==='custom'?'<svg class="check" width="22" height="22"><use href="#i-check"/></svg>':''}</button>` }
+function bgGrid(){ return `<div class="cgrid">${BGS.map(([id,b1,b2,b3])=>`<button class="${(saved.bgTheme||'navy')===id?'on':''}" data-bgt="${id}" style="--a:${b3};--b:${b1}" aria-label="${t('bg_'+id)}"></button>`).join('')}</div>
+  <button class="ownrow" id="ownBg"><span class="ownsw"></span><span class="grow">${t('pickOwnBg')}</span>${saved.bgTheme==='custom'?'<svg class="check" width="22" height="22"><use href="#i-check"/></svg>':''}</button>` }
+function bindThemeBits(again){
+  const b=$('#sheetBody');
+  b.querySelectorAll('[data-tm]').forEach(x=>x.onclick=()=>{ S.theme=x.dataset.tm; save(); applyTheme(); again(); renderQPop() });
+  b.querySelectorAll('[data-acc]').forEach(x=>x.onclick=()=>{ saved.accent=x.dataset.acc; save(); applyTheme(); again(); renderQPop() });
+  b.querySelectorAll('[data-bgt]').forEach(x=>x.onclick=()=>{ saved.bgTheme=x.dataset.bgt; save(); applyTheme(); again(); renderQPop() });
+  const oa=$('#ownAcc'); if(oa) oa.onclick=()=>colorPicker('acc',again);
+  const ob=$('#ownBg'); if(ob) ob.onclick=()=>colorPicker('bg',again);
 }
 function themeSheet(){
+  const dark=S.theme!=='light'&&S.theme!=='amoled';
   sheet(`<h3>${t('tTheme')}</h3>
-    <div class="grp">${t('themeMode')}</div>
-    ${[['dark','themeDark'],['light','themeLight'],['amoled','themeAmoled'],['system','themeSys']].map(([v,l])=>`<button class="opt${S.theme===v?' on':''}" data-tm="${v}"><span class="dot"></span><span class="grow">${t(l)}</span></button>`).join('')}
-    ${S.theme!=='light'&&S.theme!=='amoled'?`<div class="grp">${t('themeBg')}</div>
-    <div class="swatches">${BGS.map(([id,b1,b2,b3])=>`<button class="sw${(saved.bgTheme||'navy')===id?' on':''}" data-bgt="${id}" style="--a:${b3};--b:${b1}" aria-label="${t('bg_'+id)}"><i></i><span>${t('bg_'+id)}</span></button>`).join('')}</div>`:''}
-    <div class="grp">${t('themeColor')}</div>
-    <div class="swatches">${ACCENTS.map(([id,a,b])=>`<button class="sw${(saved.accent||'aurora')===id?' on':''}" data-acc="${id}" style="--a:${a};--b:${b}" aria-label="${t('acc_'+id)}"><i></i><span>${t('acc_'+id)}</span></button>`).join('')}</div>
+    <div class="grp">${t('themeMode')}</div>${modeRows()}
+    <div class="grp">${t('accentT')}</div>${accGrid()}
+    ${dark?`<div class="grp">${t('themeBg')}</div>${bgGrid()}`:''}
     <button class="btn ghost" onclick="closeSheet()">${t('close')}</button>`);
-  $('#sheetBody').querySelectorAll('[data-tm]').forEach(b=>b.onclick=()=>{ S.theme=b.dataset.tm; save(); applyTheme(); themeSheet(); renderQPop() });
-  $('#sheetBody').querySelectorAll('[data-bgt]').forEach(b=>b.onclick=()=>{ saved.bgTheme=b.dataset.bgt; save(); applyTheme(); $('#sheetBody').querySelectorAll('[data-bgt]').forEach(x=>x.classList.toggle('on',x===b)) });
-  $('#sheetBody').querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{ saved.accent=b.dataset.acc; save(); applyTheme(); $('#sheetBody').querySelectorAll('[data-acc]').forEach(x=>x.classList.toggle('on',x===b)) });
+  bindThemeBits(themeSheet);
+}
+function modeSheet(){ sheet(`<h3>${t('tTheme')}</h3>${modeRows()}<button class="btn ghost" onclick="closeSheet()">${t('close')}</button>`); bindThemeBits(modeSheet) }
+function colorSheet(){ sheet(`<h3>${t('accentT')}</h3>${accGrid()}`); bindThemeBits(colorSheet) }
+function bgSheet(){
+  if(S.theme==='light'||S.theme==='amoled'){ toast(t('bgDarkOnly')); return }
+  sheet(`<h3>${t('themeBg')}</h3>${bgGrid()}`); bindThemeBits(bgSheet);
+}
+/* ---- Elige tu color: Principal / Secundario, cuadro de color, barra de tono y código ---- */
+const CP_PRE=['#9B30FF','#FF3D7F','#FF7A00','#FFC400','#00C853','#00B8D4','#2979FF','#D500F9','#FF4081','#FFFFFF','#9E9E9E','#131214','#46E0C4','#8C7BFF','#FB923C','#22D3EE'];
+function colorPicker(kind,back){
+  const prev={accent:saved.accent,accA:saved.accA,accB:saved.accB,bgTheme:saved.bgTheme,bgC:saved.bgC};
+  const P={tab:'a'};
+  if(kind==='acc'){ const [a,b]=accentPair(); P.a=a; P.b=b } else { P.a=bgTriple()[0] }
+  const cur=()=>P[P.tab];
+  sheet(`<h3>${t('pickTitle')}</h3>
+    <div class="cpPrev" id="cpPrev"><b>Nexora Download Plus</b><span>${t('pickPrev')}</span></div>
+    ${kind==='acc'?`<div class="seg2"><button class="on" data-cpt="a">${t('pickMain')}</button><button data-cpt="b">${t('pickSec')}</button></div>`:''}
+    <div class="cpSV" id="cpSV"><i id="cpDot"></i></div>
+    <div class="cpHue" id="cpHue"><i id="cpHueDot"></i></div>
+    <div class="cpRow"><span class="cpSw" id="cpSw"></span><input class="input" id="cpHex" maxlength="7" autocomplete="off" spellcheck="false"></div>
+    <div class="cpPre">${CP_PRE.map(c=>`<button data-cpc="${c}" style="--a:${c}" aria-label="${c}"></button>`).join('')}</div>
+    <div class="cpBtns"><button class="btn ghost" id="cpReset">${t('reset')}</button><button class="btn" id="cpOk">${t('done')}</button></div>`);
+  closeSheet._cb=()=>{ Object.assign(saved,prev); applyTheme() };   // si se cierra sin "Listo", vuelve como estaba
+  let hsv=hex2hsv(cur());
+  const sv=$('#cpSV'), hue=$('#cpHue');
+  function live(){
+    if(kind==='acc'){ saved.accent='custom'; saved.accA=P.a; saved.accB=P.b } else { saved.bgTheme='custom'; saved.bgC=P.a }
+    applyTheme();
+  }
+  function paint(fromHex){
+    if(!fromHex) P[P.tab]=hsv2hex(hsv[0],hsv[1],hsv[2]);
+    const c=cur();
+    sv.style.backgroundColor=hsv2hex(hsv[0],1,1);
+    $('#cpDot').style.left=(hsv[1]*100)+'%'; $('#cpDot').style.top=((1-hsv[2])*100)+'%'; $('#cpDot').style.background=c;
+    $('#cpHueDot').style.left=(hsv[0]/360*100)+'%'; $('#cpHueDot').style.background=hsv2hex(hsv[0],1,1);
+    $('#cpSw').style.background=c;
+    if(document.activeElement!==$('#cpHex')) $('#cpHex').value=c;
+    $('#cpPrev').style.background = kind==='acc' ? `linear-gradient(120deg,${P.a},${P.b})` : `linear-gradient(120deg,${P.a},${mixHex(P.a,'#FFFFFF',.18)})`;
+    $('#cpPrev').style.color = lum(kind==='acc'?P.a:P.a)>.45?'#111':'#fff';
+    live();
+  }
+  function drag(el,fn){
+    const go=e=>{ const r=el.getBoundingClientRect(), p=e.touches?e.touches[0]:e; fn(Math.max(0,Math.min(1,(p.clientX-r.left)/r.width)), Math.max(0,Math.min(1,(p.clientY-r.top)/r.height))) };
+    el.addEventListener('pointerdown',e=>{ el.setPointerCapture&&el.setPointerCapture(e.pointerId); go(e); el.onpointermove=go });
+    el.addEventListener('pointerup',()=>{ el.onpointermove=null });
+    el.addEventListener('pointercancel',()=>{ el.onpointermove=null });
+  }
+  drag(sv,(x,y)=>{ hsv=[hsv[0],x,1-y]; paint() });
+  drag(hue,x=>{ hsv=[Math.min(359.9,x*360),hsv[1]||.8,hsv[2]||.9]; paint() });
+  $('#sheetBody').querySelectorAll('[data-cpt]').forEach(b=>b.onclick=()=>{ P.tab=b.dataset.cpt; $('#sheetBody').querySelectorAll('[data-cpt]').forEach(x=>x.classList.toggle('on',x===b)); hsv=hex2hsv(cur()); paint(true) });
+  $('#sheetBody').querySelectorAll('[data-cpc]').forEach(b=>b.onclick=()=>{ P[P.tab]=b.dataset.cpc; hsv=hex2hsv(cur()); paint(true) });
+  $('#cpHex').addEventListener('input',e=>{ let v=e.target.value.trim(); if(v[0]!=='#') v='#'+v; if(hexOk(v)){ P[P.tab]=v.toUpperCase(); hsv=hex2hsv(cur()); paint(true) } });
+  $('#cpReset').onclick=()=>{ closeSheet._cb=null; if(kind==='acc') saved.accent='aurora'; else saved.bgTheme='navy'; save(); applyTheme(); renderQPop(); (back||themeSheet)() };
+  $('#cpOk').onclick=()=>{ closeSheet._cb=null; live(); save(); renderQPop(); closeSheet(); toast(t('saved')) };
+  paint(true);
 }
 function applyLang(){
   document.documentElement.lang=S.lang;
@@ -1031,8 +1171,8 @@ document.addEventListener('click',e=>{
 });
 
 /* ====== Sheet ====== */
-function sheet(html){ $('#sheetBody').innerHTML=html; $('#scrim').classList.add('on'); $('#sheet').classList.add('on') }
-function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
+function sheet(html){ if(closeSheet._cb){ const f=closeSheet._cb; closeSheet._cb=null; f() } $('#sheetBody').innerHTML=html; $('#scrim').classList.add('on'); $('#sheet').classList.add('on') }
+function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); const f=closeSheet._cb; closeSheet._cb=null; if(f) f() }
 const sheetOpen = () => $('#sheet').classList.contains('on');
 $('#scrim').onclick=closeSheet;
 
@@ -2669,7 +2809,7 @@ function renderQPop(){
   const dark=S.theme!=='light'&&S.theme!=='amoled';
   p.innerHTML=`<div class="seg">${[['dark','themeDark'],['light','themeLight'],['amoled','themeAmoled'],['system','themeSys']].map(([v,l])=>`<button class="${S.theme===v?'on':''}" data-qtm="${v}">${v==='amoled'?'AMOLED':t(l)}</button>`).join('')}</div>
     <div class="lbl2">${t('themeColor')}</div>
-    <div class="dots">${ACCENTS.map(([id,a,b])=>`<button class="${(saved.accent||'aurora')===id?'on':''}" data-qacc="${id}" style="--a:${a};--b:${b}" aria-label="${t('acc_'+id)}"></button>`).join('')}</div>
+    <div class="dots">${saved.accent==='custom'?`<button class="on" style="--a:${saved.accA};--b:${saved.accB}" aria-label="${t('ownColor')}"></button>`:''}${ACCENTS.map(([id,a,b])=>`<button class="${(saved.accent||'aurora')===id?'on':''}" data-qacc="${id}" style="--a:${a};--b:${b}" aria-label="${t('acc_'+id)}"></button>`).join('')}</div>
     ${dark?`<div class="lbl2">${t('themeBg')}</div><div class="dots">${BGS.map(([id,b1,b2,b3])=>`<button class="${(saved.bgTheme||'navy')===id?'on':''}" data-qbg="${id}" style="--a:${b3};--b:${b1}" aria-label="${t('bg_'+id)}"></button>`).join('')}</div>`:''}
     <button class="more" id="qMore">${t('moreTheme')}</button>`;
   p.querySelectorAll('[data-qtm]').forEach(b=>b.onclick=()=>{ S.theme=b.dataset.qtm; save(); applyTheme(); renderQPop() });
@@ -2687,6 +2827,9 @@ document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{
       break;
     case 'lang': pick(t('tLang'),Object.entries(LANGS),S.lang,v=>{ S.lang=v; save(); applyLang() }); break;
     case 'theme': themeSheet(); break;
+    case 'mode': modeSheet(); break;
+    case 'color': colorSheet(); break;
+    case 'bg': bgSheet(); break;
     case 'engine': engineSheet(); break;
     case 'account': accountSheet(); break;
     case 'cache': { if(!A||!A.clearCache){ toast(t('cacheDone')); break } const n=Number(A.clearCache()); if(n<0) toast(t('busy')); else toast(t('cacheDone')+(n>0?': '+fmtSize(n):'')); break }

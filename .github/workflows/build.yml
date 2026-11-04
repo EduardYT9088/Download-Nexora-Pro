@@ -1023,7 +1023,16 @@ jobs:
                   });
               }
 
-              private static void addFormat(YoutubeDLRequest r, String mode) {
+              /** Portada de la canción dentro del archivo (se ve en cualquier reproductor de música). */
+              private static void addCover(YoutubeDLRequest r) {
+                  r.addOption("--embed-thumbnail");
+                  r.addOption("--convert-thumbnails", "jpg");
+                  // Recorta la miniatura a cuadrado, como la portada de un disco
+                  r.addOption("--ppa", "ThumbnailsConvertor+FFmpeg_o:-c:v mjpeg -qmin 1 -qscale:v 3 -vf \"crop=min(iw\\,ih):min(iw\\,ih)\"");
+              }
+
+              private static void addFormat(YoutubeDLRequest r, String mode, boolean cover) {
+                  if (cover && ("mp3".equals(mode) || "m4a".equals(mode))) addCover(r);
                   switch (mode) {
                       case "mp3":
                           r.addOption("-f", "ba/b");
@@ -1071,7 +1080,9 @@ jobs:
                       }
                       Throwable lastErr = null;
                       boolean ok = false;
-                      for (int c : order) {
+                      boolean cover = true;
+                      for (int oi = 0; oi < order.length; oi++) {
+                        int c = order[oi];
                         pathFile.delete();
                         YoutubeDLRequest r = new YoutubeDLRequest(url);
                       r.addOption("--no-playlist");
@@ -1081,7 +1092,7 @@ jobs:
                       r.addOption("--trim-filenames", "150");
                       r.addOption("--newline");
                       r.addOption("-o", dir.getAbsolutePath() + "/%(title)s - %(uploader|Desconocido)s [%(id)s].%(ext)s");
-                      addFormat(r, mode);
+                      addFormat(r, mode, cover);
                       applyCommon(app, r, c);
                       List<String> extra = Arrays.asList("--print-to-file", "after_move:filepath", pathFile.getAbsolutePath());
                       r.addCommands(extra);
@@ -1106,6 +1117,11 @@ jobs:
                           throw ce;
                         } catch (Throwable e) {
                           lastErr = e;
+                          String low = String.valueOf(e.getMessage()).toLowerCase();
+                          // Si solo falló poner la portada, se repite sin portada (el audio ya está bajado)
+                          if (cover && (low.contains("thumbnail") || low.contains("postprocessing") || low.contains("atomicparsley") || low.contains("mutagen"))) {
+                              cover = false; oi--; continue;
+                          }
                           if (shouldStop(shortErr(e))) break;
                         }
                       }
