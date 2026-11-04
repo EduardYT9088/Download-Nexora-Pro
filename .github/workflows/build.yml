@@ -732,6 +732,13 @@ jobs:
                   return m != null ? m : "*/*";
               }
 
+              /** Archivos intermedios de yt-dlp (formato suelto, conversión o miniatura). */
+              static boolean isWorkFile(String n) {
+                  String l = n.toLowerCase();
+                  return l.matches(".*\\.f\\d+(-\\d+)?\\.[a-z0-9]+$") || l.contains(".temp.") || l.endsWith(".ytdl")
+                      || (l.matches(".*\\[[\\w-]{11}\\]\\.(jpg|jpeg|webp|png)$"));
+              }
+
               private static File outDir() {
                   File d = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Nexora");
                   if (!d.exists()) d.mkdirs();
@@ -1081,6 +1088,8 @@ jobs:
                       Throwable lastErr = null;
                       boolean ok = false;
                       boolean cover = true;
+                      File work = new File(app.getCacheDir(), "trabajo/" + key);
+                      work.mkdirs();
                       for (int oi = 0; oi < order.length; oi++) {
                         int c = order[oi];
                         pathFile.delete();
@@ -1091,7 +1100,11 @@ jobs:
                       r.addOption("--windows-filenames");
                       r.addOption("--trim-filenames", "150");
                       r.addOption("--newline");
-                      r.addOption("-o", dir.getAbsolutePath() + "/%(title)s - %(uploader|Desconocido)s [%(id)s].%(ext)s");
+                      // Los archivos de trabajo (audio original, miniatura, partes) quedan en la carpeta privada de la app;
+                      // a Download/Nexora solo llega el archivo final, así no aparecen copias ni imágenes sueltas.
+                      r.addOption("-P", "home:" + dir.getAbsolutePath());
+                      r.addOption("-P", "temp:" + work.getAbsolutePath());
+                      r.addOption("-o", "%(title)s - %(uploader|Desconocido)s [%(id)s].%(ext)s");
                       addFormat(r, mode, cover);
                       applyCommon(app, r, c);
                       List<String> extra = Arrays.asList("--print-to-file", "after_move:filepath", pathFile.getAbsolutePath());
@@ -1143,6 +1156,7 @@ jobs:
                           if (newest == null) throw new Exception("No se encontró el archivo descargado");
                           path = newest.getAbsolutePath();
                       }
+                      deleteTree(work, true);
                       final String finalPath = path;
                       final long size = new File(finalPath).length();
                       MediaScannerConnection.scanFile(app, new String[]{finalPath},
@@ -1783,7 +1797,9 @@ jobs:
                                       long id = c.getLong(0);
                                       String name = c.getString(1);
                                       String mime = c.getString(3);
-                                      if (name == null || name.endsWith(".part") || name.endsWith(".ytdl")) continue;
+                                      if (name == null || name.endsWith(".part") || name.endsWith(".ytdl") || isWorkFile(name)) continue;
+                                      String data = c.getString(6);
+                                      if (data != null && !new File(data).exists()) continue;   // registro viejo de un archivo borrado
                                       Uri base = files;
                                       if (mime != null && mime.startsWith("video/")) base = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
                                       else if (mime != null && mime.startsWith("audio/")) base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -1800,7 +1816,7 @@ jobs:
                           } else {
                               File[] fs = outDir().listFiles();
                               if (fs != null) for (File f : fs) {
-                                  if (!f.isFile() || f.getName().endsWith(".part")) continue;
+                                  if (!f.isFile() || f.getName().endsWith(".part") || isWorkFile(f.getName())) continue;
                                   arr.put(new JSONObject().put("name", f.getName()).put("size", f.length())
                                       .put("mime", mimeOf(f.getAbsolutePath())).put("date", f.lastModified())
                                       .put("uri", Uri.fromFile(f).toString()).put("path", f.getAbsolutePath()));
