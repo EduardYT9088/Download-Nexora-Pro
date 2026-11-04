@@ -615,6 +615,25 @@ img.wav{object-fit:cover}
 .vblk .vnote{margin:0}
 .vyt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;padding:12px;border-radius:999px;background:var(--surface-2);font-weight:600;font-size:14px}
 .vyt svg{color:#FF4E45}
+#wv::cue{background:rgba(0,0,0,.62);color:#fff;font-size:1em;line-height:1.35}
+/* ===== Mis descargas ===== */
+.libsum{margin:-2px 0 0;color:var(--muted);font-size:13.5px}
+.libchips{margin-top:12px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.libchips::-webkit-scrollbar{display:none}
+.libchips .chip{flex:none;display:flex;align-items:center;gap:6px}
+.libchips .chip small{font-size:11px;opacity:.7;font-weight:700}
+.libit{gap:12px;padding:8px;border-radius:var(--r-md);margin-top:6px;background:var(--surface);align-items:center}
+.libit:active{background:var(--surface-2)}
+.lthumb{position:relative;width:118px;aspect-ratio:16/9;border-radius:10px;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--surface-2);color:var(--muted)}
+.lthumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lthumb.t-audio img{filter:saturate(1.05)}
+.lq{position:absolute;left:5px;top:5px;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:var(--accent);color:var(--accent-ink);letter-spacing:.02em}
+.ld{position:absolute;right:5px;bottom:5px;font-size:10.5px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.72);color:#fff}
+.lplay{position:absolute;left:5px;bottom:5px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center}
+.libit .name2{font-weight:600;font-size:14.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.libit .ch2{font-size:12.5px;color:var(--text);opacity:.8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.libit .sub{margin-top:3px}
+.libit .icon-btn{width:34px;height:34px;flex:none}
 /* ===== Selector de color propio ===== */
 .ptiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .ptile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px 10px;border-radius:var(--r-md);background:var(--surface);min-width:0}
@@ -766,6 +785,7 @@ img.wav{object-fit:cover}
     <section class="view" id="v-lib">
       <div class="libtop" id="libTop">
         <h1 data-t="libTitle">Mis descargas</h1>
+        <p class="libsum" id="libSum"></p>
       </div>
       <div class="permbox" id="permBox" hidden>
         <svg width="22" height="22"><use href="#i-folder"/></svg>
@@ -776,16 +796,16 @@ img.wav{object-fit:cover}
       <div class="sechead" id="doneHead">
         <h2 data-t="secDone">Descargado</h2>
         <div class="secact">
-          <button class="icon-btn" id="libFilterBtn" aria-label="Filtrar"><svg width="20" height="20"><use href="#i-filter"/></svg></button>
+          <button class="icon-btn" id="libFilterBtn" aria-label="Filtrar" hidden><svg width="20" height="20"><use href="#i-filter"/></svg></button>
           <button class="icon-btn" id="libSelBtn" aria-label="Eliminar"><svg width="20" height="20"><use href="#i-trash"/></svg></button>
           <button class="icon-btn" id="libSearchBtn" aria-label="Buscar"><svg width="20" height="20"><use href="#i-search"/></svg></button>
         </div>
       </div>
       <input class="input" id="libSearch" type="search" hidden data-tp="libSearchPh" placeholder="Buscar en tus descargas">
-      <div class="types" id="filters" hidden>
+      <div class="types libchips" id="filters">
         <button class="chip on" data-f="all" data-t="fAll">Todo</button>
-        <button class="chip" data-f="video" data-t="fVideo">Video</button>
         <button class="chip" data-f="audio" data-t="fAudio">Música</button>
+        <button class="chip" data-f="video" data-t="fVideo">Video</button>
         <button class="chip" data-f="image" data-t="fImage">Imágenes</button>
         <button class="chip" data-f="other" data-t="fOther">Otros</button>
       </div>
@@ -959,7 +979,7 @@ const I18N = {
     vVideo:'Vídeo',vAudio:'Áudio',vImage:'Imagem',vDoc:'Documento',vApk:'Aplicativo',vFile:'Arquivo',dupe:'Você já está baixando este link',platTitle:'Link do {n}',platBody:'O Nexora não baixa conteúdo do {n}, para respeitar os direitos dos criadores e as regras da plataforma. Para assistir offline, use a opção de download do app oficial.',platOpen:'Abrir no {n}',ok:'Entendi',ytHint:'Cole um link do YouTube, TikTok, Instagram, Facebook e mais, ou um link direto de arquivo.',analyzing:'Lendo o link…',enginePrepMsg:'Preparando o motor de download. Na primeira vez demora um pouco.',chooseFmt:'Formato',fV1080:'Vídeo 1080p',fV720:'Vídeo 720p',fV480:'Vídeo 480p',fMp3:'Áudio MP3',fM4a:'Áudio M4A',fV1080s:'Melhor qualidade',fV720s:'Equilibrado',fV480s:'Economiza espaço',fMp3s:'Toca em tudo',fM4as:'Qualidade original',channel:'Canal',credit:'O título e o canal são salvos como crédito ao criador.',notice:'Baixe só conteúdo seu ou com permissão do criador.',noticeTitle:'Antes de começar',noticeBody:'O Nexora Download Plus pode salvar vídeos e músicas do YouTube e outras redes. Respeite os criadores: baixe só conteúdo seu, com licença livre ou com permissão. Cada download guarda o título e o canal como crédito.',accept:'Aceito',infoErr:'Não foi possível ler este link',tryDirect:'Tentar download direto',tEngine:'Motor',engineReady:'Pronto',enginePrep:'Preparando…',engineUpdating:'Atualizando…',engineErr:'Com erro',engineUpd:'Atualizar motor',engineDesc:'O motor (yt-dlp) se atualiza sozinho todo dia. Atualize manualmente se uma rede parar de funcionar.',updated:'Motor atualizado',upToDate:'O motor já está atualizado',updErr:'Não foi possível atualizar. Verifique a conexão.',busy:'Espere os downloads terminarem',cancelDl:'Cancelar download',sCancelled:'Cancelado',sInterrupted:'Interrompido',seeOriginal:'Ver original',webOnly:'Downloads de redes só funcionam no app instalado',close:'Fechar',homeTitle:'Pesquise ou cole um link',urlPh:'Pesquisar ou colar link',search:'Pesquisar',siteHint:'Abra um vídeo, toque em Compartilhar e escolha Nexora Download Plus.',results:'Resultados',clearRes:'Limpar',searching:'Pesquisando…',noRes:'Nenhum resultado para essa pesquisa.',views:'visualizações',grpMusic:'Música',grpVideo:'Vídeo',fVbest:'Vídeo',fVbests:'Melhor disponível',errBot:'O YouTube pediu para confirmar que você não é um robô.',errBotFix:'Troque de rede (Wi-Fi ou dados) ou entre em Ferramentas → Conta do YouTube.',errFmt:'O YouTube não entregou formatos para este vídeo.',errFmtFix:'O Nexora já tentou vários métodos. Atualize o motor e tente de novo em alguns minutos.',errGen:'Verifique o link ou a conexão e tente de novo.',goLogin:'Entrar',tAccount:'Conta do YouTube',accOn:'Conectado',accOff:'Sem login',accTitle:'Conta do YouTube',accDesc:'Entrar ajuda quando o YouTube pede para confirmar que você não é um robô. A sessão fica só no seu celular.',accWarn:'O YouTube pode limitar ou suspender contas que baixam vídeos. Use uma conta secundária, não a principal nem a do seu canal.',login:'Entrar',importCk:'Importar cookies.txt',logout:'Sair',loggedOut:'Sessão encerrada',tCache:'Liberar espaço',tCacheS:'Apaga arquivos temporários',cacheDone:'Espaço liberado',tFeedback:'Comentários',tFeedbackS:'Relatar um problema',fV360:'Vídeo 360p',fV360s:'Ocupa pouco',popular:'Pesquisas populares',seeSites:'Sites',recentSearches:'Pesquisas recentes',clearHist:'Limpar',cMusic:'Música',cGames:'Games',cFunny:'Engraçados',cTut:'Tutoriais',cNews:'Notícias',cSports:'Esportes',cKids:'Infantil',qMusic:'música nova',qGames:'games gameplay',qFunny:'vídeos engraçados',qTut:'tutoriais',qNews:'notícias hoje',qSports:'esportes melhores momentos',qKids:'vídeos infantis',pops:'funk|vídeos engraçados|Minecraft|Free Fire|filmes completos|status para WhatsApp|sertanejo|Anitta',resultsFor:'Resultados de',stageRetry:'Tentando outro método…',stageUpdate:'Atualizando o motor…',feedErr:'Não foi possível carregar os vídeos.',retryBtn:'Tentar de novo',openYt:'Ver no YouTube',clipPasted:'Link colado da área de transferência',moreFmts:'Mais formatos',fV144s:'Qualidade mínima',fV240s:'Baixa qualidade',fV1440s:'Tela grande',fV2160s:'Qualidade máxima',tSettings:'Configurações',tSettingsS:'Área de transferência e player',autoClip:'Detectar links copiados',autoClipS:'Ao abrir o app, oferece baixar o link que você copiou',playerT:'Player de vídeos e músicas',recommended:'recomendado',askEach:'Escolher sempre',recTitle:'Reproduza com {n}',recBody:'Para assistir seus vídeos e ouvir suas músicas com a melhor qualidade, o Nexora recomenda o {n}. É grátis.',install:'Instalar {n}',openOther:'Abrir com outro app',cForYou:'Para você',qForYou:'',qMods:'novo|popular|em alta|2026|melhores|viral|ao vivo|completo',watchLoading:'Preparando vídeo…',playErr:'Não foi possível reproduzir aqui.',audioOnly:'Só áudio',options:'Opções',quality:'Qualidade',speed:'Velocidade',repeat:'Repetir vídeo',autoplay:'Reprodução automática',related:'Mais vídeos',subs:'inscritos',showMore:'Mostrar mais',showLess:'Mostrar menos',installing:'Instalando {n}',instStart:'Preparando o download…',instDl:'Baixando…',instPerm:'Permita que o Nexora instale apps e volte aqui.',instReady:'Pronto, confirme a instalação',instErr:'Falha no download, abrindo a página…',instWeb:'Baixar pela página web',recBody:'Para ver seus vídeos e ouvir suas músicas, o Nexora recomenda o {n}.',tHome:'Início',tVideos:'Vídeos',tShorts:'Shorts',tLive:'Ao vivo',tPlaylists:'Playlists',seeAll:'Todos',playlist:'Playlist',sizing:'Calculando tamanhos… já pode baixar',sizingEst:'Tamanhos aproximados · já pode baixar',bgListen:'Ouvir em segundo plano',bgOn:'Tocando em segundo plano. Controle pela notificação.',bgWait:'Preparando o áudio… começa em alguns segundos',bgErr:'Não foi possível tocar o áudio',pipBtn:'Janela flutuante',pipNo:'Seu celular não permite janela flutuante',leaveT:'Ao sair do app com um vídeo',leavePip:'Janela flutuante',leaveAudio:'Continuar ouvindo',leavePause:'Pausar',qualityAuto:'Automática',qualityEmbed:'Mude pela engrenagem do player',tUpdate:'Buscar atualização',checking:'Buscando atualização…',upToDateV:'Você já tem a versão mais recente (V{n})',updCheckErr:'Não foi possível verificar. Verifique a conexão.',apkPrep:'Preparando o APK para compartilhar…',themeMode:'Modo',themeColor:'Cor',themeAmoled:'Preto AMOLED',acc_aurora:'Aurora',acc_neon:'Neon',acc_ocean:'Oceano',acc_fire:'Fogo',acc_rose:'Rosa',acc_emerald:'Esmeralda',acc_gold:'Ouro',acc_ruby:'Rubi',fbTitle:'Enviar comentários',fbDetails:'Detalhes',fbPh:'Conte um pouco mais sobre suas dúvidas ou sugestões.',fbContact:'Contato',fbContactPh:'WhatsApp, número ou e-mail',fbMedia:'Fotos e vídeos',fbSend:'Enviar',fbThanks:'Obrigado! Envie o e-mail para terminar.',secDl:'Baixando',secDone:'Baixado',pauseAll:'Pausar tudo',resumeAll:'Continuar tudo',pause:'Pausar',resume:'Continuar',sPausedU:'Pausado',selAll:'Selecionar tudo',nSel:'{n} itens',del2:'Excluir',delQ:'Excluir {n} itens?',delFiles:'Excluir também os arquivos do celular',deletedN:'{n} itens excluídos',libSearchPh:'Pesquisar nos downloads',qCurrent:'Qualidade do vídeo atual',qAuto:'Automática (recomendada)',qAutoD:'Ajusta para a melhor experiência',qHigh:'Qualidade de imagem mais alta',qHighD:'Usa mais dados',qSaver:'Economia de dados',qSaverD:'Qualidade de imagem mais baixa',qAdv:'Avançada',qAdvD:'Selecione uma resolução específica',themeBg:'Fundo',bg_navy:'Nexora',bg_midnight:'Meia-noite',bg_purple:'Galáxia',bg_forest:'Floresta',bg_deep:'Abismo',bg_wine:'Vinho',bg_coffee:'Café',bg_graphite:'Grafite',acc_lime:'Lima',acc_sky:'Céu',acc_violet:'Violeta',acc_coral:'Coral',acc_mint:'Menta',acc_candy:'Doce',acc_sunset:'Pôr do sol',acc_mono:'Branco',basedOn:'Com base no que você assiste:',noTab:'Este canal não tem {n}',permT:'Ver todos os seus downloads',permD:'Permita o acesso a vídeos e músicas para ver o que você baixou antes, mesmo após reinstalar.',permBtn:'Permitir',updTitle:'Atualização obrigatória',updTitleOpt:'Nova versão disponível',updCur:'Sua versão:',updNew:'Novidades desta versão',updNow:'Atualizar agora',updLater:'Mais tarde',updConfirm:'Confirme a instalação na janela do Android',prefetch:'Pré-carregar vídeos',prefetchS:'Analisa em segundo plano os vídeos que você vê para o download abrir na hora'}
 };
 /* Textos nuevos (motor rápido, comentarios, Acerca de, calidad, herramientas) */
-Object.assign(I18N.es,{videoSettings:'Ajustes de este video',nowPlaying:'ahora',autoplayShort:'Automático',repeatShort:'Repetir',bgAlways:'Al salir de la app sigue sonando solo la música',fMusic:'Música',fVideos:'Videos',fImages:'Imágenes',fDocs:'Documentos',fastShort:'Rápido',stFiles:'archivos',organized:'Tus descargas quedaron ordenadas en carpetas',
+Object.assign(I18N.es,{libSumT:'{n} archivos · {s}',videoSettings:'Ajustes de este video',nowPlaying:'ahora',autoplayShort:'Automático',repeatShort:'Repetir',bgAlways:'Al salir de la app sigue sonando solo la música',fMusic:'Música',fVideos:'Videos',fImages:'Imágenes',fDocs:'Documentos',fastShort:'Rápido',stFiles:'archivos',organized:'Tus descargas quedaron ordenadas en carpetas',
   folderMsg:'Tus archivos se guardan en Download/Nexora, ordenados en Música, Videos, Imágenes y Documentos',accentT:'Color de acento',pickOwn:'Elegir tu propio color',pickOwnBg:'Elegir tu propio fondo',pickTitle:'Elige tu color',pickPrev:'Así se verá el color',pickMain:'Principal',pickSec:'Secundario',reset:'Restablecer',done:'Listo',saved:'Guardado',ownColor:'Propio',bgDarkOnly:'El fondo se cambia en modo Oscuro',
   acc_cherry:'Cereza',acc_lavender:'Lavanda',acc_teal:'Turquesa',acc_amber:'Ámbar',acc_indigo:'Índigo',acc_magenta:'Magenta',acc_blood:'Sangre',acc_ice:'Hielo',bg_slate:'Pizarra',bg_plum:'Ciruela',bg_abyss:'Abismo',bg_moss:'Musgo',
   comments:'Comentarios',comDisabled:'Los comentarios están desactivados',comErr:'No se pudieron cargar los comentarios',comEmpty:'Aún no hay comentarios',
@@ -969,7 +989,7 @@ Object.assign(I18N.es,{videoSettings:'Ajustes de este video',nowPlaying:'ahora',
   subsErr:'No se pudieron cargar los subtítulos',on:'Activado',off:'Desactivado',qVeryHigh:'Muy alto',qHighL:'Alto',qMid:'Medio',qLowL:'Ahorro de datos',qAutoL:'Auto',
   liveB:'EN VIVO',quickTheme:'Colores y tema',moreTheme:'Más opciones de tema',tgLook:'Personaliza',tgDl:'Descargas',tgAcc:'Cuenta',fastOn:'Motor rápido activo',
   tCacheS:'Borra archivos temporales',tSettingsS:'Portapapeles y reproductor',tFeedbackS:'Reporta un problema'});
-Object.assign(I18N.en,{videoSettings:'Settings for this video',nowPlaying:'now',autoplayShort:'Autoplay',repeatShort:'Repeat',bgAlways:'When you leave the app, only the music keeps playing',fMusic:'Music',fVideos:'Videos',fImages:'Images',fDocs:'Documents',fastShort:'Fast',stFiles:'files',organized:'Your downloads are now sorted into folders',
+Object.assign(I18N.en,{libSumT:'{n} files · {s}',videoSettings:'Settings for this video',nowPlaying:'now',autoplayShort:'Autoplay',repeatShort:'Repeat',bgAlways:'When you leave the app, only the music keeps playing',fMusic:'Music',fVideos:'Videos',fImages:'Images',fDocs:'Documents',fastShort:'Fast',stFiles:'files',organized:'Your downloads are now sorted into folders',
   folderMsg:'Your files are saved in Download/Nexora, sorted into Music, Videos, Images and Documents',accentT:'Accent color',pickOwn:'Pick your own color',pickOwnBg:'Pick your own background',pickTitle:'Pick your color',pickPrev:'This is how it will look',pickMain:'Primary',pickSec:'Secondary',reset:'Reset',done:'Done',saved:'Saved',ownColor:'Custom',bgDarkOnly:'Background changes in Dark mode',
   acc_cherry:'Cherry',acc_lavender:'Lavender',acc_teal:'Teal',acc_amber:'Amber',acc_indigo:'Indigo',acc_magenta:'Magenta',acc_blood:'Blood',acc_ice:'Ice',bg_slate:'Slate',bg_plum:'Plum',bg_abyss:'Abyss',bg_moss:'Moss',
   comments:'Comments',comDisabled:'Comments are turned off',comErr:'Couldn’t load comments',comEmpty:'No comments yet',
@@ -978,7 +998,7 @@ Object.assign(I18N.en,{videoSettings:'Settings for this video',nowPlaying:'now',
   videosN:'{n} videos',videosW:'videos',upNext:'Up next in this list',subsT:'Subtitles',subsOff:'Off',subsAuto:'auto-generated',subsNone:'This video has no subtitles',
   subsErr:'Couldn’t load subtitles',on:'On',off:'Off',qVeryHigh:'Very high',qHighL:'High',qMid:'Medium',qLowL:'Data saver',qAutoL:'Auto',
   liveB:'LIVE',quickTheme:'Colors & theme',moreTheme:'More theme options',tgLook:'Personalize',tgDl:'Downloads',tgAcc:'Account',fastOn:'Fast engine on'});
-Object.assign(I18N.pt,{videoSettings:'Ajustes deste vídeo',nowPlaying:'agora',autoplayShort:'Automático',repeatShort:'Repetir',bgAlways:'Ao sair do app, só a música continua tocando',fMusic:'Música',fVideos:'Vídeos',fImages:'Imagens',fDocs:'Documentos',fastShort:'Rápido',stFiles:'arquivos',organized:'Seus downloads foram organizados em pastas',
+Object.assign(I18N.pt,{libSumT:'{n} arquivos · {s}',videoSettings:'Ajustes deste vídeo',nowPlaying:'agora',autoplayShort:'Automático',repeatShort:'Repetir',bgAlways:'Ao sair do app, só a música continua tocando',fMusic:'Música',fVideos:'Vídeos',fImages:'Imagens',fDocs:'Documentos',fastShort:'Rápido',stFiles:'arquivos',organized:'Seus downloads foram organizados em pastas',
   folderMsg:'Seus arquivos ficam em Download/Nexora, separados em Música, Vídeos, Imagens e Documentos',accentT:'Cor de destaque',pickOwn:'Escolher sua própria cor',pickOwnBg:'Escolher seu próprio fundo',pickTitle:'Escolha sua cor',pickPrev:'Assim ficará a cor',pickMain:'Principal',pickSec:'Secundária',reset:'Restaurar',done:'Pronto',saved:'Salvo',ownColor:'Própria',bgDarkOnly:'O fundo muda no modo Escuro',
   acc_cherry:'Cereja',acc_lavender:'Lavanda',acc_teal:'Turquesa',acc_amber:'Âmbar',acc_indigo:'Índigo',acc_magenta:'Magenta',acc_blood:'Sangue',acc_ice:'Gelo',bg_slate:'Ardósia',bg_plum:'Ameixa',bg_abyss:'Abismo',bg_moss:'Musgo',
   comments:'Comentários',comDisabled:'Os comentários estão desativados',comErr:'Não foi possível carregar os comentários',comEmpty:'Ainda não há comentários',
@@ -1200,20 +1220,32 @@ function pctOf(it){
 }
 function qTag(it){ const m=it.mode||''; if(m==='mp3') return 'MP3'; if(m==='m4a') return 'M4A'; if(/^v\d+/.test(m)) return m.slice(1)+'P'; return '' }
 const isActive = it => ['running','pending','paused','interrupted'].includes(it.status) && (it.src==='yt'||it.sysId);
+function fmtAgoTs(ms){
+  if(!ms) return '';
+  const sec=(Date.now()-ms)/1000;
+  try{ const rtf=new Intl.RelativeTimeFormat(S.lang,{numeric:'auto'});
+    for(const [n,u] of [[31536000,'year'],[2592000,'month'],[604800,'week'],[86400,'day'],[3600,'hour'],[60,'minute']]) if(sec>=n) return rtf.format(-Math.floor(sec/n),u);
+    return rtf.format(0,'minute');
+  }catch(e){ return '' }
+}
 function itemHTML(it){
   const active = ['running','pending','paused'].includes(it.status);
   const p = pctOf(it);
-  const size = it.status==='done' ? fmtSize(it.total||it.done) : '';
-  const pic = it.thumb ? imgHQ(it.thumb,it.url).replace('/hq720.jpg','/hqdefault.jpg') : `<svg width="24" height="24"><use href="#${ICON[it.kind]}"/></svg>`;
-  const canPause = it.src==='yt' && ['running','pending','paused','interrupted','cancelled'].includes(it.status) && it.status!=='done';
+  const done = it.status==='done';
+  const size = done ? fmtSize(it.total||it.done) : '';
+  const img = it.thumb ? imgHQ(it.thumb,it.url).replace('/hq720.jpg','/hqdefault.jpg') : '';
+  const canPause = it.src==='yt' && ['running','pending','paused','interrupted','cancelled'].includes(it.status) && !done;
   const sel = LS.sel && LS.picked.has(it.key);
   const q=qTag(it);
-  return `<div class="item${sel?' sel':''}" data-id="${esc(it.key)}" role="button" tabindex="0">
+  const sub=[done?'':statusText(it), size, done?fmtAgoTs(it.date):''].filter(Boolean).join('  ·  ');
+  return `<div class="item libit${sel?' sel':''}" data-id="${esc(it.key)}" role="button" tabindex="0">
     ${LS.sel?'<span class="ck"></span>':''}
-    <div class="thumb t-${it.kind}">${pic}</div>
-    <div class="meta"><div class="name">${esc(it.name)}</div>
-      ${it.channel?`<div class="credit">${t('channel')}: <b>${esc(it.channel)}</b></div>`:''}
-      <div class="sub">${it.duration?fmtDur(it.duration)+'  ·  ':''}${size?esc(size)+'  ·  ':''}${statusText(it)}${q?`<span class="q">${q}</span>`:''}</div>
+    <div class="lthumb t-${it.kind}">${img||`<svg width="26" height="26"><use href="#${ICON[it.kind]}"/></svg>`}
+      ${q?`<span class="lq">${q}</span>`:''}${it.duration?`<span class="ld">${fmtDur(it.duration)}</span>`:''}
+      ${done&&(it.kind==='audio'||it.kind==='video')?`<span class="lplay"><svg width="16" height="16"><use href="#i-play"/></svg></span>`:''}</div>
+    <div class="meta"><div class="name2">${esc(it.name)}</div>
+      ${it.channel?`<div class="ch2">${esc(it.channel)}</div>`:''}
+      <div class="sub">${sub}</div>
       ${active?`<div class="bar ${p!=null?'':'ind'}"><i style="width:${p||0}%"></i></div>`:''}
     </div>
     ${LS.sel?'':canPause?`<button class="pbtn" data-pause="${esc(it.key)}" aria-label="${it.status==='running'||it.status==='pending'?t('pause'):t('resume')}"><svg width="18" height="18"><use href="#${it.status==='running'||it.status==='pending'?'i-pause':'i-play'}"/></svg></button>`:`<button class="icon-btn" data-more="${esc(it.key)}" aria-label="Más opciones"><svg width="20" height="20"><use href="#i-more"/></svg></button>`}
@@ -1239,6 +1271,9 @@ function render(){
   $('#stCount').textContent=done.length;
   $('#stSize').textContent=fmtSize(done.reduce((s,i)=>s+(i.total||0),0))||'0 MB';
   renderLibCard(done);
+  const ls=$('#libSum'); if(ls) ls.textContent = done.length ? tn('libSumT',done.length).replace('{s}',fmtSize(done.reduce((s,i)=>s+(i.total||0),0))||'0 MB') : '';
+  const cnt={all:done.length,audio:0,video:0,image:0,other:0}; done.forEach(i=>{ if(cnt[i.kind]!=null&&i.kind!=='all') cnt[i.kind]++; else cnt.other++ });
+  document.querySelectorAll('#filters .chip').forEach(c=>{ const k=c.dataset.f; c.hidden = k!=='all' && !cnt[k] && S.filter!==k; c.innerHTML=`${t(c.dataset.t)}<small>${cnt[k]||0}</small>` });
   const act=S.items.filter(i=>['running','pending','paused'].includes(i.status)).length;
   const bd=$('#badge'); bd.textContent=act; bd.classList.toggle('on',act>0);
 }
@@ -1906,7 +1941,7 @@ function showPreparing(){
 }
 function closeWatch(silent){
   if(!W) return;
-  destroyHls(); closeWPanel(true);
+  destroyHls(); closeWPanel(true); try{ A&&A.bgPreload&&A.bgPreload('','') }catch(e){}
   const v=wv(); try{ v.pause() }catch(e){} v.querySelectorAll('track').forEach(x=>x.remove()); v.removeAttribute('src'); v.load();
   const f=wf(); f.src='about:blank'; f.hidden=true; v.hidden=false;
   clearInterval(W.listenIv); clearTimeout(W.embedTimer);
@@ -1955,8 +1990,11 @@ function syncNow(){
   if(!A||!A.setNow) return;
   const i=(W&&W.info)||{}, r=(W&&W.r)||{};
   try{ A.setNow(JSON.stringify({playing:!!(W&&W.open&&W.playing&&!W.bg), leave:'audio', audio:i.audio||'', ua:i.audioUa||'',
-    title:i.title||r.title||'', artist:i.channel||r.channel||'', pos:Math.round(curPos()*1000)})) }catch(e){}
+    title:i.title||r.title||'', artist:i.channel||r.channel||'', pos:Math.round(curPos()*1000),
+    thumb: ytId(r.url||'') ? 'https://i.ytimg.com/vi/'+ytId(r.url)+'/hqdefault.jpg' : (r.thumb||i.thumb||'')})) }catch(e){}
 }
+/* Deja la música lista mientras ves el video: al salir de la app suena al instante */
+function bgPreload(){ if(!A||!A.bgPreload) return; try{ const i=W&&W.info; A.bgPreload(i&&i.audio&&!W.bg?i.audio:'', i&&i.audioUa||'') }catch(e){} }
 function fmtAgo(d){
   if(!/^\d{8}$/.test(d||'')) return '';
   const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8)), sec=(Date.now()-dt)/1000;
@@ -2168,7 +2206,7 @@ function onWatchInfo(ev,p){
   W.info.streams=(W.info.streams||[]).slice().sort((a,b)=>a.h-b.h);
   if(W.info.related&&W.info.related.length){ W.related=W.info.related.filter(x=>x.url!==W.r.url); W.relDone=true }
   else if(!W.related.length) askRelated();
-  renderWatchBody(); syncNow();
+  renderWatchBody(); syncNow(); setTimeout(bgPreload,1500);
   if(W.bgPending){ W.bgPending=false; if(W.info.audio){ startBg(); return } toast(t('bgErr')) }
   if(W.mode==='stream') startStream(0);
 }
@@ -2290,7 +2328,7 @@ function playFail(){
 function toggleBg(){
   if(!W) return;
   if(!A||!A.bgPlay){ toast(t('webOnly')); return }
-  if(W.bg){ let pos=-1; try{ pos=A.bgStop() }catch(e){} W.bg=false; BG_ON=false; renderWatchBody(); if(pos>=0){ if(!wv().src&&W.info){ startStream(pos/1000) } else resumePlayer(pos/1000) } return }
+  if(W.bg){ let pos=-1; try{ pos=A.bgStop() }catch(e){} W.bg=false; BG_ON=false; renderWatchBody(); if(pos>=0){ if(!wv().src&&W.info){ startStream(pos/1000) } else resumePlayer(pos/1000) } setTimeout(bgPreload,1500); return }
   if(W.bgPending){ W.bgPending=false; renderWatchBody(); if(W.info) startStream(0); return }
   if(!W.info||!W.info.audio){ W.bgPending=true; toast(t('bgWait')); return }
   startBg();
@@ -2411,8 +2449,11 @@ function setSubs(x){
   if(!x) return;
   fetch(x.url).then(r=>r.ok?r.text():Promise.reject(r.status)).then(txt=>{
     if(!W||W.sub!==x.url) return;
+    // YouTube pone los subtítulos a la izquierda: se centran
+    txt=txt.replace(/^(\s*(?:\d+:)?\d+:\d+[.,]\d+\s+-->\s+(?:\d+:)?\d+:\d+[.,]\d+).*$/gm,'$1 align:center position:50% size:100%');
     const tr=document.createElement('track'); tr.kind='subtitles'; tr.label=x.name||x.lang; tr.srclang=(x.lang||'').slice(0,2); tr.default=true;
     tr.src=URL.createObjectURL(new Blob([txt],{type:'text/vtt'}));
+    tr.addEventListener('load',()=>{ try{ for(const c of tr.track.cues){ c.align='center'; c.position='auto'; c.size=100 } }catch(e){} });
     v.appendChild(tr);
     setTimeout(()=>{ for(const tt of v.textTracks) tt.mode='showing' },60);
   }).catch(()=>{ toast(t('subsErr')); if(W&&W.sub===x.url) W.sub='' });
