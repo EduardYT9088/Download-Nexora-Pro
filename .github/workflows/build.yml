@@ -288,8 +288,10 @@ jobs:
               android:width="108dp" android:height="108dp"
               android:viewportWidth="108" android:viewportHeight="108">
               <group android:pivotX="54" android:pivotY="57.5" android:scaleX="0.8" android:scaleY="0.8" android:translateY="-3.5">
-                  <path android:pathData="M30,72 V33 L67,68 M67,31 V68 L79,56 M31,84 H77"
-                      android:strokeColor="#FFFFFFFF" android:strokeWidth="9"
+                  <path android:pathData="M54,22 A32,32 0 1,1 53.99,22 Z"
+                      android:strokeColor="#FFFFFFFF" android:strokeWidth="8" android:fillColor="#00000000" />
+                  <path android:pathData="M54,36 V58 M43,50 L54,61 L65,50 M44,71 H64"
+                      android:strokeColor="#FFFFFFFF" android:strokeWidth="8"
                       android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" />
               </group>
           </vector>
@@ -3193,7 +3195,7 @@ jobs:
               canvas.save(f"{res}/mipmap-{folder}/ic_launcher_fg.png")
           PY
           cat > android/app/src/main/res/values/icon_bg.xml <<'EOF'
-          <resources><color name="icon_bg">#0B0620</color></resources>
+          <resources><color name="icon_bg">#14081F</color></resources>
           EOF
           cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
